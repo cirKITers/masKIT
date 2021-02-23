@@ -1,5 +1,6 @@
 import pennylane as qml
 import remote_cirq
+from random import choice, randrange
 from pennylane import numpy as np
 
 np.random.seed(1337)
@@ -52,6 +53,32 @@ def my_circuit(dev, wires, layers, params, rotations, dropouts):
 def cost(dev, wires, layers, params, rotations, dropouts):
     return my_circuit(dev, wires, layers, params, rotations, dropouts)()
 
+def determine_dropout(params, dropout, epsilon=0.01, factor=0.2, difference=0):
+    """
+    Determines new dropout based on previous dropout and current parameters.
+
+    Args:
+        params ([type]): Parameters for the current training
+        dropout ([type]): Dropout currently in use
+
+    Returns:
+        [type]: Dropout for next training step
+    """
+    new_dropout = np.zeros_like(params)
+    i_dim = len(params)
+    j_dim = len(params[0])
+    for i in range(i_dim):
+        for j in range(j_dim):
+            if 0 - epsilon <= params[i][j] >= 0 + epsilon:
+                new_dropout[i][j] = 1
+    max_count = i_dim * j_dim
+    if difference > epsilon:
+        while np.sum(new_dropout) / max_count <= factor:
+            rand_i = randrange(0, i_dim)
+            rand_j = randrange(0, j_dim)
+            new_dropout[rand_i][rand_j] = 1
+    return new_dropout
+
 def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
     dev = get_device(sim_local, wires=wires)
     #circuit = qml.QNode(variational_circuit, dev)
@@ -63,14 +90,22 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
         rotations.append(rotation)
 
     params = np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires))
-    dropouts = np.zeros_like(params)
+    dropouts = determine_dropout(params, np.zeros_like(params))
 
     opt = qml.GradientDescentOptimizer(stepsize=0.01)
+    last_cost = None
 
-    for s in range(steps):
-        c = cost(dev, wires, layers, params, rotations, dropouts)
-        print(s, c)
+    for step in range(steps):
+        new_cost = cost(dev, wires, layers, params, rotations, dropouts)
+        if last_cost is None:
+            last_cost = new_cost
+        difference = last_cost - new_cost
+        
+        print(step, new_cost)
         params = opt.step(lambda p: cost(dev, wires, layers, p, rotations, dropouts), params)
+        # determine new dropouts based on new parameter values
+        dropouts = determine_dropout(params, dropouts, difference=difference)
+        last_cost = new_cost
 
 
 if __name__ == "__main__":
