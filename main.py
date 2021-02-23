@@ -66,27 +66,22 @@ def determine_dropout(params, dropout, epsilon=0.01, factor=0.2, difference=0):
     Returns:
         [type]: Dropout for next training step
     """
-    new_dropout = np.zeros_like(params)
-    i_dim = len(params)
-    j_dim = len(params[0])
-    for i in range(i_dim):
-        for j in range(j_dim):
-            if 0 - epsilon <= params[i][j] >= 0 + epsilon:
-                new_dropout[i][j] = 1
-    max_count = i_dim * j_dim
+    new_dropout = dropout.copy()
+    indices = np.argwhere((params <= epsilon) & (params >= -epsilon))
+    if len(indices) > 0:
+        index = choice(indices)
+        new_dropout[index[0], index[1]] = 1
     if difference > epsilon:
-        old_indices = np.argwhere(dropout == 1)
-        while np.sum(new_dropout) / max_count < factor:
-            if len(old_indices) > 0:
-                index = choice(old_indices, replace=False)
-                new_dropout[index[0], index[1]] = 1
-            else:
-                rand_i = randrange(0, i_dim)
-                rand_j = randrange(0, j_dim)
-                new_dropout[rand_i, rand_j] = 1
-        # in case the dropout is higher than factor, we should randomly remove some
-        # for _ in range(randrange(0, ((np.sum(new_dropout) / max_count) - factor) * max_count)):
-        if np.sum(new_dropout) / max_count > factor:
+        i_dim = len(params)
+        j_dim = len(params[0])
+        max_count = i_dim * j_dim
+        if np.sum(new_dropout) / max_count < factor:
+            # in case we have little dropouts, add one
+            rand_i = randrange(0, i_dim)
+            rand_j = randrange(0, j_dim)
+            new_dropout[rand_i, rand_j] = 1
+        elif np.sum(new_dropout) / max_count > factor:
+            # in case the dropout is higher than factor, we should randomly remove one
             current_indices = np.argwhere(new_dropout == 1)
             index = choice(current_indices)
             new_dropout[index[0], index[1]] = 0
