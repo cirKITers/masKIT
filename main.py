@@ -19,7 +19,7 @@ def get_device(sim_local, wires, analytic=False):
                          analytic=analytic)
     return dev
 
-def my_circuit(dev, wires, layers, params, rotations):
+def my_circuit(dev, wires, layers, params, rotations, dropouts):
     @qml.qnode(dev)
     def variational_circuit():
         for w in range(wires):
@@ -27,6 +27,8 @@ def my_circuit(dev, wires, layers, params, rotations):
         r = 0
         for l in range(layers):
             for w in range(wires):
+                if dropouts[l][w] == 1:
+                    continue
                 if rotations[r] == 0:
                     rotation = qml.RX
                 elif rotations[r] == 1:
@@ -42,8 +44,8 @@ def my_circuit(dev, wires, layers, params, rotations):
         return qml.probs(0)
     return variational_circuit
 
-def cost(dev, wires, layers, params, rotations):
-    return 1 - my_circuit(dev, wires, layers, params, rotations)()[0]
+def cost(dev, wires, layers, params, rotations, dropouts):
+    return 1 - my_circuit(dev, wires, layers, params, rotations, dropouts)()[0]
 
 def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
     dev = get_device(sim_local, wires=wires)
@@ -56,13 +58,14 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
         rotations.append(rotation)
 
     params = np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires))
+    dropouts = np.zeros_like(params)
 
     opt = qml.GradientDescentOptimizer(stepsize=0.01)
 
     for s in range(steps):
-        c = cost(dev, wires, layers, params, rotations)
+        c = cost(dev, wires, layers, params, rotations, dropouts)
         print(s, c)
-        params = opt.step(lambda p: cost(dev, wires, layers, p, rotations), params)
+        params = opt.step(lambda p: cost(dev, wires, layers, p, rotations, dropouts), params)
         
 
 
