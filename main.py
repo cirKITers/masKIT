@@ -73,10 +73,21 @@ def determine_dropout(params, dropout, epsilon=0.01, factor=0.2, difference=0):
                 new_dropout[i][j] = 1
     max_count = i_dim * j_dim
     if difference > epsilon:
-        while np.sum(new_dropout) / max_count <= factor:
-            rand_i = randrange(0, i_dim)
-            rand_j = randrange(0, j_dim)
-            new_dropout[rand_i][rand_j] = 1
+        old_indices = np.argwhere(dropout == 1)
+        while np.sum(new_dropout) / max_count < factor:
+            if len(old_indices) > 0:
+                index = choice(old_indices, replace=False)
+                new_dropout[index[0], index[1]] = 1
+            else:
+                rand_i = randrange(0, i_dim)
+                rand_j = randrange(0, j_dim)
+                new_dropout[rand_i, rand_j] = 1
+        # in case the dropout is higher than factor, we should randomly remove some
+        # for _ in range(randrange(0, ((np.sum(new_dropout) / max_count) - factor) * max_count)):
+        if np.sum(new_dropout) / max_count > factor:
+            current_indices = np.argwhere(new_dropout == 1)
+            index = choice(current_indices)
+            new_dropout[index[0], index[1]] = 0
     return new_dropout
 
 
@@ -117,4 +128,4 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
         print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, new_cost, np.var(gradient)))
 
 if __name__ == "__main__":
-    train_circuit()
+    train_circuit(sim_local=True, use_dropout=True)
