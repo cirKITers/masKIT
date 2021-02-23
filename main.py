@@ -28,6 +28,7 @@ def my_circuit(dev, wires, layers, params, rotations, dropouts):
         for l in range(layers):
             for w in range(wires):
                 if dropouts[l][w] == 1:
+                    r += 1
                     continue
                 if rotations[r] == 0:
                     rotation = qml.RX
