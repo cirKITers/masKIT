@@ -21,6 +21,7 @@ def get_device(sim_local, wires, analytic=False):
                          analytic=analytic)
     return dev
 
+
 def my_circuit(dev, wires, layers, params, rotations, dropouts):
     @qml.qnode(dev)
     def variational_circuit():
@@ -50,8 +51,10 @@ def my_circuit(dev, wires, layers, params, rotations, dropouts):
         return qml.expval(qml.Hermitian(H, wirelist))
     return variational_circuit
 
+
 def cost(dev, wires, layers, params, rotations, dropouts):
     return my_circuit(dev, wires, layers, params, rotations, dropouts)()
+
 
 def determine_dropout(params, dropout, epsilon=0.01, factor=0.2, difference=0):
     """
@@ -79,18 +82,18 @@ def determine_dropout(params, dropout, epsilon=0.01, factor=0.2, difference=0):
             new_dropout[rand_i][rand_j] = 1
     return new_dropout
 
-def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
+
+def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=True):
     dev = get_device(sim_local, wires=wires)
-    #circuit = qml.QNode(variational_circuit, dev)
 
     rotation_choices = [0, 1, 2]
-    rotations = []
-    for _ in range(layers*wires):
-        rotation = np.random.choice(rotation_choices)
-        rotations.append(rotation)
+    rotations = [np.random.choice(rotation_choices) for _ in range(layers*wires)]
 
     params = np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires))
-    dropouts = determine_dropout(params, np.zeros_like(params))
+    if use_dropout:
+        dropouts = determine_dropout(params, np.zeros_like(params))
+    else:
+        dropouts = np.zeros_like(params)
 
     opt = qml.GradientDescentOptimizer(stepsize=0.01)
     last_cost = None
@@ -104,7 +107,8 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
         print(step, new_cost)
         params = opt.step(lambda p: cost(dev, wires, layers, p, rotations, dropouts), params)
         # determine new dropouts based on new parameter values
-        dropouts = determine_dropout(params, dropouts, difference=difference)
+        if use_dropout:
+            dropouts = determine_dropout(params, dropouts, difference=difference)
         last_cost = new_cost
 
 
