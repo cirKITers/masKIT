@@ -3,6 +3,8 @@ import remote_cirq
 from random import choice
 from pennylane import numpy as np
 
+np.random.seed(1447)
+
 def get_device(sim_local, wires, analytic=False):
     if sim_local:
         dev = qml.device("default.qubit", 
@@ -67,8 +69,6 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
         c = cost(dev, wires, layers, params, rotations, dropouts)
         print(s, c)
         params = opt.step(lambda p: cost(dev, wires, layers, p, rotations, dropouts), params)
-        
-
 
 
 if __name__ == "__main__":
