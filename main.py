@@ -1,9 +1,8 @@
 import pennylane as qml
 import remote_cirq
-from random import choice
 from pennylane import numpy as np
 
-np.random.seed(1447)
+np.random.seed(1337)
 
 def get_device(sim_local, wires, analytic=False):
     if sim_local:
@@ -44,11 +43,14 @@ def my_circuit(dev, wires, layers, params, rotations, dropouts):
             for w in range(wires-1):
                 qml.CZ(wires=[w, w+1])
 
-        return qml.probs(0)
+        H = np.zeros((2 ** wires, 2 ** wires))
+        H[0, 0] = 1
+        wirelist = [i for i in range(wires)]
+        return qml.expval(qml.Hermitian(H, wirelist))
     return variational_circuit
 
 def cost(dev, wires, layers, params, rotations, dropouts):
-    return 1 - my_circuit(dev, wires, layers, params, rotations, dropouts)()[0]
+    return my_circuit(dev, wires, layers, params, rotations, dropouts)()
 
 def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
     dev = get_device(sim_local, wires=wires)
@@ -57,7 +59,7 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True):
     rotation_choices = [0, 1, 2]
     rotations = []
     for _ in range(layers*wires):
-        rotation = choice(rotation_choices)
+        rotation = np.random.choice(rotation_choices)
         rotations.append(rotation)
 
     params = np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires))
