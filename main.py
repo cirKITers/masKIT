@@ -40,8 +40,10 @@ def variational_circuit(params, wires, layers, rotations, dropouts):
             r += 1
             rotation(params[l][w], wires=w)
     
-        for w in range(wires-1):
-            qml.CZ(wires=[w, w+1])
+        for w in range(0, wires - 1, 2):
+            qml.CZ(wires=[w, w + 1])
+        for w in range(1, wires - 1, 2):
+            qml.CZ(wires=[w, w + 1])
 
     H = np.zeros((2 ** wires, 2 ** wires))
     H[0, 0] = 1
