@@ -61,7 +61,7 @@ class MaskedParameters(object):
                 return
         else:
             indices = np.arange(wire_count)
-        indices = np.random.choice(indices, count, replace=False)
+        indices = np.random.choice(indices, min(count, len(indices)), replace=False)
         self._mask[indices] = ~self._mask[indices]
 
     def _perturb_layers(self, amount: int = None):
@@ -73,7 +73,7 @@ class MaskedParameters(object):
                 return
         else:
             indices = np.arange(layer_count)
-        layer_indices = [slice(None, None, None), np.random.choice(indices, count, replace=False)]
+        layer_indices = [slice(None, None, None), np.random.choice(indices, min(count, len(indices)), replace=False)]
         self._mask[layer_indices] = ~self._mask[layer_indices]
 
     def _perturb_random(self, amount: int = None):
@@ -82,10 +82,10 @@ class MaskedParameters(object):
             indices = np.argwhere(self._mask)
             if len(indices) == 0:
                 return
-            random_indices = tuple(zip(*indices[np.random.choice(len(indices), count, replace=False)]))
+            random_indices = tuple(zip(*indices[np.random.choice(len(indices), min(count, len(indices)), replace=False)]))
         else:
             indices = np.arange(self._params.size)
-            selection = np.random.choice(indices, count, replace=False)
+            selection = np.random.choice(indices, min(count, len(indices)), replace=False)
             random_indices = np.unravel_index(selection, self._mask.shape)
         self._mask[random_indices] = ~self._mask[random_indices]
 
