@@ -89,6 +89,10 @@ class MaskedParameters(object):
             random_indices = np.unravel_index(selection, self._mask.shape)
         self._mask[random_indices] = ~self._mask[random_indices]
 
+    def apply_mask(self, params):
+        params = np.array(params[0])
+        return params[~self._mask]
+
 
 if __name__ == "__main__":
     parameter = MaskedParameters(np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])))

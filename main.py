@@ -130,6 +130,8 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
 
         masked_params = best_branch
         current_cost = minimum_cost
+        # get the real gradients as gradients also contain values from dropped gates
+        real_gradients = masked_params.apply_mask(gradient)
 
         print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(gradient)))
 
