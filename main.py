@@ -81,11 +81,11 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
         branch_costs = []
         gradients = []
         for branch in branches:
-            start_params = branch.params
+            params = branch.params
             for _ in range(step_count):
-                end_params, cost, gradient = optimizer.step_cost_and_grad(
-                    *args, start_params, mask=branch.mask)
-            branch.params = end_params
+                params, cost, gradient = optimizer.step_cost_and_grad(
+                    *args, params, mask=branch.mask)
+            branch.params = params
             branch_costs.append(cost)
             gradients.append(gradient)
         minimum_cost = min(branch_costs)
