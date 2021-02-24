@@ -2,7 +2,7 @@ from typing import List
 
 import pennylane as qml
 import remote_cirq
-from pennylane import numpy as np, GradientDescentOptimizer
+from pennylane import numpy as np, GradientDescentOptimizer, AdamOptimizer
 
 from masked_parameters import MaskedParameters
 
@@ -25,6 +25,10 @@ class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
         if len(new_args) == 1:
             return new_args[0], forward, gradient
         return new_args, forward, gradient
+
+
+class ExtendedAdamOptimizer(ExtendedGradientDescentOptimizer, AdamOptimizer):
+    pass
 
 
 def get_device(sim_local, wires, analytic=False):
@@ -99,8 +103,8 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
 
     masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
 
-    opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
-    # opt = qml.AdamOptimizer(stepsize=0.01)
+    # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
+    opt = ExtendedAdamOptimizer(stepsize=0.01)
 
     circuit = qml.QNode(variational_circuit, dev)
 
