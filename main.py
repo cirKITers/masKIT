@@ -137,6 +137,6 @@ if __name__ == "__main__":
     train_circuit(sim_local=True, use_dropout=False, steps=20)
     # example values for layers = 15
     # steps | dropout = False | dropout = True
-    # 20:     0.99600,          0.90200
-    # 50:     0.98900,          0.92500
+    # 20:     0.99600,          0.91500
+    # 50:     0.98900,          0.81700
     # steps are normalised with regard to # branches
