@@ -1,11 +1,31 @@
+from typing import List
+
 import pennylane as qml
 import remote_cirq
-from random import choice, randrange
-from pennylane import numpy as np
+from pennylane import numpy as np, GradientDescentOptimizer
 
 from masked_parameters import MaskedParameters
 
 np.random.seed(1337)
+
+
+class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
+    def step_cost_and_grad(self, objective_fn, *args, grad_fn=None, **kwargs):
+        """
+        This function copies the functionality of the GradientDescentOptimizer
+        one-to-one but changes the return statement to also return the gradient.
+        """
+        gradient, forward = self.compute_grad(objective_fn, args, kwargs, grad_fn=grad_fn)
+        new_args = self.apply_grad(gradient, args)
+
+        if forward is None:
+            forward = objective_fn(*args, **kwargs)
+
+        # unwrap from list if one argument, cleaner return
+        if len(new_args) == 1:
+            return new_args[0], forward, gradient
+        return new_args, forward, gradient
+
 
 def get_device(sim_local, wires, analytic=False):
     if sim_local:
@@ -52,40 +72,26 @@ def cost(circuit, params, wires, layers, rotations, dropouts):
     return 1 - circuit(params, wires, layers, rotations, dropouts)[0]
 
 
-def determine_dropout(params, dropout, epsilon=0.01, factor=0.2, difference=0):
-    """
-    Determines new dropout based on previous dropout and current parameters.
-
-    Args:
-        params ([type]): Parameters for the current training
-        dropout ([type]): Dropout currently in use
-
-    Returns:
-        [type]: Dropout for next training step
-    """
-    new_dropout = dropout.copy()
-    indices = np.argwhere((params <= epsilon) & (params >= -epsilon))
-    if len(indices) > 0:
-        index = choice(indices)
-        new_dropout[index[0], index[1]] = 1
-    if difference > epsilon:
-        i_dim = len(params)
-        j_dim = len(params[0])
-        max_count = i_dim * j_dim
-        if np.sum(new_dropout) / max_count < factor:
-            # in case we have little dropouts, add one
-            rand_i = randrange(0, i_dim)
-            rand_j = randrange(0, j_dim)
-            new_dropout[rand_i, rand_j] = 1
-        elif np.sum(new_dropout) / max_count > factor:
-            # in case the dropout is higher than factor, we should randomly remove one
-            current_indices = np.argwhere(new_dropout == 1)
-            index = choice(current_indices)
-            new_dropout[index[0], index[1]] = 0
-    return new_dropout
-
-
 def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=False):
+    def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
+        """
+        Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
+        roll out the ensembles in the available range of Floq.
+        """
+        branch_costs = []
+        gradients = []
+        for branch in branches:
+            start_params = branch.params
+            for _ in range(step_count):
+                end_params, cost, gradient = optimizer.step_cost_and_grad(
+                    *args, start_params, mask=branch.mask)
+            branch.params = end_params
+            branch_costs.append(cost)
+            gradients.append(gradient)
+        minimum_cost = min(branch_costs)
+        minimum_index = branch_costs.index(minimum_cost)
+        return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
+
     dev = get_device(sim_local, wires=wires)
 
     rotation_choices = [0, 1, 2]
@@ -93,19 +99,13 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
 
     masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
 
-    opt = qml.GradientDescentOptimizer(stepsize=0.01)
-    last_cost = None
+    opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
+    # opt = qml.AdamOptimizer(stepsize=0.01)
 
     circuit = qml.QNode(variational_circuit, dev)
 
     step_count = steps // 2 // 3 if use_dropout else steps // 2
     for step in range(step_count):
-
-        grad, _ = opt.compute_grad(
-            lambda p: cost(circuit, p, wires, layers, rotations, masked_params.mask),
-            (masked_params.params,),
-            {})
-        
         if use_dropout:
             center_params = masked_params
             left_branch_params = masked_params.copy()
@@ -116,24 +116,18 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
             branches = [center_params, left_branch_params, right_branch_params]
         else:
             branches = [masked_params]
-        # best_branch, best_cost = ensemble_step(branches, opt, step_count=2)
 
-        branch_costs = []
-        for branch in branches:
-            for _ in range(2):
-                params, optimized_cost = opt.step_and_cost(
-                    lambda p: cost(circuit, p, wires, layers, rotations, branch.mask),
-                    branch.params)
-                branch.params = params
-            branch_costs.append(optimized_cost)
+        best_branch, minimum_cost, gradient = ensemble_step(
+            branches,
+            opt,
+            lambda params, mask=None: cost(
+                circuit, params, wires, layers, rotations, mask),
+            step_count=2)
 
-        minimum_cost = min(branch_costs)
-        index = branch_costs.index(minimum_cost)
-        print(f"picked index {index}")
-        masked_params = branches[index]
-        current_cost = branch_costs[index]
+        masked_params = best_branch
+        current_cost = minimum_cost
 
-        print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(grad)))
+        print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(gradient)))
 
     print(masked_params.params)
     print(masked_params.mask)
