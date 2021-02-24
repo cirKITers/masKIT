@@ -98,11 +98,14 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
 
     circuit = qml.QNode(variational_circuit, dev)
 
-    # grad = qml.grad(circuit, argnum=0)
-    # gradient = grad(params, wires=wires, layers=layers, rotations=rotations, dropouts=dropouts)
-
     step_count = steps // 2 // 3 if use_dropout else steps // 2
     for step in range(step_count):
+
+        grad, _ = opt.compute_grad(
+            lambda p: cost(circuit, p, wires, layers, rotations, masked_params.mask),
+            (masked_params.params,),
+            {})
+        
         if use_dropout:
             center_params = masked_params
             left_branch_params = masked_params.copy()
@@ -130,8 +133,8 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
         masked_params = branches[index]
         current_cost = branch_costs[index]
 
-        # print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, new_cost, np.var(gradient)))
-        print("Step: {:4d} | Cost: {: .5f}".format(step, current_cost))
+        print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(grad)))
+
     print(masked_params.params)
     print(masked_params.mask)
 
