@@ -103,8 +103,6 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
 
     step_count = steps // 2 // 3 if use_dropout else steps // 2
     for step in range(step_count):
-        current_cost = cost(circuit, masked_params.params, wires, layers, rotations, masked_params.mask)
-
         if use_dropout:
             center_params = masked_params
             left_branch_params = masked_params.copy()
@@ -115,14 +113,16 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
             branches = [center_params, left_branch_params, right_branch_params]
         else:
             branches = [masked_params]
+        # best_branch, best_cost = ensemble_step(branches, opt, step_count=2)
 
         branch_costs = []
-        for params in branches:
+        for branch in branches:
             for _ in range(2):
-                params.params = opt.step(
-                    lambda p: cost(circuit, p, wires, layers, rotations, params.mask),
-                    params.params)
-            branch_costs.append(cost(circuit, params.params, wires, layers, rotations, params.mask))
+                params, optimized_cost = opt.step_and_cost(
+                    lambda p: cost(circuit, p, wires, layers, rotations, branch.mask),
+                    branch.params)
+                branch.params = params
+            branch_costs.append(optimized_cost)
 
         minimum_cost = min(branch_costs)
         index = branch_costs.index(minimum_cost)
