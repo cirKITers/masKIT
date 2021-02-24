@@ -7,7 +7,7 @@ random.seed(1337)
 class MaskedParameters(object):
     def __init__(self, params):
         self._params = params
-        self._mask = np.zeros_like(params, dtype=bool)
+        self._mask = np.zeros_like(params, dtype=bool, requires_grad=False)
 
     @property
     def params(self):
