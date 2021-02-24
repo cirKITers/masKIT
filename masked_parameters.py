@@ -1,6 +1,8 @@
 import random
 import pennylane.numpy as np
 
+random.seed(1337)
+
 
 class MaskedParameters(object):
     def __init__(self, params):
