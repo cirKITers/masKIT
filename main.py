@@ -169,7 +169,7 @@ def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, u
                 print("Label: {} Output: {} Correct: {}".format(target, output, same))
             print("Accuracy = {} / {} = {} \nAvg Cost: {}".format(correct, N, correct/N, np.average(costs)))
 
-        if step % 40 == 0 and step > 0 and current_layers < layers:
+        if epoch % 2 == 0 and epoch > 0 and current_layers < layers:
             current_layers += 1
             print(f"Increased number of layers from {current_layers-1} to {current_layers}")
 
