@@ -55,7 +55,7 @@ class MaskedParameters(object):
         return clone
 
     def perturb(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
-        assert amount >= 0, "Negative values are not supported, plese use PerturbationMode.REMOVE"
+        assert amount is None or amount >= 0, "Negative values are not supported, plese use PerturbationMode.REMOVE"
         if mode == PerturbationMode.ADD:
             raise NotImplementedError(f"The mode {mode} is not yet implemented")
         if self.perturbation_axis == PerturbationAxis.WIRES:
