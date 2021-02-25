@@ -1,8 +1,8 @@
-import random
+import random as rand
 import pennylane.numpy as np
 from enum import Enum
 
-random.seed(1337)
+rand.seed(1337)
 
 
 class PerturbationAxis(Enum):
@@ -76,7 +76,7 @@ class MaskedParameters(object):
 
     def _perturb_wires(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         wire_count = self._params.shape[1]
-        count = abs(amount) if amount is not None else random.randrange(0, wire_count)
+        count = abs(amount) if amount is not None else rand.randrange(0, wire_count)
         if mode == PerturbationMode.REMOVE:
             indices = [index for index, value in enumerate(self._mask[:, 0]) if value]
         elif mode == PerturbationMode.ADD:
@@ -93,7 +93,7 @@ class MaskedParameters(object):
 
     def _perturb_layers(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         layer_count = self._params.shape[0]
-        count = abs(amount) if amount is not None else random.randrange(0, layer_count)
+        count = abs(amount) if amount is not None else rand.randrange(0, layer_count)
         if mode == PerturbationMode.REMOVE:
             indices = [index for index, value in enumerate(self._mask[0]) if value]
         elif mode == PerturbationMode.ADD:
@@ -111,7 +111,7 @@ class MaskedParameters(object):
         self._mask[layer_indices] = ~self._mask[layer_indices]
 
     def _perturb_random(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
-        count = abs(amount) if amount is not None else random.randrange(0, self._params.size)
+        count = abs(amount) if amount is not None else rand.randrange(0, self._params.size)
         if mode == PerturbationMode.REMOVE:
             indices = np.argwhere(self._mask)
             if len(indices) == 0:
