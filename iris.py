@@ -3,6 +3,7 @@ from sklearn import datasets
 
 np.random.seed(1337)
 
+
 def one_hot(a, num_classes):
   return np.squeeze(np.eye(num_classes)[a.astype(int).reshape(-1)])
 
@@ -43,4 +44,3 @@ def cross_entropy(predictions, targets, epsilon=1e-12):
 if __name__ == "__main__":
     x_train, y_train, x_test, y_test = load_iris()
     print(y_train)
-    

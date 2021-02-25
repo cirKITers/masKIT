@@ -109,25 +109,6 @@ def cost_iris(circuit, params, data, target, wires, layers, rotations, dropouts)
 
 
 def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, use_dropout=False, testing=True):
-    def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
-        """
-        Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
-        roll out the ensembles in the available range of Floq.
-        """
-        branch_costs = []
-        gradients = []
-        for branch in branches:
-            params = branch.params
-            for _ in range(step_count):
-                params, cost, gradient = optimizer.step_cost_and_grad(
-                    *args, params, mask=branch.mask)
-            branch.params = params
-            branch_costs.append(cost)
-            gradients.append(gradient)
-        minimum_cost = min(branch_costs)
-        minimum_index = branch_costs.index(minimum_cost)
-        return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
-
     dev = get_device(sim_local, wires=wires)
 
     rotation_choices = [0, 1, 2]
@@ -145,7 +126,6 @@ def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, u
 
     circuit = qml.QNode(circuit_iris, dev)
     x_train, y_train, x_test, y_test = load_iris()
-
 
     for epoch in range(epochs):
         for step, (data, target) in enumerate(zip(x_train, y_train)):
@@ -196,28 +176,28 @@ def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, u
     print(masked_params.params)
     print(masked_params.mask)
 
-    
+
+def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
+    """
+    Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
+    roll out the ensembles in the available range of Floq.
+    """
+    branch_costs = []
+    gradients = []
+    for branch in branches:
+        params = branch.params
+        for _ in range(step_count):
+            params, cost, gradient = optimizer.step_cost_and_grad(
+                *args, params, mask=branch.mask)
+        branch.params = params
+        branch_costs.append(args[0](params, mask=branch.mask))
+        gradients.append(gradient)
+    minimum_cost = min(branch_costs)
+    minimum_index = branch_costs.index(minimum_cost)
+    return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
+
 
 def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=True, use_dropout=False):
-    def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
-        """
-        Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
-        roll out the ensembles in the available range of Floq.
-        """
-        branch_costs = []
-        gradients = []
-        for branch in branches:
-            params = branch.params
-            for _ in range(step_count):
-                params, cost, gradient = optimizer.step_cost_and_grad(
-                    *args, params, mask=branch.mask)
-            branch.params = params
-            branch_costs.append(cost)
-            gradients.append(gradient)
-        minimum_cost = min(branch_costs)
-        minimum_index = branch_costs.index(minimum_cost)
-        return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
-
     dev = get_device(sim_local, wires=wires)
 
     rotation_choices = [0, 1, 2]
