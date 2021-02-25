@@ -61,20 +61,20 @@ class MaskedParameters(object):
         clone.perturbation_axis = self.perturbation_axis
         return clone
 
-    def perturb(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
+    def perturb(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         assert amount is None or amount >= 0, "Negative values are not supported, plese use PerturbationMode.REMOVE"
         if amount == 0:
             return
         if self.perturbation_axis == PerturbationAxis.WIRES:
-            self._perturb_wires(amount, mode)
+            self._perturb_wires(amount, mode, random)
         elif self.perturbation_axis == PerturbationAxis.LAYERS:
-            self._perturb_layers(amount, mode)
+            self._perturb_layers(amount, mode, random)
         elif self.perturbation_axis == PerturbationAxis.RANDOM:
-            self._perturb_random(amount, mode)
+            self._perturb_random(amount, mode, random)
         else:
             raise ValueError(f"The perturbation {self.perturbation_axis} is not supported")
 
-    def _perturb_wires(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
+    def _perturb_wires(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         wire_count = self._params.shape[1]
         count = abs(amount) if amount is not None else random.randrange(0, wire_count)
         if mode == PerturbationMode.REMOVE:
@@ -88,7 +88,7 @@ class MaskedParameters(object):
         indices = np.random.choice(indices, min(count, len(indices)), replace=False)
         self._mask[indices] = ~self._mask[indices]
 
-    def _perturb_layers(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
+    def _perturb_layers(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         layer_count = self._params.shape[0]
         count = abs(amount) if amount is not None else random.randrange(0, layer_count)
         if mode == PerturbationMode.REMOVE:
@@ -99,12 +99,15 @@ class MaskedParameters(object):
             indices = np.arange(layer_count)
         if len(indices) == 0:
             return
-        layer_indices = [slice(None, None, None),
-                         np.random.choice(indices, min(count, len(indices)),
-                                          replace=False)]
+        if random:
+            layer_indices = [slice(None, None, None),
+                             np.random.choice(indices, min(count, len(indices)),
+                                              replace=False)]
+        else:
+            layer_indices = indices[:count]
         self._mask[layer_indices] = ~self._mask[layer_indices]
 
-    def _perturb_random(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
+    def _perturb_random(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         count = abs(amount) if amount is not None else random.randrange(0, self._params.size)
         if mode == PerturbationMode.REMOVE:
             indices = np.argwhere(self._mask)
