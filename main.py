@@ -76,7 +76,7 @@ def cost(circuit, params, wires, layers, rotations, dropouts):
     return 1 - circuit(params, wires, layers, rotations, dropouts)[0]
 
 
-def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=False):
+def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=True, use_dropout=False):
     def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
         """
         Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
@@ -101,8 +101,13 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers*wires)]
 
-    masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
-
+    current_layers = starting_layers
+    params_uniform = np.random.uniform(low=-np.pi, high=np.pi, size=(current_layers, wires))
+    para_zero = np.zeros((layers-current_layers, wires))
+    params_combined = np.concatenate((params_uniform, para_zero))
+    masked_params = MaskedParameters(params_combined)
+    # masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
+    
     # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
     opt = ExtendedAdamOptimizer(stepsize=0.01)
 
@@ -125,7 +130,7 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
             branches,
             opt,
             lambda params, mask=None: cost(
-                circuit, params, wires, layers, rotations, mask),
+                circuit, params, wires, current_layers, rotations, mask),
             step_count=2)
 
         masked_params = best_branch
@@ -134,6 +139,10 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
         real_gradients = masked_params.apply_mask(gradient)
 
         print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(gradient)))
+
+        if step % 40 == 0 and step > 0 and current_layers < layers:
+            current_layers += 1
+            print(f"Increased number of layers from {current_layers-1} to {current_layers}")
 
     print(masked_params.params)
     print(masked_params.mask)
