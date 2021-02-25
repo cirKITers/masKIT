@@ -103,8 +103,8 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
 
     current_layers = starting_layers
     params_uniform = np.random.uniform(low=-np.pi, high=np.pi, size=(current_layers, wires))
-    para_zero = np.zeros((layers-current_layers, wires))
-    params_combined = np.concatenate((params_uniform, para_zero))
+    params_zero = np.zeros((layers-current_layers, wires))
+    params_combined = np.concatenate((params_uniform, params_zero))
     masked_params = MaskedParameters(params_combined)
     # masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
     
@@ -138,7 +138,7 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
         # get the real gradients as gradients also contain values from dropped gates
         real_gradients = masked_params.apply_mask(gradient)
 
-        print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(gradient)))
+        print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(gradient[0][0:current_layers])))
 
         if step % 40 == 0 and step > 0 and current_layers < layers:
             current_layers += 1
