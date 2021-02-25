@@ -63,6 +63,8 @@ class MaskedParameters(object):
 
     def perturb(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
         assert amount is None or amount >= 0, "Negative values are not supported, plese use PerturbationMode.REMOVE"
+        if amount == 0:
+            return
         if self.perturbation_axis == PerturbationAxis.WIRES:
             self._perturb_wires(amount, mode)
         elif self.perturbation_axis == PerturbationAxis.LAYERS:
@@ -125,8 +127,6 @@ class MaskedParameters(object):
             selection = np.random.choice(indices, min(count, len(indices)),
                                          replace=False)
             random_indices = np.unravel_index(selection, self._mask.shape)
-        if len(random_indices) == 0:
-            return
         self._mask[random_indices] = ~self._mask[random_indices]
 
     def apply_mask(self, params):
