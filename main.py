@@ -5,6 +5,7 @@ import remote_cirq
 from pennylane import numpy as np, GradientDescentOptimizer, AdamOptimizer
 
 from masked_parameters import MaskedParameters, PerturbationMode
+from iris import load_iris, cross_entropy
 
 np.random.seed(1337)
 
@@ -72,9 +73,130 @@ def variational_circuit(params, wires, layers, rotations, dropouts):
     return qml.probs(wires=range(wires))
 
 
+def circuit_iris(params, data, wires, layers, rotations, dropouts):
+    qml.templates.embeddings.AngleEmbedding(features=data, wires=range(4), rotation="X")
+
+    for w in range(wires):
+        qml.RY(np.pi/4, wires=w) 
+    r = -1
+    for l in range(layers):
+        for w in range(wires):
+            r += 1
+            if dropouts[l][w] == True:
+                continue
+            if rotations[r] == 0:
+                rotation = qml.RX
+            elif rotations[r] == 1:
+                rotation = qml.RY
+            else:
+                rotation = qml.RZ
+            rotation(params[l][w], wires=w)
+    
+        for w in range(0, wires - 1, 2):
+            qml.CZ(wires=[w, w + 1])
+        for w in range(1, wires - 1, 2):
+            qml.CZ(wires=[w, w + 1])
+    return qml.probs(wires=[0,1])
+
+
 def cost(circuit, params, wires, layers, rotations, dropouts):
     return 1 - circuit(params, wires, layers, rotations, dropouts)[0]
 
+
+def cost_iris(circuit, params, data, target, wires, layers, rotations, dropouts):
+    prediction = circuit(params, data, wires, layers, rotations, dropouts)
+    return cross_entropy(predictions=prediction, targets=target)
+
+
+def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, use_dropout=False, testing=True):
+    def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
+        """
+        Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
+        roll out the ensembles in the available range of Floq.
+        """
+        branch_costs = []
+        gradients = []
+        for branch in branches:
+            params = branch.params
+            for _ in range(step_count):
+                params, cost, gradient = optimizer.step_cost_and_grad(
+                    *args, params, mask=branch.mask)
+            branch.params = params
+            branch_costs.append(cost)
+            gradients.append(gradient)
+        minimum_cost = min(branch_costs)
+        minimum_index = branch_costs.index(minimum_cost)
+        return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
+
+    dev = get_device(sim_local, wires=wires)
+
+    rotation_choices = [0, 1, 2]
+    rotations = [np.random.choice(rotation_choices) for _ in range(layers*wires)]
+
+    current_layers = layers if use_dropout else starting_layers
+    params_uniform = np.random.uniform(low=-np.pi, high=np.pi, size=(current_layers, wires))
+    params_zero = np.zeros((layers-current_layers, wires))
+    params_combined = np.concatenate((params_uniform, params_zero))
+    masked_params = MaskedParameters(params_combined)
+    # masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
+    
+    # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
+    opt = ExtendedAdamOptimizer(stepsize=0.01)
+
+    circuit = qml.QNode(circuit_iris, dev)
+    x_train, y_train, x_test, y_test = load_iris()
+
+
+    for epoch in range(epochs):
+        for step, (data, target) in enumerate(zip(x_train, y_train)):
+            if use_dropout:
+                center_params = masked_params
+                left_branch_params = masked_params.copy()
+                right_branch_params = masked_params.copy()
+                # perturb the right params
+                left_branch_params.perturb(1, mode=PerturbationMode.REMOVE)
+                right_branch_params.perturb()
+                branches = [center_params, left_branch_params, right_branch_params]
+            else:
+                branches = [masked_params]
+
+            best_branch, minimum_cost, gradient = ensemble_step(
+                branches,
+                opt,
+                lambda params, mask=None: cost_iris(
+                    circuit, params, data, target, wires, current_layers, rotations, mask),
+                step_count=2)
+
+            masked_params = best_branch
+            current_cost = minimum_cost
+            # get the real gradients as gradients also contain values from dropped gates
+            real_gradients = masked_params.apply_mask(gradient)
+
+            print("Epoch: {:2d} | Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(epoch, step, current_cost, np.var(real_gradients[0:current_layers])))
+
+        if testing:
+            correct = 0
+            N = len(x_test)
+            costs = []
+            for step, (data, target) in enumerate(zip(x_test, y_test)):
+                test_mask = np.zeros_like(masked_params.params, dtype=bool, requires_grad=False) 
+                output = circuit(masked_params.params, data, wires, current_layers, rotations, test_mask)
+                c = cost_iris(circuit, masked_params.params, data, target, wires, current_layers, rotations, test_mask)
+                costs.append(c)
+                same = np.argmax(target) == np.argmax(output)
+                if same:
+                    correct += 1
+                print("Label: {} Output: {} Correct: {}".format(target, output, same))
+            print("Accuracy = {} / {} = {} \nAvg Cost: {}".format(correct, N, correct/N, np.average(costs)))
+
+        if step % 40 == 0 and step > 0 and current_layers < layers:
+            current_layers += 1
+            print(f"Increased number of layers from {current_layers-1} to {current_layers}")
+
+    print(masked_params.params)
+    print(masked_params.mask)
+
+    
 
 def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=True, use_dropout=False):
     def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
@@ -149,7 +271,8 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
 
 
 if __name__ == "__main__":
-    train_circuit(sim_local=True, use_dropout=False, steps=20)
+    # train_circuit(sim_local=True, use_dropout=False, steps=20)
+    train_iris(sim_local=True, use_dropout=False, epochs=3)
     # example values for layers = 15
     # steps | dropout = False | dropout = True
     # 20:     0.99600,          0.91500
