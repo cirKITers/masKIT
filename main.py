@@ -4,7 +4,7 @@ import pennylane as qml
 import remote_cirq
 from pennylane import numpy as np, GradientDescentOptimizer, AdamOptimizer
 
-from masked_parameters import MaskedParameters
+from masked_parameters import MaskedParameters, PerturbationMode
 
 np.random.seed(1337)
 
@@ -115,7 +115,7 @@ def train_circuit(wires=5, layers=5, steps=500, sim_local=True, use_dropout=Fals
             left_branch_params = masked_params.copy()
             right_branch_params = masked_params.copy()
             # perturb the right params
-            left_branch_params.perturb(-1)
+            left_branch_params.perturb(1, mode=PerturbationMode.REMOVE)
             right_branch_params.perturb()
             branches = [center_params, left_branch_params, right_branch_params]
         else:
