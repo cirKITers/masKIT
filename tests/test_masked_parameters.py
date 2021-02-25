@@ -2,7 +2,7 @@ import pytest
 
 import pennylane.numpy as pnp
 
-from masked_parameters import MaskedParameters, PerturbationAxis
+from masked_parameters import MaskedParameters, PerturbationAxis, PerturbationMode
 
 # TODO: unit test für None
 # TODO: unit test für Entfernung der Maske, wenn keine angesetzt ist
@@ -27,7 +27,7 @@ def test_perturbation(perturbation):
         print(f"current i {i}")
         print(mp.mask)
         assert pnp.sum(mp.mask) == (i + 1) * factor
-        mp.perturb(-(i + 1))
+        mp.perturb(i + 1, mode=PerturbationMode.REMOVE)
         print(mp.mask)
         assert pnp.sum(mp.mask) == 0
 
