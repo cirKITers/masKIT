@@ -25,7 +25,6 @@ class PerturbationMode(Enum):
 
 class MaskedParameters(object):
     """
-    TODO: check if np.array.size is wires or layers
     TODO: currently only works for 2d arrays
     TODO: interpretation of wires and layers is not strict and depends on user
         interpretation how the different parameters are mapped to the circuit
@@ -74,7 +73,7 @@ class MaskedParameters(object):
         else:
             raise ValueError(f"The perturbation {self.perturbation_axis} is not supported")
 
-    def _perturb_wires(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
+    def _perturb_layers(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         wire_count = self._params.shape[1]
         count = abs(amount) if amount is not None else rand.randrange(0, wire_count)
         if mode == PerturbationMode.REMOVE:
@@ -91,7 +90,7 @@ class MaskedParameters(object):
             indices = indices[:count]
         self._mask[indices] = ~self._mask[indices]
 
-    def _perturb_layers(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
+    def _perturb_wires(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT, random: bool = True):
         layer_count = self._params.shape[0]
         count = abs(amount) if amount is not None else rand.randrange(0, layer_count)
         if mode == PerturbationMode.REMOVE:
