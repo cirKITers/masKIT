@@ -32,8 +32,9 @@ class MaskedParameters(object):
     """
     def __init__(self, params, perturbation_axis: PerturbationAxis = PerturbationAxis.RANDOM):
         self._params = params
-        self._mask = np.zeros_like(params, dtype=bool, requires_grad=False)
+        self._mask = None
         self.perturbation_axis = perturbation_axis
+        self.reset()
 
     @property
     def params(self):
@@ -47,6 +48,12 @@ class MaskedParameters(object):
     def params(self, values):
         self._params = values
 
+    def reset(self):
+        """
+        Resets the mask to all-False.
+        """
+        self._mask = np.zeros_like(self._params, dtype=bool, requires_grad=False)
+
     def copy(self) -> 'MaskedParameters':
         clone = object.__new__(MaskedParameters)
         clone._params = self._params.copy()
@@ -56,8 +63,6 @@ class MaskedParameters(object):
 
     def perturb(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
         assert amount is None or amount >= 0, "Negative values are not supported, plese use PerturbationMode.REMOVE"
-        if mode == PerturbationMode.ADD:
-            raise NotImplementedError(f"The mode {mode} is not yet implemented")
         if self.perturbation_axis == PerturbationAxis.WIRES:
             self._perturb_wires(amount, mode)
         elif self.perturbation_axis == PerturbationAxis.LAYERS:
@@ -72,10 +77,12 @@ class MaskedParameters(object):
         count = abs(amount) if amount is not None else random.randrange(0, wire_count)
         if mode == PerturbationMode.REMOVE:
             indices = [index for index, value in enumerate(self._mask[:, 0]) if value]
-            if len(indices) == 0:
-                return
+        elif mode == PerturbationMode.ADD:
+            indices = [index for index, value in enumerate(self._mask[:, 0]) if not value]
         else:
             indices = np.arange(wire_count)
+        if len(indices) == 0:
+            return
         indices = np.random.choice(indices, min(count, len(indices)), replace=False)
         self._mask[indices] = ~self._mask[indices]
 
@@ -84,11 +91,15 @@ class MaskedParameters(object):
         count = abs(amount) if amount is not None else random.randrange(0, layer_count)
         if mode == PerturbationMode.REMOVE:
             indices = [index for index, value in enumerate(self._mask[0]) if value]
-            if len(indices) == 0:
-                return
+        elif mode == PerturbationMode.ADD:
+            indices = [index for index, value in enumerate(self._mask[0]) if not value]
         else:
             indices = np.arange(layer_count)
-        layer_indices = [slice(None, None, None), np.random.choice(indices, min(count, len(indices)), replace=False)]
+        if len(indices) == 0:
+            return
+        layer_indices = [slice(None, None, None),
+                         np.random.choice(indices, min(count, len(indices)),
+                                          replace=False)]
         self._mask[layer_indices] = ~self._mask[layer_indices]
 
     def _perturb_random(self, amount: int = None, mode: PerturbationMode = PerturbationMode.INVERT):
@@ -97,11 +108,25 @@ class MaskedParameters(object):
             indices = np.argwhere(self._mask)
             if len(indices) == 0:
                 return
-            random_indices = tuple(zip(*indices[np.random.choice(len(indices), min(count, len(indices)), replace=False)]))
+            random_indices = tuple(zip(*indices[
+                np.random.choice(len(indices), min(count, len(indices)),
+                                 replace=False)]))
+        elif mode == PerturbationMode.ADD:
+            indices = np.argwhere(~self._mask)
+            if len(indices) == 0:
+                return
+            random_indices = tuple(zip(*indices[
+                np.random.choice(len(indices), min(count, len(indices)),
+                                 replace=False)]))
         else:
             indices = np.arange(self._params.size)
-            selection = np.random.choice(indices, min(count, len(indices)), replace=False)
+            if len(indices) == 0:
+                return
+            selection = np.random.choice(indices, min(count, len(indices)),
+                                         replace=False)
             random_indices = np.unravel_index(selection, self._mask.shape)
+        if len(random_indices) == 0:
+            return
         self._mask[random_indices] = ~self._mask[random_indices]
 
     def apply_mask(self, params):
