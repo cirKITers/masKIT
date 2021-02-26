@@ -109,7 +109,7 @@ def cost_iris(circuit, params, data, target, wires, layers, rotations, dropouts)
     return cross_entropy(predictions=prediction, targets=target)
 
 
-def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, use_dropout=False, testing=True):
+def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, use_dropout=False, use_classical_dropout=False, testing=True):
     dev = get_device(sim_local, wires=wires)
 
     rotation_choices = [0, 1, 2]
@@ -138,6 +138,10 @@ def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, u
                 left_branch_params.perturb(1, mode=PerturbationMode.REMOVE)
                 right_branch_params.perturb()
                 branches = [center_params, left_branch_params, right_branch_params]
+            elif use_classical_dropout:
+                masked_params.reset()
+                masked_params.perturb(masked_params.params.size // 10, mode=PerturbationMode.ADD)
+                branches = [masked_params]
             else:
                 branches = [masked_params]
 
