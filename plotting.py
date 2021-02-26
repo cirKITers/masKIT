@@ -23,7 +23,9 @@ def plot_cost(data):
             steps = [s * 3 for s in steps]
 
         plt.plot(steps, values)
-
+    plt.ylim((0, 1.1))
+    plt.ylabel("Cost", fontsize=16)
+    plt.xlabel("Steps", fontsize=16)
     plt.show()
 
 
@@ -55,12 +57,12 @@ def plot_cost_normalized(data):
         step_counter = 0
         if real_data_length == 0:
             real_data_length += len(costs) * 5
-            real_data_length += len(branches) * 3
+            real_data_length += len(branches) * 2
 
         for i in range(real_data_length):
             key = f"{i}"
             if key in branches:
-                step_counter += 3
+                step_counter += 2
             if key in costs:
                 steps.append(i + step_counter)
                 values.append(costs[key])
@@ -69,10 +71,11 @@ def plot_cost_normalized(data):
         plt.plot(steps, values, label=label)
 
     plt.rcParams.update({'font.size': 15})
-    plt.legend(loc="upper right")
+    plt.legend()
     plt.title(label="Wires: {}, Layers: {}".format(d["call"][2]["wires"], d["call"][2]["layers"]), fontdict={"fontsize": 18})
     plt.xlabel('Training steps', fontsize=16)
     plt.ylabel('Cost', fontsize=16)
+    plt.ylim((0, 1.1))
     plt.show()
 
 def plot_dropouts(data):
@@ -89,12 +92,12 @@ def plot_dropouts(data):
         step_counter = 0
         if real_data_length == 0:
             real_data_length += len(dropouts) * 5
-            real_data_length += len(branches) * 3
+            real_data_length += len(branches) * 2
 
         for i in range(real_data_length):
             key = f"{i}"
             if key in branches:
-                step_counter += 3
+                step_counter += 2
             if key in dropouts:
                 steps.append(i + step_counter)
                 values.append(int(dropouts[key]))
