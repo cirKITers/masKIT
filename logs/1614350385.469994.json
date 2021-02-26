@@ -1,0 +1,4027 @@
+{
+  "event": "log_results",
+  "call": [
+    "__main__.train_test",
+    [
+      "\"ExtendedGradientDescentOptimizer(0.01)\""
+    ],
+    {
+      "steps": 1000,
+      "wires": 10,
+      "layers": 5,
+      "cost_span": 5,
+      "log_interval": 5,
+      "use_dropout": true,
+      "seed": 1337
+    }
+  ],
+  "result": {
+    "costs": {
+      "0": 0.9997132780183416,
+      "5": 0.9997131125273484,
+      "10": 0.9997128363277659,
+      "15": 0.9997033692674975,
+      "20": 0.9988251857574557,
+      "25": 0.9951023671038923,
+      "30": 0.9936811501550172,
+      "35": 0.9936568946411704,
+      "40": 0.993449168502005,
+      "45": 0.9926535988386167,
+      "50": 0.9924815246011816,
+      "55": 0.9924530283327682,
+      "60": 0.9924243695098174,
+      "65": 0.992395546860114,
+      "70": 0.9923665590987657,
+      "75": 0.9919993457916949,
+      "80": 0.9903407854009834,
+      "85": 0.9892205722474852,
+      "90": 0.9891634895713945,
+      "95": 0.9891059576852964,
+      "100": 0.9890237984677309,
+      "105": 0.9888680889955019,
+      "110": 0.9887767198522841,
+      "115": 0.9885897204663434,
+      "120": 0.9881360818466224,
+      "125": 0.9864851573809721,
+      "130": 0.9863857863042231,
+      "135": 0.9862853160538151,
+      "140": 0.9861478157906948,
+      "145": 0.9859071941177453,
+      "150": 0.9858131004288909,
+      "155": 0.9857180928912734,
+      "160": 0.9856221598149422,
+      "165": 0.9844378246646895,
+      "170": 0.9799476772727658,
+      "175": 0.9797773780394101,
+      "180": 0.9794825666894418,
+      "185": 0.9788142592121017,
+      "190": 0.9786313359853919,
+      "195": 0.9784462790741847,
+      "200": 0.9782590573386969,
+      "205": 0.9780696391098089,
+      "210": 0.9778779921792236,
+      "215": 0.9776840837894365,
+      "220": 0.9774878806235211,
+      "225": 0.977289348794719,
+      "230": 0.977088453835836,
+      "235": 0.976885160688439,
+      "240": 0.9766794336918547,
+      "245": 0.9764712365719582,
+      "250": 0.9762605324297591,
+      "255": 0.9760472837297731,
+      "260": 0.9758314522881832,
+      "265": 0.9756129992607796,
+      "270": 0.9753918851306829,
+      "275": 0.9751680696958418,
+      "280": 0.9749415120563057,
+      "285": 0.9747121706012667,
+      "290": 0.9731764376996761,
+      "295": 0.9676591077702564,
+      "300": 0.9673063497981534,
+      "305": 0.9669486676229614,
+      "310": 0.9665859802779279,
+      "315": 0.9662182053771666,
+      "320": 0.965845259093116,
+      "325": 0.9654670561338543,
+      "330": 0.9650835097202777,
+      "335": 0.9646945315631636,
+      "340": 0.9643000318401309,
+      "345": 0.9638999191725116,
+      "350": 0.963494100602154,
+      "355": 0.963082481568178,
+      "360": 0.9626649658836973,
+      "365": 0.9622414557125356,
+      "370": 0.9618118515459552,
+      "375": 0.9613760521794266,
+      "380": 0.9609339546894621,
+      "385": 0.9604854544105409,
+      "390": 0.9600304449121578,
+      "395": 0.9594413373360261,
+      "400": 0.9584515971566558,
+      "405": 0.9579569590903942,
+      "410": 0.9573396028445508,
+      "415": 0.9563681424813412,
+      "420": 0.955849859921081,
+      "425": 0.955323942409245,
+      "430": 0.9547902644485211,
+      "435": 0.9542486985789929,
+      "440": 0.9536991153614496,
+      "445": 0.9531413833614394,
+      "450": 0.9525753691341207,
+      "455": 0.9520009372099825,
+      "460": 0.9514179500814949,
+      "465": 0.9508262681907608,
+      "470": 0.9502257499182434,
+      "475": 0.9496162515726398,
+      "480": 0.9489976273819843,
+      "485": 0.948369729486061,
+      "490": 0.9461931841673488,
+      "495": 0.9392389489472898,
+      "500": 0.9383265903723684,
+      "505": 0.9373974065561574,
+      "510": 0.9364510744074825,
+      "515": 0.9354872662954913,
+      "520": 0.9345056501258929,
+      "525": 0.9335058894289915,
+      "530": 0.9324876434602084,
+      "535": 0.9314505673138065,
+      "540": 0.9303943120505552,
+      "545": 0.929318524840089,
+      "550": 0.9282228491187332,
+      "555": 0.9271069247635868,
+      "560": 0.9259703882836705,
+      "565": 0.9248128730289521,
+      "570": 0.9236340094180855,
+      "575": 0.9224334251856922,
+      "580": 0.9212107456500297,
+      "585": 0.9199655940018914,
+      "590": 0.9186975916155744,
+      "595": 0.9174063583827493,
+      "600": 0.9160915130700568,
+      "605": 0.9147526737012324,
+      "610": 0.9133894579645474,
+      "615": 0.9120014836463202,
+      "620": 0.9105883690912181,
+      "625": 0.9091497336900337,
+      "630": 0.9076851983955635,
+      "635": 0.9061943862671656,
+      "640": 0.9046769230445058,
+      "645": 0.903132437750928,
+      "650": 0.9015605633267985,
+      "655": 0.8999609372930856,
+      "660": 0.8983332024453292,
+      "665": 0.8966770075780403,
+      "670": 0.8949920082394455,
+      "675": 0.8932778675163615,
+      "680": 0.8915342568488253,
+      "685": 0.8897608568739598,
+      "690": 0.8879573582983749,
+      "695": 0.8861234627982266,
+      "700": 0.8842588839458664,
+      "705": 0.8823633481618003,
+      "710": 0.880436595690478,
+      "715": 0.8784783815981934,
+      "720": 0.8764884767911558,
+      "725": 0.8744666690515503,
+      "730": 0.8724127640891497,
+      "735": 0.8714411105251945,
+      "740": 0.873811969005257,
+      "745": 0.8717105816558812,
+      "750": 0.8695729002334083,
+      "755": 0.8673985647605681,
+      "760": 0.8651872303145435,
+      "765": 0.8629385682126518,
+      "770": 0.8606522672254011,
+      "775": 0.8583280348145144,
+      "780": 0.8559655983932384,
+      "785": 0.8535647066059392,
+      "790": 0.8511251306236824,
+      "795": 0.8486466654521851,
+      "800": 0.8461291312482142,
+      "805": 0.8435723746401882,
+      "810": 0.8409762700484398,
+      "815": 0.838340721000287,
+      "820": 0.8356656614347759,
+      "825": 0.8329510569916747,
+      "830": 0.8301969062790391,
+      "835": 0.8274032421134303,
+      "840": 0.8245701327266476,
+      "845": 0.82169768293265,
+      "850": 0.818786035248185,
+      "855": 0.8158353709605215,
+      "860": 0.8128459111356025,
+      "865": 0.8098179175598957,
+      "870": 0.806751693609228,
+      "875": 0.8036475850379465,
+      "880": 0.8005059806818577,
+      "885": 0.7973273130685653,
+      "890": 0.7941120589290402,
+      "895": 0.7908607396045406,
+      "900": 0.7875739213433317,
+      "905": 0.7842522154820506,
+      "910": 0.7808962785070136,
+      "915": 0.7775068119912684,
+      "920": 0.7740845624037574,
+      "925": 0.7706303207875678,
+      "930": 0.7671449223049029,
+      "935": 0.7636292456471111,
+      "940": 0.7600842123088427,
+      "945": 0.7565107857261797,
+      "950": 0.7529099702793649,
+      "955": 0.7492828101615773,
+      "960": 0.7456303881160131,
+      "965": 0.741953824044347,
+      "970": 0.7382542734904669,
+      "975": 0.7345329260041668,
+      "980": 0.7307910033902529,
+      "985": 0.7270297578492559,
+      "990": 0.7232504700166407,
+      "995": 0.7194544469080496
+    },
+    "final_cost": 0.7148795557888846,
+    "branch_enforcements": {
+      "735": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      }
+    },
+    "dropouts": {
+      "0": 0.0,
+      "5": 0.0,
+      "10": 0.0,
+      "15": 0.2,
+      "20": 1.2,
+      "25": 2.2,
+      "30": 3.0,
+      "35": 3.0,
+      "40": 3.2,
+      "45": 4.2,
+      "50": 5.0,
+      "55": 5.0,
+      "60": 5.0,
+      "65": 5.0,
+      "70": 5.0,
+      "75": 5.2,
+      "80": 6.2,
+      "85": 7.0,
+      "90": 7.0,
+      "95": 7.0,
+      "100": 7.2,
+      "105": 8.0,
+      "110": 8.2,
+      "115": 9.0,
+      "120": 9.2,
+      "125": 10.0,
+      "130": 10.0,
+      "135": 10.0,
+      "140": 9.6,
+      "145": 8.0,
+      "150": 8.0,
+      "155": 8.0,
+      "160": 8.0,
+      "165": 8.2,
+      "170": 9.0,
+      "175": 9.0,
+      "180": 9.2,
+      "185": 10.0,
+      "190": 10.0,
+      "195": 10.0,
+      "200": 10.0,
+      "205": 10.0,
+      "210": 10.0,
+      "215": 10.0,
+      "220": 10.0,
+      "225": 10.0,
+      "230": 10.0,
+      "235": 10.0,
+      "240": 10.0,
+      "245": 10.0,
+      "250": 10.0,
+      "255": 10.0,
+      "260": 10.0,
+      "265": 10.0,
+      "270": 10.0,
+      "275": 10.0,
+      "280": 10.2,
+      "285": 11.0,
+      "290": 11.2,
+      "295": 12.0,
+      "300": 12.0,
+      "305": 12.0,
+      "310": 12.0,
+      "315": 12.0,
+      "320": 12.0,
+      "325": 12.0,
+      "330": 12.0,
+      "335": 12.0,
+      "340": 12.0,
+      "345": 12.0,
+      "350": 12.0,
+      "355": 12.0,
+      "360": 12.0,
+      "365": 12.0,
+      "370": 12.0,
+      "375": 12.0,
+      "380": 12.0,
+      "385": 12.0,
+      "390": 12.0,
+      "395": 11.6,
+      "400": 10.0,
+      "405": 10.0,
+      "410": 10.2,
+      "415": 11.2,
+      "420": 12.0,
+      "425": 12.0,
+      "430": 12.0,
+      "435": 12.0,
+      "440": 12.0,
+      "445": 12.0,
+      "450": 12.0,
+      "455": 12.0,
+      "460": 12.0,
+      "465": 12.0,
+      "470": 12.0,
+      "475": 12.0,
+      "480": 12.0,
+      "485": 12.0,
+      "490": 12.2,
+      "495": 13.0,
+      "500": 13.0,
+      "505": 13.0,
+      "510": 13.0,
+      "515": 13.2,
+      "520": 14.0,
+      "525": 14.0,
+      "530": 14.0,
+      "535": 14.0,
+      "540": 14.0,
+      "545": 14.0,
+      "550": 14.0,
+      "555": 14.0,
+      "560": 14.0,
+      "565": 14.0,
+      "570": 14.0,
+      "575": 14.0,
+      "580": 14.0,
+      "585": 14.0,
+      "590": 14.0,
+      "595": 14.0,
+      "600": 14.0,
+      "605": 14.0,
+      "610": 14.0,
+      "615": 14.0,
+      "620": 14.0,
+      "625": 14.0,
+      "630": 14.0,
+      "635": 14.0,
+      "640": 14.0,
+      "645": 14.0,
+      "650": 14.0,
+      "655": 14.0,
+      "660": 14.0,
+      "665": 14.0,
+      "670": 14.0,
+      "675": 14.0,
+      "680": 14.0,
+      "685": 14.0,
+      "690": 14.0,
+      "695": 14.0,
+      "700": 14.0,
+      "705": 14.0,
+      "710": 14.0,
+      "715": 14.0,
+      "720": 14.0,
+      "725": 14.0,
+      "730": 14.2,
+      "735": 14.8,
+      "740": 14.0,
+      "745": 14.0,
+      "750": 14.0,
+      "755": 14.0,
+      "760": 14.0,
+      "765": 14.0,
+      "770": 14.0,
+      "775": 14.0,
+      "780": 14.0,
+      "785": 14.0,
+      "790": 14.0,
+      "795": 14.0,
+      "800": 14.0,
+      "805": 14.0,
+      "810": 14.0,
+      "815": 14.0,
+      "820": 14.0,
+      "825": 13.6,
+      "830": 12.0,
+      "835": 12.0,
+      "840": 12.0,
+      "845": 12.0,
+      "850": 12.0,
+      "855": 12.0,
+      "860": 12.0,
+      "865": 12.0,
+      "870": 12.0,
+      "875": 12.0,
+      "880": 12.0,
+      "885": 12.0,
+      "890": 12.0,
+      "895": 12.0,
+      "900": 12.0,
+      "905": 12.0,
+      "910": 12.0,
+      "915": 12.0,
+      "920": 12.0,
+      "925": 12.0,
+      "930": 12.0,
+      "935": 12.0,
+      "940": 12.0,
+      "945": 12.0,
+      "950": 12.0,
+      "955": 12.0,
+      "960": 12.0,
+      "965": 12.0,
+      "970": 12.0,
+      "975": 12.0,
+      "980": 12.0,
+      "985": 12.0,
+      "990": 12.0,
+      "995": 12.0
+    },
+    "branches": {
+      "5": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "10": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "15": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "20": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "25": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "30": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "35": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "40": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "45": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "50": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "55": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "60": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "65": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "70": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "75": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "80": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "85": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "90": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "95": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "100": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "105": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "110": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "115": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "120": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "125": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "130": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "135": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "140": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "145": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "150": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "155": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "160": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "165": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "170": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "175": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "180": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "185": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "190": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "195": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "200": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "205": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "210": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "215": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "220": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "225": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "230": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "235": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "240": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "245": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "250": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "255": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "260": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "265": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "270": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "275": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "280": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "285": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "290": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "295": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "300": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "305": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "310": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "315": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "320": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "325": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "330": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "335": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "340": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "345": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "350": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "355": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "360": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "365": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "370": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "375": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "380": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "385": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "390": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "395": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "400": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "405": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "410": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "415": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "420": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "425": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "430": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "435": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "440": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "445": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "450": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "455": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "460": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "465": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "470": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "475": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "480": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "485": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "490": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "495": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "500": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "505": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "510": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "515": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "520": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "525": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "530": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "535": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "540": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "545": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "550": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "555": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "560": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "565": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "570": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "575": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "580": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "585": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "590": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "595": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "600": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "605": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "610": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "615": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "620": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "625": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "630": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "635": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "640": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "645": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "650": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "655": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "660": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "665": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "670": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "675": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "680": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "685": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "690": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "695": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "700": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "705": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "710": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "715": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "720": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "725": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "730": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "735": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "740": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "745": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "750": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "755": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "760": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "765": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "770": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "775": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "780": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "785": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "790": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "795": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "800": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "805": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "810": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "815": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "820": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "825": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "830": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "835": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "840": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "845": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "850": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "855": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "860": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "865": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "870": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "875": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "880": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "885": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "890": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "895": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "900": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "905": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "910": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "915": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "920": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "925": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "930": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "935": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "940": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "945": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "950": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "955": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "960": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "965": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "970": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "975": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "980": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "985": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "990": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "995": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      }
+    },
+    "branch_selections": {
+      "0": "center",
+      "1": "center",
+      "2": "center",
+      "3": "center",
+      "4": "center",
+      "5": "center",
+      "6": "center",
+      "7": "center",
+      "8": "center",
+      "9": "center",
+      "10": "center",
+      "11": "center",
+      "12": "center",
+      "13": "center",
+      "14": "center",
+      "15": "left",
+      "16": "center",
+      "17": "center",
+      "18": "center",
+      "19": "center",
+      "20": "left",
+      "21": "center",
+      "22": "center",
+      "23": "center",
+      "24": "center",
+      "25": "left",
+      "26": "center",
+      "27": "center",
+      "28": "center",
+      "29": "center",
+      "30": "center",
+      "31": "center",
+      "32": "center",
+      "33": "center",
+      "34": "center",
+      "35": "center",
+      "36": "center",
+      "37": "center",
+      "38": "center",
+      "39": "center",
+      "40": "left",
+      "41": "center",
+      "42": "center",
+      "43": "center",
+      "44": "center",
+      "45": "left",
+      "46": "center",
+      "47": "center",
+      "48": "center",
+      "49": "center",
+      "50": "center",
+      "51": "center",
+      "52": "center",
+      "53": "center",
+      "54": "center",
+      "55": "center",
+      "56": "center",
+      "57": "center",
+      "58": "center",
+      "59": "center",
+      "60": "center",
+      "61": "center",
+      "62": "center",
+      "63": "center",
+      "64": "center",
+      "65": "center",
+      "66": "center",
+      "67": "center",
+      "68": "center",
+      "69": "center",
+      "70": "center",
+      "71": "center",
+      "72": "center",
+      "73": "center",
+      "74": "center",
+      "75": "left",
+      "76": "center",
+      "77": "center",
+      "78": "center",
+      "79": "center",
+      "80": "left",
+      "81": "center",
+      "82": "center",
+      "83": "center",
+      "84": "center",
+      "85": "center",
+      "86": "center",
+      "87": "center",
+      "88": "center",
+      "89": "center",
+      "90": "center",
+      "91": "center",
+      "92": "center",
+      "93": "center",
+      "94": "center",
+      "95": "center",
+      "96": "center",
+      "97": "center",
+      "98": "center",
+      "99": "center",
+      "100": "left",
+      "101": "center",
+      "102": "center",
+      "103": "center",
+      "104": "center",
+      "105": "center",
+      "106": "center",
+      "107": "center",
+      "108": "center",
+      "109": "center",
+      "110": "left",
+      "111": "center",
+      "112": "center",
+      "113": "center",
+      "114": "center",
+      "115": "center",
+      "116": "center",
+      "117": "center",
+      "118": "center",
+      "119": "center",
+      "120": "left",
+      "121": "center",
+      "122": "center",
+      "123": "center",
+      "124": "center",
+      "125": "center",
+      "126": "center",
+      "127": "center",
+      "128": "center",
+      "129": "center",
+      "130": "center",
+      "131": "center",
+      "132": "center",
+      "133": "center",
+      "134": "center",
+      "135": "center",
+      "136": "center",
+      "137": "center",
+      "138": "center",
+      "139": "center",
+      "140": "right",
+      "141": "center",
+      "142": "center",
+      "143": "center",
+      "144": "center",
+      "145": "center",
+      "146": "center",
+      "147": "center",
+      "148": "center",
+      "149": "center",
+      "150": "center",
+      "151": "center",
+      "152": "center",
+      "153": "center",
+      "154": "center",
+      "155": "center",
+      "156": "center",
+      "157": "center",
+      "158": "center",
+      "159": "center",
+      "160": "center",
+      "161": "center",
+      "162": "center",
+      "163": "center",
+      "164": "center",
+      "165": "left",
+      "166": "center",
+      "167": "center",
+      "168": "center",
+      "169": "center",
+      "170": "center",
+      "171": "center",
+      "172": "center",
+      "173": "center",
+      "174": "center",
+      "175": "center",
+      "176": "center",
+      "177": "center",
+      "178": "center",
+      "179": "center",
+      "180": "left",
+      "181": "center",
+      "182": "center",
+      "183": "center",
+      "184": "center",
+      "185": "center",
+      "186": "center",
+      "187": "center",
+      "188": "center",
+      "189": "center",
+      "190": "center",
+      "191": "center",
+      "192": "center",
+      "193": "center",
+      "194": "center",
+      "195": "center",
+      "196": "center",
+      "197": "center",
+      "198": "center",
+      "199": "center",
+      "200": "center",
+      "201": "center",
+      "202": "center",
+      "203": "center",
+      "204": "center",
+      "205": "center",
+      "206": "center",
+      "207": "center",
+      "208": "center",
+      "209": "center",
+      "210": "center",
+      "211": "center",
+      "212": "center",
+      "213": "center",
+      "214": "center",
+      "215": "center",
+      "216": "center",
+      "217": "center",
+      "218": "center",
+      "219": "center",
+      "220": "center",
+      "221": "center",
+      "222": "center",
+      "223": "center",
+      "224": "center",
+      "225": "center",
+      "226": "center",
+      "227": "center",
+      "228": "center",
+      "229": "center",
+      "230": "center",
+      "231": "center",
+      "232": "center",
+      "233": "center",
+      "234": "center",
+      "235": "center",
+      "236": "center",
+      "237": "center",
+      "238": "center",
+      "239": "center",
+      "240": "center",
+      "241": "center",
+      "242": "center",
+      "243": "center",
+      "244": "center",
+      "245": "center",
+      "246": "center",
+      "247": "center",
+      "248": "center",
+      "249": "center",
+      "250": "center",
+      "251": "center",
+      "252": "center",
+      "253": "center",
+      "254": "center",
+      "255": "center",
+      "256": "center",
+      "257": "center",
+      "258": "center",
+      "259": "center",
+      "260": "center",
+      "261": "center",
+      "262": "center",
+      "263": "center",
+      "264": "center",
+      "265": "center",
+      "266": "center",
+      "267": "center",
+      "268": "center",
+      "269": "center",
+      "270": "center",
+      "271": "center",
+      "272": "center",
+      "273": "center",
+      "274": "center",
+      "275": "center",
+      "276": "center",
+      "277": "center",
+      "278": "center",
+      "279": "center",
+      "280": "left",
+      "281": "center",
+      "282": "center",
+      "283": "center",
+      "284": "center",
+      "285": "center",
+      "286": "center",
+      "287": "center",
+      "288": "center",
+      "289": "center",
+      "290": "left",
+      "291": "center",
+      "292": "center",
+      "293": "center",
+      "294": "center",
+      "295": "center",
+      "296": "center",
+      "297": "center",
+      "298": "center",
+      "299": "center",
+      "300": "center",
+      "301": "center",
+      "302": "center",
+      "303": "center",
+      "304": "center",
+      "305": "center",
+      "306": "center",
+      "307": "center",
+      "308": "center",
+      "309": "center",
+      "310": "center",
+      "311": "center",
+      "312": "center",
+      "313": "center",
+      "314": "center",
+      "315": "center",
+      "316": "center",
+      "317": "center",
+      "318": "center",
+      "319": "center",
+      "320": "center",
+      "321": "center",
+      "322": "center",
+      "323": "center",
+      "324": "center",
+      "325": "center",
+      "326": "center",
+      "327": "center",
+      "328": "center",
+      "329": "center",
+      "330": "center",
+      "331": "center",
+      "332": "center",
+      "333": "center",
+      "334": "center",
+      "335": "center",
+      "336": "center",
+      "337": "center",
+      "338": "center",
+      "339": "center",
+      "340": "center",
+      "341": "center",
+      "342": "center",
+      "343": "center",
+      "344": "center",
+      "345": "center",
+      "346": "center",
+      "347": "center",
+      "348": "center",
+      "349": "center",
+      "350": "center",
+      "351": "center",
+      "352": "center",
+      "353": "center",
+      "354": "center",
+      "355": "center",
+      "356": "center",
+      "357": "center",
+      "358": "center",
+      "359": "center",
+      "360": "center",
+      "361": "center",
+      "362": "center",
+      "363": "center",
+      "364": "center",
+      "365": "center",
+      "366": "center",
+      "367": "center",
+      "368": "center",
+      "369": "center",
+      "370": "center",
+      "371": "center",
+      "372": "center",
+      "373": "center",
+      "374": "center",
+      "375": "center",
+      "376": "center",
+      "377": "center",
+      "378": "center",
+      "379": "center",
+      "380": "center",
+      "381": "center",
+      "382": "center",
+      "383": "center",
+      "384": "center",
+      "385": "center",
+      "386": "center",
+      "387": "center",
+      "388": "center",
+      "389": "center",
+      "390": "center",
+      "391": "center",
+      "392": "center",
+      "393": "center",
+      "394": "center",
+      "395": "right",
+      "396": "center",
+      "397": "center",
+      "398": "center",
+      "399": "center",
+      "400": "center",
+      "401": "center",
+      "402": "center",
+      "403": "center",
+      "404": "center",
+      "405": "center",
+      "406": "center",
+      "407": "center",
+      "408": "center",
+      "409": "center",
+      "410": "left",
+      "411": "center",
+      "412": "center",
+      "413": "center",
+      "414": "center",
+      "415": "left",
+      "416": "center",
+      "417": "center",
+      "418": "center",
+      "419": "center",
+      "420": "center",
+      "421": "center",
+      "422": "center",
+      "423": "center",
+      "424": "center",
+      "425": "center",
+      "426": "center",
+      "427": "center",
+      "428": "center",
+      "429": "center",
+      "430": "center",
+      "431": "center",
+      "432": "center",
+      "433": "center",
+      "434": "center",
+      "435": "center",
+      "436": "center",
+      "437": "center",
+      "438": "center",
+      "439": "center",
+      "440": "center",
+      "441": "center",
+      "442": "center",
+      "443": "center",
+      "444": "center",
+      "445": "center",
+      "446": "center",
+      "447": "center",
+      "448": "center",
+      "449": "center",
+      "450": "center",
+      "451": "center",
+      "452": "center",
+      "453": "center",
+      "454": "center",
+      "455": "center",
+      "456": "center",
+      "457": "center",
+      "458": "center",
+      "459": "center",
+      "460": "center",
+      "461": "center",
+      "462": "center",
+      "463": "center",
+      "464": "center",
+      "465": "center",
+      "466": "center",
+      "467": "center",
+      "468": "center",
+      "469": "center",
+      "470": "center",
+      "471": "center",
+      "472": "center",
+      "473": "center",
+      "474": "center",
+      "475": "center",
+      "476": "center",
+      "477": "center",
+      "478": "center",
+      "479": "center",
+      "480": "center",
+      "481": "center",
+      "482": "center",
+      "483": "center",
+      "484": "center",
+      "485": "center",
+      "486": "center",
+      "487": "center",
+      "488": "center",
+      "489": "center",
+      "490": "left",
+      "491": "center",
+      "492": "center",
+      "493": "center",
+      "494": "center",
+      "495": "center",
+      "496": "center",
+      "497": "center",
+      "498": "center",
+      "499": "center",
+      "500": "center",
+      "501": "center",
+      "502": "center",
+      "503": "center",
+      "504": "center",
+      "505": "center",
+      "506": "center",
+      "507": "center",
+      "508": "center",
+      "509": "center",
+      "510": "center",
+      "511": "center",
+      "512": "center",
+      "513": "center",
+      "514": "center",
+      "515": "left",
+      "516": "center",
+      "517": "center",
+      "518": "center",
+      "519": "center",
+      "520": "center",
+      "521": "center",
+      "522": "center",
+      "523": "center",
+      "524": "center",
+      "525": "center",
+      "526": "center",
+      "527": "center",
+      "528": "center",
+      "529": "center",
+      "530": "center",
+      "531": "center",
+      "532": "center",
+      "533": "center",
+      "534": "center",
+      "535": "center",
+      "536": "center",
+      "537": "center",
+      "538": "center",
+      "539": "center",
+      "540": "center",
+      "541": "center",
+      "542": "center",
+      "543": "center",
+      "544": "center",
+      "545": "center",
+      "546": "center",
+      "547": "center",
+      "548": "center",
+      "549": "center",
+      "550": "center",
+      "551": "center",
+      "552": "center",
+      "553": "center",
+      "554": "center",
+      "555": "center",
+      "556": "center",
+      "557": "center",
+      "558": "center",
+      "559": "center",
+      "560": "center",
+      "561": "center",
+      "562": "center",
+      "563": "center",
+      "564": "center",
+      "565": "center",
+      "566": "center",
+      "567": "center",
+      "568": "center",
+      "569": "center",
+      "570": "center",
+      "571": "center",
+      "572": "center",
+      "573": "center",
+      "574": "center",
+      "575": "center",
+      "576": "center",
+      "577": "center",
+      "578": "center",
+      "579": "center",
+      "580": "center",
+      "581": "center",
+      "582": "center",
+      "583": "center",
+      "584": "center",
+      "585": "center",
+      "586": "center",
+      "587": "center",
+      "588": "center",
+      "589": "center",
+      "590": "center",
+      "591": "center",
+      "592": "center",
+      "593": "center",
+      "594": "center",
+      "595": "center",
+      "596": "center",
+      "597": "center",
+      "598": "center",
+      "599": "center",
+      "600": "center",
+      "601": "center",
+      "602": "center",
+      "603": "center",
+      "604": "center",
+      "605": "center",
+      "606": "center",
+      "607": "center",
+      "608": "center",
+      "609": "center",
+      "610": "center",
+      "611": "center",
+      "612": "center",
+      "613": "center",
+      "614": "center",
+      "615": "center",
+      "616": "center",
+      "617": "center",
+      "618": "center",
+      "619": "center",
+      "620": "center",
+      "621": "center",
+      "622": "center",
+      "623": "center",
+      "624": "center",
+      "625": "center",
+      "626": "center",
+      "627": "center",
+      "628": "center",
+      "629": "center",
+      "630": "center",
+      "631": "center",
+      "632": "center",
+      "633": "center",
+      "634": "center",
+      "635": "center",
+      "636": "center",
+      "637": "center",
+      "638": "center",
+      "639": "center",
+      "640": "center",
+      "641": "center",
+      "642": "center",
+      "643": "center",
+      "644": "center",
+      "645": "center",
+      "646": "center",
+      "647": "center",
+      "648": "center",
+      "649": "center",
+      "650": "center",
+      "651": "center",
+      "652": "center",
+      "653": "center",
+      "654": "center",
+      "655": "center",
+      "656": "center",
+      "657": "center",
+      "658": "center",
+      "659": "center",
+      "660": "center",
+      "661": "center",
+      "662": "center",
+      "663": "center",
+      "664": "center",
+      "665": "center",
+      "666": "center",
+      "667": "center",
+      "668": "center",
+      "669": "center",
+      "670": "center",
+      "671": "center",
+      "672": "center",
+      "673": "center",
+      "674": "center",
+      "675": "center",
+      "676": "center",
+      "677": "center",
+      "678": "center",
+      "679": "center",
+      "680": "center",
+      "681": "center",
+      "682": "center",
+      "683": "center",
+      "684": "center",
+      "685": "center",
+      "686": "center",
+      "687": "center",
+      "688": "center",
+      "689": "center",
+      "690": "center",
+      "691": "center",
+      "692": "center",
+      "693": "center",
+      "694": "center",
+      "695": "center",
+      "696": "center",
+      "697": "center",
+      "698": "center",
+      "699": "center",
+      "700": "center",
+      "701": "center",
+      "702": "center",
+      "703": "center",
+      "704": "center",
+      "705": "center",
+      "706": "center",
+      "707": "center",
+      "708": "center",
+      "709": "center",
+      "710": "center",
+      "711": "center",
+      "712": "center",
+      "713": "center",
+      "714": "center",
+      "715": "center",
+      "716": "center",
+      "717": "center",
+      "718": "center",
+      "719": "center",
+      "720": "center",
+      "721": "center",
+      "722": "center",
+      "723": "center",
+      "724": "center",
+      "725": "center",
+      "726": "center",
+      "727": "center",
+      "728": "center",
+      "729": "center",
+      "730": "left",
+      "731": "center",
+      "732": "center",
+      "733": "center",
+      "734": "center",
+      "735": "center",
+      "736": "center",
+      "737": "center",
+      "738": "center",
+      "739": "center",
+      "740": "center",
+      "741": "center",
+      "742": "center",
+      "743": "center",
+      "744": "center",
+      "745": "center",
+      "746": "center",
+      "747": "center",
+      "748": "center",
+      "749": "center",
+      "750": "center",
+      "751": "center",
+      "752": "center",
+      "753": "center",
+      "754": "center",
+      "755": "center",
+      "756": "center",
+      "757": "center",
+      "758": "center",
+      "759": "center",
+      "760": "center",
+      "761": "center",
+      "762": "center",
+      "763": "center",
+      "764": "center",
+      "765": "center",
+      "766": "center",
+      "767": "center",
+      "768": "center",
+      "769": "center",
+      "770": "center",
+      "771": "center",
+      "772": "center",
+      "773": "center",
+      "774": "center",
+      "775": "center",
+      "776": "center",
+      "777": "center",
+      "778": "center",
+      "779": "center",
+      "780": "center",
+      "781": "center",
+      "782": "center",
+      "783": "center",
+      "784": "center",
+      "785": "center",
+      "786": "center",
+      "787": "center",
+      "788": "center",
+      "789": "center",
+      "790": "center",
+      "791": "center",
+      "792": "center",
+      "793": "center",
+      "794": "center",
+      "795": "center",
+      "796": "center",
+      "797": "center",
+      "798": "center",
+      "799": "center",
+      "800": "center",
+      "801": "center",
+      "802": "center",
+      "803": "center",
+      "804": "center",
+      "805": "center",
+      "806": "center",
+      "807": "center",
+      "808": "center",
+      "809": "center",
+      "810": "center",
+      "811": "center",
+      "812": "center",
+      "813": "center",
+      "814": "center",
+      "815": "center",
+      "816": "center",
+      "817": "center",
+      "818": "center",
+      "819": "center",
+      "820": "center",
+      "821": "center",
+      "822": "center",
+      "823": "center",
+      "824": "center",
+      "825": "right",
+      "826": "center",
+      "827": "center",
+      "828": "center",
+      "829": "center",
+      "830": "center",
+      "831": "center",
+      "832": "center",
+      "833": "center",
+      "834": "center",
+      "835": "center",
+      "836": "center",
+      "837": "center",
+      "838": "center",
+      "839": "center",
+      "840": "center",
+      "841": "center",
+      "842": "center",
+      "843": "center",
+      "844": "center",
+      "845": "center",
+      "846": "center",
+      "847": "center",
+      "848": "center",
+      "849": "center",
+      "850": "center",
+      "851": "center",
+      "852": "center",
+      "853": "center",
+      "854": "center",
+      "855": "center",
+      "856": "center",
+      "857": "center",
+      "858": "center",
+      "859": "center",
+      "860": "center",
+      "861": "center",
+      "862": "center",
+      "863": "center",
+      "864": "center",
+      "865": "center",
+      "866": "center",
+      "867": "center",
+      "868": "center",
+      "869": "center",
+      "870": "center",
+      "871": "center",
+      "872": "center",
+      "873": "center",
+      "874": "center",
+      "875": "center",
+      "876": "center",
+      "877": "center",
+      "878": "center",
+      "879": "center",
+      "880": "center",
+      "881": "center",
+      "882": "center",
+      "883": "center",
+      "884": "center",
+      "885": "center",
+      "886": "center",
+      "887": "center",
+      "888": "center",
+      "889": "center",
+      "890": "center",
+      "891": "center",
+      "892": "center",
+      "893": "center",
+      "894": "center",
+      "895": "center",
+      "896": "center",
+      "897": "center",
+      "898": "center",
+      "899": "center",
+      "900": "center",
+      "901": "center",
+      "902": "center",
+      "903": "center",
+      "904": "center",
+      "905": "center",
+      "906": "center",
+      "907": "center",
+      "908": "center",
+      "909": "center",
+      "910": "center",
+      "911": "center",
+      "912": "center",
+      "913": "center",
+      "914": "center",
+      "915": "center",
+      "916": "center",
+      "917": "center",
+      "918": "center",
+      "919": "center",
+      "920": "center",
+      "921": "center",
+      "922": "center",
+      "923": "center",
+      "924": "center",
+      "925": "center",
+      "926": "center",
+      "927": "center",
+      "928": "center",
+      "929": "center",
+      "930": "center",
+      "931": "center",
+      "932": "center",
+      "933": "center",
+      "934": "center",
+      "935": "center",
+      "936": "center",
+      "937": "center",
+      "938": "center",
+      "939": "center",
+      "940": "center",
+      "941": "center",
+      "942": "center",
+      "943": "center",
+      "944": "center",
+      "945": "center",
+      "946": "center",
+      "947": "center",
+      "948": "center",
+      "949": "center",
+      "950": "center",
+      "951": "center",
+      "952": "center",
+      "953": "center",
+      "954": "center",
+      "955": "center",
+      "956": "center",
+      "957": "center",
+      "958": "center",
+      "959": "center",
+      "960": "center",
+      "961": "center",
+      "962": "center",
+      "963": "center",
+      "964": "center",
+      "965": "center",
+      "966": "center",
+      "967": "center",
+      "968": "center",
+      "969": "center",
+      "970": "center",
+      "971": "center",
+      "972": "center",
+      "973": "center",
+      "974": "center",
+      "975": "center",
+      "976": "center",
+      "977": "center",
+      "978": "center",
+      "979": "center",
+      "980": "center",
+      "981": "center",
+      "982": "center",
+      "983": "center",
+      "984": "center",
+      "985": "center",
+      "986": "center",
+      "987": "center",
+      "988": "center",
+      "989": "center",
+      "990": "center",
+      "991": "center",
+      "992": "center",
+      "993": "center",
+      "994": "center",
+      "995": "center",
+      "996": "center",
+      "997": "center",
+      "998": "center",
+      "999": "center"
+    },
+    "params": "\"array([[ 0.54392714, -3.08868695,  1.7088888 ,  2.88337064, -2.14726592,\\n        -2.35194016, -0.78456807,  1.21365204, -3.25858885, -0.87682688],\\n       [-2.90151808,  1.81818071, -0.90531132,  1.55144523, -0.14880212,\\n         2.8870209 ,  2.25334598,  0.83140737,  0.40386426,  3.12494963],\\n       [-2.01339982, -3.10496092, -2.72848751,  2.68690491,  2.97358724,\\n        -0.21962471, -0.87988035,  1.40025581, -3.20822446,  2.24579132],\\n       [ 1.07676801, -1.94498812,  1.20381409,  2.23923328, -2.11671432,\\n         2.80375206, -1.10359184,  1.06546077, -1.53648525,  0.11879668],\\n       [-2.49881453, -0.20202971, -0.39245943, -0.65304528,  1.8342216 ,\\n        -0.04271577,  1.40710614,  1.84111801, -1.1259867 ,  2.83160542]])\"",
+    "mask": "\"array([[False, False, False, False, False,  True,  True,  True, False,\\n        False],\\n       [False,  True,  True, False, False, False, False, False,  True,\\n         True],\\n       [False, False, False, False, False, False, False,  True, False,\\n        False],\\n       [ True, False, False, False,  True, False, False, False, False,\\n         True],\\n       [False, False, False, False, False,  True, False, False, False,\\n        False]])\""
+  },
+  "walltime": 92.46221365299999,
+  "cputime": 90.994255
+}

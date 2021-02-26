@@ -1,0 +1,2745 @@
+{
+  "event": "log_results",
+  "call": [
+    "__main__.train_test",
+    [
+      "\"ExtendedGradientDescentOptimizer(0.01)\""
+    ],
+    {
+      "steps": 1000,
+      "wires": 5,
+      "layers": 10,
+      "cost_span": 5,
+      "log_interval": 5,
+      "use_dropout": true,
+      "seed": 1337
+    }
+  ],
+  "result": {
+    "costs": {
+      "0": 0.9857049957401733,
+      "5": 0.9840190053256288,
+      "10": 0.9776588116605307,
+      "15": 0.9770593980748628,
+      "20": 0.9722985808423203,
+      "25": 0.9544543363915098,
+      "30": 0.952671216504732,
+      "35": 0.9508098285285314,
+      "40": 0.9488664293945355,
+      "45": 0.9444159182576704,
+      "50": 0.9230401320728344,
+      "55": 0.8820951689094718,
+      "60": 0.8716312416082126,
+      "65": 0.8493981420996626,
+      "70": 0.8403138781963303,
+      "75": 0.804409632274,
+      "80": 0.6931820106067368,
+      "85": 0.6750092330080822,
+      "90": 0.6562022266555114,
+      "95": 0.6368277950995797,
+      "100": 0.6169645097730105,
+      "105": 0.5967015212134803,
+      "110": 0.576136851529278,
+      "115": 0.5553752266442726,
+      "120": 0.5345255480578512,
+      "125": 0.5136981379570359,
+      "130": 0.49300191362395973,
+      "135": 0.47254165387848923,
+      "140": 0.4524155107509353,
+      "145": 0.43271289516576034,
+      "150": 0.413512829794359,
+      "155": 0.3948828204864058,
+      "160": 0.3768782553175194,
+      "165": 0.35954230223574085,
+      "170": 0.34290624618862053,
+      "175": 0.32699018643385436,
+      "180": 0.31180400478703313,
+      "185": 0.2973485147949392,
+      "190": 0.2836167083134634,
+      "195": 0.2705950274004037,
+      "200": 0.2582646035255026,
+      "205": 0.2982149503225955,
+      "210": 0.32265910015306,
+      "215": 0.3134668131014123,
+      "220": 0.30475002523708816,
+      "225": 0.29649222044539497,
+      "230": 0.28867538062768217,
+      "235": 0.2812803834388526,
+      "240": 0.2742873570341339,
+      "245": 0.2676759911063924,
+      "250": 0.2614258050236814,
+      "255": 0.21355264249371947,
+      "260": 0.29136774011268995,
+      "265": 0.3568794260512561,
+      "270": 0.3467544871345051,
+      "275": 0.33679012686095877,
+      "280": 0.3269935119779087,
+      "285": 0.3173711203250279,
+      "290": 0.30792874309084256,
+      "295": 0.2986714919186282,
+      "300": 0.2896038104000358,
+      "305": 0.2807294894753406,
+      "310": 0.2720516862514176,
+      "315": 0.2635729457511411,
+      "320": 0.25475170376056894,
+      "325": 0.26505149834796704,
+      "330": 0.26776785352912447,
+      "335": 0.2576217781787231,
+      "340": 0.24931885568085788,
+      "345": 0.2429295381266278,
+      "350": 0.29673037094393906,
+      "355": 0.27682319208336414,
+      "360": 0.28810611800075064,
+      "365": 0.31597022685750453,
+      "370": 0.26258887209757314,
+      "375": 0.3166655372266982,
+      "380": 0.35053433805466516,
+      "385": 0.32176573678072684,
+      "390": 0.29651695112844834,
+      "395": 0.2745685599254274,
+      "400": 0.2556209193482085,
+      "405": 0.23933522735056617,
+      "410": 0.22536486827164195,
+      "415": 0.3807022686330656,
+      "420": 0.473405901382865,
+      "425": 0.4534649584948309,
+      "430": 0.43456004380471314,
+      "435": 0.41675143329547026,
+      "440": 0.40007116378261004,
+      "445": 0.38452592033696686,
+      "450": 0.3701007272292692,
+      "455": 0.3567630194032497,
+      "460": 0.3444667362400698,
+      "465": 0.3331561673406118,
+      "470": 0.32276937233055103,
+      "475": 0.3132410799432487,
+      "480": 0.23269347061584406,
+      "485": 0.17838927458299908,
+      "490": 0.6687297790590153,
+      "495": 0.9715894520644325,
+      "500": 0.9503201251053666,
+      "505": 0.9455249529566266,
+      "510": 0.9403040866739258,
+      "515": 0.9346284667445655,
+      "520": 0.9284688694039935,
+      "525": 0.7631767390671368,
+      "530": 0.6455121896162404,
+      "535": 0.6319809221742431,
+      "540": 0.6180417578517151,
+      "545": 0.603711719179541,
+      "550": 0.5890126024624888,
+      "555": 0.5739711721987071,
+      "560": 0.5586192522838946,
+      "565": 0.5429936941627296,
+      "570": 0.5271362051376136,
+      "575": 0.5110930248665293,
+      "580": 0.4949144446136039,
+      "585": 0.4786541717881125,
+      "590": 0.4623685512340189,
+      "595": 0.44611566393258306,
+      "600": 0.42995433243873127,
+      "605": 0.41394306962671434,
+      "610": 0.3981390123786165,
+      "615": 0.3825968841005814,
+      "620": 0.3673680290674478,
+      "625": 0.3524995575880997,
+      "630": 0.33803363421080357,
+      "635": 0.32400693231013333,
+      "640": 0.3104502682825744,
+      "645": 0.29738841818017014,
+      "650": 0.2765334098267517,
+      "655": 0.2522672137567952,
+      "660": 0.24120883667835286,
+      "665": 0.23081129753988763,
+      "670": 0.221042662220701,
+      "675": 0.21186983612298604,
+      "680": 0.2032592968134602,
+      "685": 0.19517768991361248,
+      "690": 0.18759229945874706,
+      "695": 0.18047140650868493,
+      "700": 0.17378455090284667,
+      "705": 0.16750271108267234,
+      "710": 0.1615984161857612,
+      "715": 0.15604580342357888,
+      "720": 0.15082063230382353,
+      "725": 0.14590026571047687,
+      "730": 0.141263626322019,
+      "735": 0.1368911354053965,
+      "740": 0.13276463971374627,
+      "745": 0.1288673310609883,
+      "750": 0.1251836621516395,
+      "755": 0.12169926140458757,
+      "760": 0.11840084881365072,
+      "765": 0.11527615432050842,
+      "770": 0.11231383972079276,
+      "775": 0.1095034247653005,
+      "780": 0.1068352178402151,
+      "785": 0.104300251398689,
+      "790": 0.10189022215885435,
+      "795": 0.09959743596963204,
+      "800": 0.09741475716641035,
+      "805": 0.09533556218630534,
+      "810": 0.09335369718100923,
+      "815": 0.0914634393491209,
+      "820": 0.08965946170531433,
+      "825": 0.08793680100744457,
+      "830": 0.08629082857228243,
+      "835": 0.08471722372398363,
+      "840": 0.08321194963517708,
+      "845": 0.08177123133762779,
+      "850": 0.08039153569687714,
+      "855": 0.07906955316260315,
+      "860": 0.07780218112318445,
+      "865": 0.07658650870889001,
+      "870": 0.07541980290303249,
+      "875": 0.07429949583424589,
+      "880": 0.07322317313578852,
+      "885": 0.07218856326933357,
+      "890": 0.071193527721278,
+      "895": 0.07023605198908459,
+      "900": 0.06931423728370208,
+      "905": 0.06842629288183681,
+      "910": 0.06757052906864922,
+      "915": 0.06674535061761615,
+      "920": 0.06594925075974704,
+      "925": 0.06518080559921065,
+      "930": 0.06443866893677253,
+      "935": 0.06372156746627744,
+      "940": 0.06302829631287028,
+      "945": 0.062357714884671164,
+      "950": 0.06170874301237202,
+      "955": 0.06108035735362445,
+      "960": 0.06047158804125996,
+      "965": 0.059881515556306296,
+      "970": 0.059309267808510716,
+      "975": 0.05875401740859791,
+      "980": 0.05821497911790312,
+      "985": 0.05769140746224279,
+      "990": 0.05718259449802465,
+      "995": 0.05668786771959729
+    },
+    "final_cost": 0.05611138309994279,
+    "branch_enforcements": {
+      "203": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "258": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "323": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "338": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "343": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "348": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "358": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "373": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "413": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "483": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "488": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "659": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "664": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "669": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      },
+      "789": {
+        "amount": 1,
+        "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+        "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+      }
+    },
+    "dropouts": {
+      "0": 0.0,
+      "5": 0.2,
+      "10": 1.0,
+      "15": 1.0,
+      "20": 1.2,
+      "25": 2.0,
+      "30": 2.0,
+      "35": 2.0,
+      "40": 2.0,
+      "45": 2.2,
+      "50": 3.2,
+      "55": 4.0,
+      "60": 4.2,
+      "65": 5.0,
+      "70": 5.2,
+      "75": 6.2,
+      "80": 7.0,
+      "85": 7.0,
+      "90": 7.0,
+      "95": 7.0,
+      "100": 7.0,
+      "105": 7.0,
+      "110": 7.0,
+      "115": 7.0,
+      "120": 7.0,
+      "125": 7.0,
+      "130": 7.0,
+      "135": 7.0,
+      "140": 7.0,
+      "145": 7.0,
+      "150": 7.0,
+      "155": 7.0,
+      "160": 7.0,
+      "165": 7.0,
+      "170": 7.0,
+      "175": 7.0,
+      "180": 7.0,
+      "185": 7.0,
+      "190": 7.0,
+      "195": 7.0,
+      "200": 7.0,
+      "205": 7.0,
+      "210": 7.0,
+      "215": 7.0,
+      "220": 7.0,
+      "225": 7.0,
+      "230": 7.0,
+      "235": 7.0,
+      "240": 7.0,
+      "245": 7.0,
+      "250": 7.0,
+      "255": 7.6,
+      "260": 7.4,
+      "265": 7.0,
+      "270": 7.0,
+      "275": 7.0,
+      "280": 7.0,
+      "285": 7.0,
+      "290": 7.0,
+      "295": 7.0,
+      "300": 7.0,
+      "305": 7.0,
+      "310": 7.0,
+      "315": 7.0,
+      "320": 7.6,
+      "325": 7.4,
+      "330": 7.0,
+      "335": 7.0,
+      "340": 6.4,
+      "345": 5.4,
+      "350": 4.4,
+      "355": 4.6,
+      "360": 5.0,
+      "365": 5.0,
+      "370": 5.6,
+      "375": 5.4,
+      "380": 5.0,
+      "385": 5.0,
+      "390": 5.0,
+      "395": 5.0,
+      "400": 5.0,
+      "405": 5.0,
+      "410": 5.0,
+      "415": 4.4,
+      "420": 4.0,
+      "425": 4.0,
+      "430": 4.0,
+      "435": 4.0,
+      "440": 4.0,
+      "445": 4.0,
+      "450": 4.0,
+      "455": 4.0,
+      "460": 4.0,
+      "465": 4.0,
+      "470": 4.0,
+      "475": 4.0,
+      "480": 4.6,
+      "485": 5.0,
+      "490": 4.4,
+      "495": 2.8,
+      "500": 2.0,
+      "505": 2.0,
+      "510": 2.0,
+      "515": 2.0,
+      "520": 2.0,
+      "525": 2.6,
+      "530": 3.0,
+      "535": 3.0,
+      "540": 3.0,
+      "545": 3.0,
+      "550": 3.0,
+      "555": 3.0,
+      "560": 3.0,
+      "565": 3.0,
+      "570": 3.0,
+      "575": 3.0,
+      "580": 3.0,
+      "585": 3.0,
+      "590": 3.0,
+      "595": 3.0,
+      "600": 3.0,
+      "605": 3.0,
+      "610": 3.0,
+      "615": 3.0,
+      "620": 3.0,
+      "625": 3.0,
+      "630": 3.0,
+      "635": 3.0,
+      "640": 3.0,
+      "645": 3.0,
+      "650": 3.4,
+      "655": 4.0,
+      "660": 3.6,
+      "665": 3.0,
+      "670": 2.6,
+      "675": 2.0,
+      "680": 2.0,
+      "685": 2.0,
+      "690": 2.0,
+      "695": 2.0,
+      "700": 2.0,
+      "705": 2.0,
+      "710": 2.0,
+      "715": 2.0,
+      "720": 2.0,
+      "725": 2.0,
+      "730": 2.0,
+      "735": 2.0,
+      "740": 2.0,
+      "745": 2.0,
+      "750": 2.0,
+      "755": 2.0,
+      "760": 2.0,
+      "765": 2.0,
+      "770": 2.0,
+      "775": 2.0,
+      "780": 2.0,
+      "785": 2.4,
+      "790": 2.6,
+      "795": 2.0,
+      "800": 2.0,
+      "805": 2.0,
+      "810": 2.0,
+      "815": 2.0,
+      "820": 2.0,
+      "825": 2.0,
+      "830": 2.0,
+      "835": 2.0,
+      "840": 2.0,
+      "845": 2.0,
+      "850": 2.0,
+      "855": 2.0,
+      "860": 2.0,
+      "865": 2.0,
+      "870": 2.0,
+      "875": 2.0,
+      "880": 2.0,
+      "885": 2.0,
+      "890": 2.0,
+      "895": 2.0,
+      "900": 2.0,
+      "905": 2.0,
+      "910": 2.0,
+      "915": 2.0,
+      "920": 2.0,
+      "925": 2.0,
+      "930": 2.0,
+      "935": 2.0,
+      "940": 2.0,
+      "945": 2.0,
+      "950": 2.0,
+      "955": 2.0,
+      "960": 2.0,
+      "965": 2.0,
+      "970": 2.0,
+      "975": 2.0,
+      "980": 2.0,
+      "985": 2.0,
+      "990": 2.0,
+      "995": 2.0
+    },
+    "branches": {
+      "5": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "10": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "15": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "20": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "25": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "30": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "35": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "40": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "45": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "50": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "55": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "60": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "65": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "70": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "75": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "198": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "203": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "208": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "213": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "218": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "223": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "228": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "233": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "238": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "243": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "248": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "253": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "258": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "263": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "268": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "273": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "278": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "283": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "288": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "293": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "298": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "303": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "308": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "313": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "318": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "323": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "328": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "333": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "338": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "343": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "348": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "353": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "358": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "363": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "368": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "373": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "413": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "458": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "463": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "468": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "473": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "478": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "483": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "488": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "493": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "498": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "503": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "508": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "513": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "518": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "523": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "649": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "654": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "659": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "664": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "669": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "674": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "679": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "684": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "689": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "694": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "699": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "704": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "709": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "714": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "719": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "724": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "729": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "734": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "739": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "744": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "749": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "754": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "759": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "764": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "769": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "774": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "779": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "784": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      },
+      "789": {
+        "center": "No perturbation",
+        "left": {
+          "amount": 1,
+          "mode": "\"<PerturbationMode.ADD: 0>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        },
+        "right": {
+          "amount": 2,
+          "mode": "\"<PerturbationMode.REMOVE: 1>\"",
+          "axis": "\"<PerturbationAxis.RANDOM: 2>\""
+        }
+      }
+    },
+    "branch_selections": {
+      "0": "center",
+      "1": "center",
+      "2": "center",
+      "3": "center",
+      "4": "center",
+      "5": "left",
+      "6": "center",
+      "7": "center",
+      "8": "center",
+      "9": "center",
+      "10": "center",
+      "11": "center",
+      "12": "center",
+      "13": "center",
+      "14": "center",
+      "15": "center",
+      "16": "center",
+      "17": "center",
+      "18": "center",
+      "19": "center",
+      "20": "left",
+      "21": "center",
+      "22": "center",
+      "23": "center",
+      "24": "center",
+      "25": "center",
+      "26": "center",
+      "27": "center",
+      "28": "center",
+      "29": "center",
+      "30": "center",
+      "31": "center",
+      "32": "center",
+      "33": "center",
+      "34": "center",
+      "35": "center",
+      "36": "center",
+      "37": "center",
+      "38": "center",
+      "39": "center",
+      "40": "center",
+      "41": "center",
+      "42": "center",
+      "43": "center",
+      "44": "center",
+      "45": "left",
+      "46": "center",
+      "47": "center",
+      "48": "center",
+      "49": "center",
+      "50": "left",
+      "51": "center",
+      "52": "center",
+      "53": "center",
+      "54": "center",
+      "55": "center",
+      "56": "center",
+      "57": "center",
+      "58": "center",
+      "59": "center",
+      "60": "left",
+      "61": "center",
+      "62": "center",
+      "63": "center",
+      "64": "center",
+      "65": "center",
+      "66": "center",
+      "67": "center",
+      "68": "center",
+      "69": "center",
+      "70": "left",
+      "71": "center",
+      "72": "center",
+      "73": "center",
+      "74": "center",
+      "75": "left",
+      "76": "center",
+      "77": "center",
+      "78": "center",
+      "79": "center",
+      "80": "center",
+      "81": "center",
+      "82": "center",
+      "83": "center",
+      "84": "center",
+      "85": "center",
+      "86": "center",
+      "87": "center",
+      "88": "center",
+      "89": "center",
+      "90": "center",
+      "91": "center",
+      "92": "center",
+      "93": "center",
+      "94": "center",
+      "95": "center",
+      "96": "center",
+      "97": "center",
+      "98": "center",
+      "99": "center",
+      "100": "center",
+      "101": "center",
+      "102": "center",
+      "103": "center",
+      "104": "center",
+      "105": "center",
+      "106": "center",
+      "107": "center",
+      "108": "center",
+      "109": "center",
+      "110": "center",
+      "111": "center",
+      "112": "center",
+      "113": "center",
+      "114": "center",
+      "115": "center",
+      "116": "center",
+      "117": "center",
+      "118": "center",
+      "119": "center",
+      "120": "center",
+      "121": "center",
+      "122": "center",
+      "123": "center",
+      "124": "center",
+      "125": "center",
+      "126": "center",
+      "127": "center",
+      "128": "center",
+      "129": "center",
+      "130": "center",
+      "131": "center",
+      "132": "center",
+      "133": "center",
+      "134": "center",
+      "135": "center",
+      "136": "center",
+      "137": "center",
+      "138": "center",
+      "139": "center",
+      "140": "center",
+      "141": "center",
+      "142": "center",
+      "143": "center",
+      "144": "center",
+      "145": "center",
+      "146": "center",
+      "147": "center",
+      "148": "center",
+      "149": "center",
+      "150": "center",
+      "151": "center",
+      "152": "center",
+      "153": "center",
+      "154": "center",
+      "155": "center",
+      "156": "center",
+      "157": "center",
+      "158": "center",
+      "159": "center",
+      "160": "center",
+      "161": "center",
+      "162": "center",
+      "163": "center",
+      "164": "center",
+      "165": "center",
+      "166": "center",
+      "167": "center",
+      "168": "center",
+      "169": "center",
+      "170": "center",
+      "171": "center",
+      "172": "center",
+      "173": "center",
+      "174": "center",
+      "175": "center",
+      "176": "center",
+      "177": "center",
+      "178": "center",
+      "179": "center",
+      "180": "center",
+      "181": "center",
+      "182": "center",
+      "183": "center",
+      "184": "center",
+      "185": "center",
+      "186": "center",
+      "187": "center",
+      "188": "center",
+      "189": "center",
+      "190": "center",
+      "191": "center",
+      "192": "center",
+      "193": "center",
+      "194": "center",
+      "195": "center",
+      "196": "center",
+      "197": "center",
+      "198": "center",
+      "199": "center",
+      "200": "center",
+      "201": "center",
+      "202": "center",
+      "203": "left",
+      "204": "center",
+      "205": "center",
+      "206": "center",
+      "207": "center",
+      "208": "center",
+      "209": "center",
+      "210": "center",
+      "211": "center",
+      "212": "center",
+      "213": "center",
+      "214": "center",
+      "215": "center",
+      "216": "center",
+      "217": "center",
+      "218": "center",
+      "219": "center",
+      "220": "center",
+      "221": "center",
+      "222": "center",
+      "223": "center",
+      "224": "center",
+      "225": "center",
+      "226": "center",
+      "227": "center",
+      "228": "center",
+      "229": "center",
+      "230": "center",
+      "231": "center",
+      "232": "center",
+      "233": "center",
+      "234": "center",
+      "235": "center",
+      "236": "center",
+      "237": "center",
+      "238": "center",
+      "239": "center",
+      "240": "center",
+      "241": "center",
+      "242": "center",
+      "243": "center",
+      "244": "center",
+      "245": "center",
+      "246": "center",
+      "247": "center",
+      "248": "center",
+      "249": "center",
+      "250": "center",
+      "251": "center",
+      "252": "center",
+      "253": "left",
+      "254": "center",
+      "255": "center",
+      "256": "center",
+      "257": "center",
+      "258": "center",
+      "259": "center",
+      "260": "center",
+      "261": "center",
+      "262": "center",
+      "263": "center",
+      "264": "center",
+      "265": "center",
+      "266": "center",
+      "267": "center",
+      "268": "center",
+      "269": "center",
+      "270": "center",
+      "271": "center",
+      "272": "center",
+      "273": "center",
+      "274": "center",
+      "275": "center",
+      "276": "center",
+      "277": "center",
+      "278": "center",
+      "279": "center",
+      "280": "center",
+      "281": "center",
+      "282": "center",
+      "283": "center",
+      "284": "center",
+      "285": "center",
+      "286": "center",
+      "287": "center",
+      "288": "center",
+      "289": "center",
+      "290": "center",
+      "291": "center",
+      "292": "center",
+      "293": "center",
+      "294": "center",
+      "295": "center",
+      "296": "center",
+      "297": "center",
+      "298": "center",
+      "299": "center",
+      "300": "center",
+      "301": "center",
+      "302": "center",
+      "303": "center",
+      "304": "center",
+      "305": "center",
+      "306": "center",
+      "307": "center",
+      "308": "center",
+      "309": "center",
+      "310": "center",
+      "311": "center",
+      "312": "center",
+      "313": "center",
+      "314": "center",
+      "315": "center",
+      "316": "center",
+      "317": "center",
+      "318": "left",
+      "319": "center",
+      "320": "center",
+      "321": "center",
+      "322": "center",
+      "323": "center",
+      "324": "center",
+      "325": "center",
+      "326": "center",
+      "327": "center",
+      "328": "center",
+      "329": "center",
+      "330": "center",
+      "331": "center",
+      "332": "center",
+      "333": "center",
+      "334": "center",
+      "335": "center",
+      "336": "center",
+      "337": "center",
+      "338": "center",
+      "339": "center",
+      "340": "center",
+      "341": "center",
+      "342": "center",
+      "343": "center",
+      "344": "center",
+      "345": "center",
+      "346": "center",
+      "347": "center",
+      "348": "center",
+      "349": "center",
+      "350": "center",
+      "351": "center",
+      "352": "center",
+      "353": "left",
+      "354": "center",
+      "355": "center",
+      "356": "center",
+      "357": "center",
+      "358": "left",
+      "359": "center",
+      "360": "center",
+      "361": "center",
+      "362": "center",
+      "363": "center",
+      "364": "center",
+      "365": "center",
+      "366": "center",
+      "367": "center",
+      "368": "left",
+      "369": "center",
+      "370": "center",
+      "371": "center",
+      "372": "center",
+      "373": "center",
+      "374": "center",
+      "375": "center",
+      "376": "center",
+      "377": "center",
+      "378": "center",
+      "379": "center",
+      "380": "center",
+      "381": "center",
+      "382": "center",
+      "383": "center",
+      "384": "center",
+      "385": "center",
+      "386": "center",
+      "387": "center",
+      "388": "center",
+      "389": "center",
+      "390": "center",
+      "391": "center",
+      "392": "center",
+      "393": "center",
+      "394": "center",
+      "395": "center",
+      "396": "center",
+      "397": "center",
+      "398": "center",
+      "399": "center",
+      "400": "center",
+      "401": "center",
+      "402": "center",
+      "403": "center",
+      "404": "center",
+      "405": "center",
+      "406": "center",
+      "407": "center",
+      "408": "center",
+      "409": "center",
+      "410": "center",
+      "411": "center",
+      "412": "center",
+      "413": "center",
+      "414": "center",
+      "415": "center",
+      "416": "center",
+      "417": "center",
+      "418": "center",
+      "419": "center",
+      "420": "center",
+      "421": "center",
+      "422": "center",
+      "423": "center",
+      "424": "center",
+      "425": "center",
+      "426": "center",
+      "427": "center",
+      "428": "center",
+      "429": "center",
+      "430": "center",
+      "431": "center",
+      "432": "center",
+      "433": "center",
+      "434": "center",
+      "435": "center",
+      "436": "center",
+      "437": "center",
+      "438": "center",
+      "439": "center",
+      "440": "center",
+      "441": "center",
+      "442": "center",
+      "443": "center",
+      "444": "center",
+      "445": "center",
+      "446": "center",
+      "447": "center",
+      "448": "center",
+      "449": "center",
+      "450": "center",
+      "451": "center",
+      "452": "center",
+      "453": "center",
+      "454": "center",
+      "455": "center",
+      "456": "center",
+      "457": "center",
+      "458": "center",
+      "459": "center",
+      "460": "center",
+      "461": "center",
+      "462": "center",
+      "463": "center",
+      "464": "center",
+      "465": "center",
+      "466": "center",
+      "467": "center",
+      "468": "center",
+      "469": "center",
+      "470": "center",
+      "471": "center",
+      "472": "center",
+      "473": "center",
+      "474": "center",
+      "475": "center",
+      "476": "center",
+      "477": "center",
+      "478": "left",
+      "479": "center",
+      "480": "center",
+      "481": "center",
+      "482": "center",
+      "483": "left",
+      "484": "center",
+      "485": "center",
+      "486": "center",
+      "487": "center",
+      "488": "center",
+      "489": "center",
+      "490": "center",
+      "491": "center",
+      "492": "center",
+      "493": "right",
+      "494": "center",
+      "495": "center",
+      "496": "center",
+      "497": "center",
+      "498": "center",
+      "499": "center",
+      "500": "center",
+      "501": "center",
+      "502": "center",
+      "503": "center",
+      "504": "center",
+      "505": "center",
+      "506": "center",
+      "507": "center",
+      "508": "center",
+      "509": "center",
+      "510": "center",
+      "511": "center",
+      "512": "center",
+      "513": "center",
+      "514": "center",
+      "515": "center",
+      "516": "center",
+      "517": "center",
+      "518": "center",
+      "519": "center",
+      "520": "center",
+      "521": "center",
+      "522": "center",
+      "523": "left",
+      "524": "center",
+      "525": "center",
+      "526": "center",
+      "527": "center",
+      "528": "center",
+      "529": "center",
+      "530": "center",
+      "531": "center",
+      "532": "center",
+      "533": "center",
+      "534": "center",
+      "535": "center",
+      "536": "center",
+      "537": "center",
+      "538": "center",
+      "539": "center",
+      "540": "center",
+      "541": "center",
+      "542": "center",
+      "543": "center",
+      "544": "center",
+      "545": "center",
+      "546": "center",
+      "547": "center",
+      "548": "center",
+      "549": "center",
+      "550": "center",
+      "551": "center",
+      "552": "center",
+      "553": "center",
+      "554": "center",
+      "555": "center",
+      "556": "center",
+      "557": "center",
+      "558": "center",
+      "559": "center",
+      "560": "center",
+      "561": "center",
+      "562": "center",
+      "563": "center",
+      "564": "center",
+      "565": "center",
+      "566": "center",
+      "567": "center",
+      "568": "center",
+      "569": "center",
+      "570": "center",
+      "571": "center",
+      "572": "center",
+      "573": "center",
+      "574": "center",
+      "575": "center",
+      "576": "center",
+      "577": "center",
+      "578": "center",
+      "579": "center",
+      "580": "center",
+      "581": "center",
+      "582": "center",
+      "583": "center",
+      "584": "center",
+      "585": "center",
+      "586": "center",
+      "587": "center",
+      "588": "center",
+      "589": "center",
+      "590": "center",
+      "591": "center",
+      "592": "center",
+      "593": "center",
+      "594": "center",
+      "595": "center",
+      "596": "center",
+      "597": "center",
+      "598": "center",
+      "599": "center",
+      "600": "center",
+      "601": "center",
+      "602": "center",
+      "603": "center",
+      "604": "center",
+      "605": "center",
+      "606": "center",
+      "607": "center",
+      "608": "center",
+      "609": "center",
+      "610": "center",
+      "611": "center",
+      "612": "center",
+      "613": "center",
+      "614": "center",
+      "615": "center",
+      "616": "center",
+      "617": "center",
+      "618": "center",
+      "619": "center",
+      "620": "center",
+      "621": "center",
+      "622": "center",
+      "623": "center",
+      "624": "center",
+      "625": "center",
+      "626": "center",
+      "627": "center",
+      "628": "center",
+      "629": "center",
+      "630": "center",
+      "631": "center",
+      "632": "center",
+      "633": "center",
+      "634": "center",
+      "635": "center",
+      "636": "center",
+      "637": "center",
+      "638": "center",
+      "639": "center",
+      "640": "center",
+      "641": "center",
+      "642": "center",
+      "643": "center",
+      "644": "center",
+      "645": "center",
+      "646": "center",
+      "647": "center",
+      "648": "center",
+      "649": "left",
+      "650": "center",
+      "651": "center",
+      "652": "center",
+      "653": "center",
+      "654": "center",
+      "655": "center",
+      "656": "center",
+      "657": "center",
+      "658": "center",
+      "659": "center",
+      "660": "center",
+      "661": "center",
+      "662": "center",
+      "663": "center",
+      "664": "left",
+      "665": "center",
+      "666": "center",
+      "667": "center",
+      "668": "center",
+      "669": "center",
+      "670": "center",
+      "671": "center",
+      "672": "center",
+      "673": "center",
+      "674": "center",
+      "675": "center",
+      "676": "center",
+      "677": "center",
+      "678": "center",
+      "679": "center",
+      "680": "center",
+      "681": "center",
+      "682": "center",
+      "683": "center",
+      "684": "center",
+      "685": "center",
+      "686": "center",
+      "687": "center",
+      "688": "center",
+      "689": "center",
+      "690": "center",
+      "691": "center",
+      "692": "center",
+      "693": "center",
+      "694": "center",
+      "695": "center",
+      "696": "center",
+      "697": "center",
+      "698": "center",
+      "699": "center",
+      "700": "center",
+      "701": "center",
+      "702": "center",
+      "703": "center",
+      "704": "center",
+      "705": "center",
+      "706": "center",
+      "707": "center",
+      "708": "center",
+      "709": "center",
+      "710": "center",
+      "711": "center",
+      "712": "center",
+      "713": "center",
+      "714": "center",
+      "715": "center",
+      "716": "center",
+      "717": "center",
+      "718": "center",
+      "719": "center",
+      "720": "center",
+      "721": "center",
+      "722": "center",
+      "723": "center",
+      "724": "center",
+      "725": "center",
+      "726": "center",
+      "727": "center",
+      "728": "center",
+      "729": "center",
+      "730": "center",
+      "731": "center",
+      "732": "center",
+      "733": "center",
+      "734": "center",
+      "735": "center",
+      "736": "center",
+      "737": "center",
+      "738": "center",
+      "739": "center",
+      "740": "center",
+      "741": "center",
+      "742": "center",
+      "743": "center",
+      "744": "center",
+      "745": "center",
+      "746": "center",
+      "747": "center",
+      "748": "center",
+      "749": "center",
+      "750": "center",
+      "751": "center",
+      "752": "center",
+      "753": "center",
+      "754": "center",
+      "755": "center",
+      "756": "center",
+      "757": "center",
+      "758": "center",
+      "759": "center",
+      "760": "center",
+      "761": "center",
+      "762": "center",
+      "763": "center",
+      "764": "center",
+      "765": "center",
+      "766": "center",
+      "767": "center",
+      "768": "center",
+      "769": "center",
+      "770": "center",
+      "771": "center",
+      "772": "center",
+      "773": "center",
+      "774": "center",
+      "775": "center",
+      "776": "center",
+      "777": "center",
+      "778": "center",
+      "779": "center",
+      "780": "center",
+      "781": "center",
+      "782": "center",
+      "783": "center",
+      "784": "left",
+      "785": "center",
+      "786": "center",
+      "787": "center",
+      "788": "center",
+      "789": "center",
+      "790": "center",
+      "791": "center",
+      "792": "center",
+      "793": "center",
+      "794": "center",
+      "795": "center",
+      "796": "center",
+      "797": "center",
+      "798": "center",
+      "799": "center",
+      "800": "center",
+      "801": "center",
+      "802": "center",
+      "803": "center",
+      "804": "center",
+      "805": "center",
+      "806": "center",
+      "807": "center",
+      "808": "center",
+      "809": "center",
+      "810": "center",
+      "811": "center",
+      "812": "center",
+      "813": "center",
+      "814": "center",
+      "815": "center",
+      "816": "center",
+      "817": "center",
+      "818": "center",
+      "819": "center",
+      "820": "center",
+      "821": "center",
+      "822": "center",
+      "823": "center",
+      "824": "center",
+      "825": "center",
+      "826": "center",
+      "827": "center",
+      "828": "center",
+      "829": "center",
+      "830": "center",
+      "831": "center",
+      "832": "center",
+      "833": "center",
+      "834": "center",
+      "835": "center",
+      "836": "center",
+      "837": "center",
+      "838": "center",
+      "839": "center",
+      "840": "center",
+      "841": "center",
+      "842": "center",
+      "843": "center",
+      "844": "center",
+      "845": "center",
+      "846": "center",
+      "847": "center",
+      "848": "center",
+      "849": "center",
+      "850": "center",
+      "851": "center",
+      "852": "center",
+      "853": "center",
+      "854": "center",
+      "855": "center",
+      "856": "center",
+      "857": "center",
+      "858": "center",
+      "859": "center",
+      "860": "center",
+      "861": "center",
+      "862": "center",
+      "863": "center",
+      "864": "center",
+      "865": "center",
+      "866": "center",
+      "867": "center",
+      "868": "center",
+      "869": "center",
+      "870": "center",
+      "871": "center",
+      "872": "center",
+      "873": "center",
+      "874": "center",
+      "875": "center",
+      "876": "center",
+      "877": "center",
+      "878": "center",
+      "879": "center",
+      "880": "center",
+      "881": "center",
+      "882": "center",
+      "883": "center",
+      "884": "center",
+      "885": "center",
+      "886": "center",
+      "887": "center",
+      "888": "center",
+      "889": "center",
+      "890": "center",
+      "891": "center",
+      "892": "center",
+      "893": "center",
+      "894": "center",
+      "895": "center",
+      "896": "center",
+      "897": "center",
+      "898": "center",
+      "899": "center",
+      "900": "center",
+      "901": "center",
+      "902": "center",
+      "903": "center",
+      "904": "center",
+      "905": "center",
+      "906": "center",
+      "907": "center",
+      "908": "center",
+      "909": "center",
+      "910": "center",
+      "911": "center",
+      "912": "center",
+      "913": "center",
+      "914": "center",
+      "915": "center",
+      "916": "center",
+      "917": "center",
+      "918": "center",
+      "919": "center",
+      "920": "center",
+      "921": "center",
+      "922": "center",
+      "923": "center",
+      "924": "center",
+      "925": "center",
+      "926": "center",
+      "927": "center",
+      "928": "center",
+      "929": "center",
+      "930": "center",
+      "931": "center",
+      "932": "center",
+      "933": "center",
+      "934": "center",
+      "935": "center",
+      "936": "center",
+      "937": "center",
+      "938": "center",
+      "939": "center",
+      "940": "center",
+      "941": "center",
+      "942": "center",
+      "943": "center",
+      "944": "center",
+      "945": "center",
+      "946": "center",
+      "947": "center",
+      "948": "center",
+      "949": "center",
+      "950": "center",
+      "951": "center",
+      "952": "center",
+      "953": "center",
+      "954": "center",
+      "955": "center",
+      "956": "center",
+      "957": "center",
+      "958": "center",
+      "959": "center",
+      "960": "center",
+      "961": "center",
+      "962": "center",
+      "963": "center",
+      "964": "center",
+      "965": "center",
+      "966": "center",
+      "967": "center",
+      "968": "center",
+      "969": "center",
+      "970": "center",
+      "971": "center",
+      "972": "center",
+      "973": "center",
+      "974": "center",
+      "975": "center",
+      "976": "center",
+      "977": "center",
+      "978": "center",
+      "979": "center",
+      "980": "center",
+      "981": "center",
+      "982": "center",
+      "983": "center",
+      "984": "center",
+      "985": "center",
+      "986": "center",
+      "987": "center",
+      "988": "center",
+      "989": "center",
+      "990": "center",
+      "991": "center",
+      "992": "center",
+      "993": "center",
+      "994": "center",
+      "995": "center",
+      "996": "center",
+      "997": "center",
+      "998": "center",
+      "999": "center"
+    },
+    "params": "\"array([[-0.57313827, -3.22581038,  1.96848769,  2.65908737, -2.08590665],\\n       [-2.31675084, -0.98504299,  0.93645405, -3.07946899, -1.47120915],\\n       [-2.74372755,  1.60002284, -0.73790277,  0.9909719 , -0.13603901],\\n       [ 3.13891314,  1.88805776,  0.8682752 ,  0.40531399,  3.19137114],\\n       [-1.88405655, -2.55414057, -2.93870228,  2.43879257,  3.04101612],\\n       [-0.27537723, -0.12491345,  1.46342953, -3.04052664,  1.98054309],\\n       [ 0.9342328 , -1.94498812,  1.30279149,  1.91371691, -2.40775412],\\n       [ 2.60348774, -1.10359184,  0.84200631, -1.45712569,  0.04261875],\\n       [-1.54322877, -0.20202971, -0.67705688, -0.63284014,  1.6973332 ],\\n       [ 0.44181959,  1.40710614,  1.84111801, -0.71213862,  2.7308871 ]])\"",
+    "mask": "\"array([[False, False, False, False, False],\\n       [False, False, False, False, False],\\n       [False, False,  True, False, False],\\n       [False, False, False, False, False],\\n       [False, False, False, False, False],\\n       [False, False, False, False, False],\\n       [False, False, False, False, False],\\n       [False, False, False, False, False],\\n       [False, False, False, False, False],\\n       [False, False, False, False,  True]])\""
+  },
+  "walltime": 87.797027699,
+  "cputime": 83.12276800000001
+}
