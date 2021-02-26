@@ -275,7 +275,9 @@ def train_test_iris(wires=5, layers=5, sim_local=True, percentage=0.05, epsilon=
 
 
 @log_results
-def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percentage=0.05, epsilon=0.01, cost_span: int=5, log_interval: int=5, use_dropout=True):
+def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percentage=0.05, epsilon=0.01, cost_span: int=5, log_interval: int=5, use_dropout=True, seed=1337):
+    np.random.seed(seed)
+
     logging_costs = {}
     logging_branches = {}
     logging_branch_selection = {}

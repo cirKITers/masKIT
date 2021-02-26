@@ -29,7 +29,8 @@ class MaskedParameters(object):
     TODO: interpretation of wires and layers is not strict and depends on user
         interpretation how the different parameters are mapped to the circuit
     """
-    def __init__(self, params, perturbation_axis: PerturbationAxis = PerturbationAxis.RANDOM):
+    def __init__(self, params, perturbation_axis: PerturbationAxis = PerturbationAxis.RANDOM, seed=1337):
+        rand.seed(seed)
         self._params = params
         self._mask = None
         self.perturbation_axis = perturbation_axis
