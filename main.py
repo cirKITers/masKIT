@@ -280,6 +280,9 @@ def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percenta
     logging_branches = {}
     logging_branch_selection = {}
     logging_branch_enforcement = {}
+    logging_gate_count = {}
+    logging_cost_values = []
+    logging_gate_count_values = []
 
     dev = get_device(sim_local=sim_local, wires=wires)
     circuit = qml.QNode(variational_circuit, dev)
@@ -320,6 +323,15 @@ def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percenta
         masked_params = branch
         # print("Step: {:4d} | Cost: {: .5f}".format(step, current_cost))
 
+        logging_cost_values.append(current_cost.unwrap())
+        logging_gate_count_values.append(np.sum(masked_params.mask))
+        if step % log_interval == 0:
+            # perform logging
+            logging_costs[step] = np.average(logging_cost_values)
+            logging_gate_count[step] = np.average(logging_gate_count_values)
+            logging_cost_values.clear()
+            logging_gate_count_values.clear()
+
         if use_dropout:
             costs.append(current_cost)
             if len(costs) >= cost_span and current_cost > .1:
@@ -339,13 +351,11 @@ def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percenta
                             "axis": masked_params.perturbation_axis}
                     costs.clear()
                     perturb = True
-        if step % log_interval == 0:
-            # perform logging
-            logging_costs[step] = current_cost.unwrap()
     return {
         "costs": logging_costs,
         "final_cost": current_cost.unwrap(),
         "branch_enforcements": logging_branch_enforcement,
+        "dropouts": logging_gate_count,
         "branches": logging_branches,
         "branch_selections": logging_branch_selection,
         "params": masked_params.params.unwrap(),
