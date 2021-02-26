@@ -8,6 +8,8 @@ from collections import deque
 from masked_parameters import MaskedParameters, PerturbationMode, PerturbationAxis
 from iris import load_iris, cross_entropy
 
+from log_results import log_results
+
 np.random.seed(1337)
 
 
@@ -27,6 +29,9 @@ class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
         if len(new_args) == 1:
             return new_args[0], forward, gradient
         return new_args, forward, gradient
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self._stepsize})"
 
 
 class ExtendedAdamOptimizer(ExtendedGradientDescentOptimizer, AdamOptimizer):
@@ -202,9 +207,10 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
 
 
-def train_test(wires=5, layers=5, sim_local=True, steps=100, epochs=5, percentage=0.05, epsilon=0.01):
+def train_test_iris(wires=5, layers=5, sim_local=True, percentage=0.05, epsilon=0.01, testing=True):
     dev = get_device(sim_local=sim_local, wires=wires)
-    circuit = qml.QNode(variational_circuit, dev)
+    circuit = qml.QNode(circuit_iris, dev)
+    x_train, y_train, x_test, y_test = load_iris()
 
     # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
     opt = ExtendedAdamOptimizer(stepsize=0.01)
@@ -212,16 +218,18 @@ def train_test(wires=5, layers=5, sim_local=True, steps=100, epochs=5, percentag
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
-    cost_fn = lambda params, mask=None: cost(circuit, params, wires, layers, rotations, mask)
+    cost_fn = lambda params, mask=None: cost_iris(
+                    circuit, params, data, target, wires, layers, rotations, mask)
 
     amount = int(wires * layers * percentage)
     masked_params = MaskedParameters(
         np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
     masked_params.perturbation_axis = PerturbationAxis.RANDOM
+    masked_params.perturb(int(layers * wires * 0.5))
 
     costs = deque(maxlen=5)
     perturb = False
-    for step in range(steps):
+    for step, (data, target) in enumerate(zip(x_train, y_train)):
         if perturb:
             left_branch = masked_params.copy()
             left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
@@ -244,8 +252,105 @@ def train_test(wires=5, layers=5, sim_local=True, steps=100, epochs=5, percentag
                     masked_params.perturb(1, mode=PerturbationMode.REMOVE)
                 costs.clear()
                 perturb = True
+
+    if testing:
+        correct = 0
+        N = len(x_test)
+        costs = []
+        for step, (data, target) in enumerate(zip(x_test, y_test)):
+            output = circuit(masked_params.params, data, wires, layers,
+                             rotations, masked_params.mask)
+            c = cost_iris(circuit, masked_params.params, data, target, wires,
+                          layers, rotations, masked_params.mask)
+            costs.append(c)
+            same = np.argmax(target) == np.argmax(output)
+            if same:
+                correct += 1
+            print("Label: {} Output: {} Correct: {}".format(target, output, same))
+        print("Accuracy = {} / {} = {} \nAvg Cost: {}".format(correct, N, correct / N,
+                                                              np.average(costs)))
+
     print(masked_params.mask)
     print(masked_params.params)
+
+
+@log_results
+def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percentage=0.05, epsilon=0.01, cost_span: int=5, log_interval: int=5, use_dropout=True):
+    logging_costs = {}
+    logging_branches = {}
+    logging_branch_selection = {}
+    logging_branch_enforcement = {}
+
+    dev = get_device(sim_local=sim_local, wires=wires)
+    circuit = qml.QNode(variational_circuit, dev)
+
+    rotation_choices = [0, 1, 2]
+    rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
+
+    cost_fn = lambda params, mask=None: cost(circuit, params, wires, layers, rotations, mask)
+
+    amount = int(wires * layers * percentage)
+    masked_params = MaskedParameters(
+        np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
+    masked_params.perturbation_axis = PerturbationAxis.RANDOM
+
+    costs = deque(maxlen=cost_span)
+    perturb = False
+    for step in range(steps):
+        if use_dropout:
+            if perturb:
+                left_branch = masked_params.copy()
+                left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
+                right_branch = masked_params.copy()
+                right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+                branches = [masked_params, left_branch, right_branch]
+                perturb = False
+                logging_branches[step] = {
+                    "center": "No perturbation",
+                    "left": {"amount": 1, "mode": PerturbationMode.ADD, "axis": left_branch.perturbation_axis},
+                    "right": {"amount": amount, "mode": PerturbationMode.REMOVE, "axis": right_branch.perturbation_axis}
+                }
+            else:
+                branches = [masked_params]
+        else:
+            branches = [masked_params]
+        branch, current_cost, gradient = ensemble_step(branches, optimiser, cost_fn)
+        branch_index = branches.index(branch)
+        logging_branch_selection[step] = "center" if branch_index == 0 else "left" if branch_index == 1 else "right"
+        masked_params = branch
+        # print("Step: {:4d} | Cost: {: .5f}".format(step, current_cost))
+
+        if use_dropout:
+            costs.append(current_cost)
+            if len(costs) >= cost_span and current_cost > .1:
+                if sum([abs(cost - costs[index + 1]) for index, cost in enumerate(list(costs)[:-1])]) < epsilon:
+                    # print("======== allowing to perturb =========")
+                    if np.sum(masked_params.mask) >= layers * wires * .3:
+                        masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                        logging_branch_enforcement[step + 1] = {
+                            "amount": 1,
+                            "mode": PerturbationMode.REMOVE,
+                            "axis": masked_params.perturbation_axis}
+                    elif current_cost < 0.25 and np.sum(masked_params.mask) >= layers * wires * .05:
+                        masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                        logging_branch_enforcement[step + 1] = {
+                            "amount": 1,
+                            "mode": PerturbationMode.REMOVE,
+                            "axis": masked_params.perturbation_axis}
+                    costs.clear()
+                    perturb = True
+        if step % log_interval == 0:
+            # perform logging
+            logging_costs[step] = current_cost.unwrap()
+    return {
+        "costs": logging_costs,
+        "final_cost": current_cost.unwrap(),
+        "branch_enforcements": logging_branch_enforcement,
+        "branches": logging_branches,
+        "branch_selections": logging_branch_selection,
+        "params": masked_params.params.unwrap(),
+        "mask": masked_params.mask.unwrap()
+    }
 
 
 def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=True, use_dropout=False):
@@ -297,14 +402,18 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
             current_layers += 1
             print(f"Increased number of layers from {current_layers-1} to {current_layers}")
 
-    print(masked_params.params)
+    # print(masked_params.params)
     print(masked_params.mask)
 
 
 if __name__ == "__main__":
+    opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
+    # opt = ExtendedAdamOptimizer(stepsize=0.01)
+
     # train_iris(sim_local=True, use_dropout=False, epochs=3)
-    # train_circuit(sim_local=True, use_dropout=False, steps=100, starting_layers=0)
-    train_test(steps=5000, wires=10, sim_local=True)
+    # train_circuit(sim_local=True, use_dropout=False, steps=200, wires=10)
+    print(train_test(opt, steps=10, wires=5, sim_local=True))
+    # train_test_iris(wires=20, layers=10, sim_local=True, percentage=0.01)
     # example values for layers = 15
     # steps | dropout = False | dropout = True
     # 20:     0.99600,          0.91500
