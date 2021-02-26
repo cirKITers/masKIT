@@ -3,8 +3,9 @@ from typing import List
 import pennylane as qml
 import remote_cirq
 from pennylane import numpy as np, GradientDescentOptimizer, AdamOptimizer
+from collections import deque
 
-from masked_parameters import MaskedParameters, PerturbationMode
+from masked_parameters import MaskedParameters, PerturbationMode, PerturbationAxis
 from iris import load_iris, cross_entropy
 
 np.random.seed(1337)
@@ -32,7 +33,7 @@ class ExtendedAdamOptimizer(ExtendedGradientDescentOptimizer, AdamOptimizer):
     pass
 
 
-def get_device(sim_local, wires, analytic=False):
+def get_device(sim_local, wires, analytic=True):
     if sim_local:
         dev = qml.device("default.qubit", 
                          wires=wires, 
@@ -197,6 +198,52 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
 
 
+def train_test(wires=5, layers=5, sim_local=True, steps=100, epochs=5, percentage=0.05, epsilon=0.01):
+    dev = get_device(sim_local=sim_local, wires=wires)
+    circuit = qml.QNode(variational_circuit, dev)
+
+    # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
+    opt = ExtendedAdamOptimizer(stepsize=0.01)
+
+    rotation_choices = [0, 1, 2]
+    rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
+
+    cost_fn = lambda params, mask=None: cost(circuit, params, wires, layers, rotations, mask)
+
+    amount = int(wires * layers * percentage)
+    masked_params = MaskedParameters(
+        np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
+    masked_params.perturbation_axis = PerturbationAxis.RANDOM
+
+    costs = deque(maxlen=5)
+    perturb = False
+    for step in range(steps):
+        if perturb:
+            left_branch = masked_params.copy()
+            left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
+            right_branch = masked_params.copy()
+            right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+            branches = [masked_params, left_branch, right_branch]
+            perturb = False
+        else:
+            branches = [masked_params]
+        branch, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
+        masked_params = branch
+        costs.append(current_cost)
+        print("Step: {:4d} | Cost: {: .5f}".format(step, current_cost))
+        if len(costs) >= 5 and current_cost > .1:
+            if sum([abs(cost - costs[index + 1]) for index, cost in enumerate(list(costs)[:-1])]) < epsilon:
+                print("======== allowing to perturb =========")
+                if np.sum(masked_params.mask) >= layers * wires * .3:
+                    masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                elif current_cost < 0.25 and np.sum(masked_params.mask) >= layers * wires * .05:
+                    masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                costs.clear()
+                perturb = True
+    print(masked_params.mask)
+    print(masked_params.params)
+
+
 def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=True, use_dropout=False):
     dev = get_device(sim_local, wires=wires)
 
@@ -251,8 +298,9 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
 
 
 if __name__ == "__main__":
-    # train_circuit(sim_local=True, use_dropout=False, steps=20)
-    train_iris(sim_local=True, use_dropout=False, epochs=3)
+    # train_iris(sim_local=True, use_dropout=False, epochs=3)
+    # train_circuit(sim_local=True, use_dropout=False, steps=100, starting_layers=0)
+    train_test(steps=5000, wires=10, sim_local=True)
     # example values for layers = 15
     # steps | dropout = False | dropout = True
     # 20:     0.99600,          0.91500
