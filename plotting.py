@@ -75,6 +75,41 @@ def plot_cost_normalized(data):
     plt.ylabel('Cost', fontsize=16)
     plt.show()
 
+def plot_dropouts(data):
+    real_data_length = 0
+
+    for d in data:
+        if not d["call"][2]["use_dropout"]:
+            continue
+
+        dropouts = d["result"]["dropouts"]
+        branches = d["result"]["branches"]
+        steps = []
+        values = []
+        step_counter = 0
+        if real_data_length == 0:
+            real_data_length += len(dropouts) * 5
+            real_data_length += len(branches) * 3
+
+        for i in range(real_data_length):
+            key = f"{i}"
+            if key in branches:
+                step_counter += 3
+            if key in dropouts:
+                steps.append(i + step_counter)
+                values.append(int(dropouts[key]))
+
+        plt.plot(steps, values, color="green")
+
+    plt.rcParams.update({'font.size': 15})
+    #plt.legend(loc="upper right")
+    plt.title(label="Wires: {}, Layers: {}, Number of Gates: {} ".format(d["call"][2]["wires"], 
+                                                                         d["call"][2]["layers"],
+                                                                         d["call"][2]["wires"]*d["call"][2]["layers"]), fontdict={"fontsize": 18})
+    plt.xlabel('Training steps', fontsize=16)
+    plt.ylabel('Number of dropped gates', fontsize=16)
+    plt.show()
+
 
 if __name__ == "__main__":
     files = ["logs/W5_L10_DOtrue.json",
@@ -87,4 +122,7 @@ if __name__ == "__main__":
 
     # plot_cost(data)
     # plot_cost_stupid(data)
+
     plot_cost_normalized(data)
+    
+    plot_dropouts(data)
