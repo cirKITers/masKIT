@@ -122,7 +122,7 @@ class BaseSimulator(cirq.SimulatesSamples):
     else:
       raise TimeoutError(
           f'Timeout limit {TIMEOUT}s reached for JobID: {job_id}'
-          'Call the [jobtype]_get_results method to resume polling')
+          ' Call the resume_polling() method to resume polling')
 
   @staticmethod
   def _update_poll_frequency(pf, t):
@@ -170,8 +170,8 @@ class BaseSimulator(cirq.SimulatesSamples):
     cirq.SimulatesSamples.
     """
     try:
-      data = schemas.SampleJobContext(circuit=cirq.to_json(circuit),
-                                      param_resolver=cirq.to_json(
+      data = schemas.SampleJobContext(circuit=self._cirq_to_json(circuit),
+                                      param_resolver=self._cirq_to_json(
                                           cirq.ParamResolver(param_resolver)),
                                       repetitions=repetitions)
     except TypeError as e:
@@ -182,6 +182,7 @@ class BaseSimulator(cirq.SimulatesSamples):
 
   def sample_job_results(self, job_id: schemas.UUID) -> 'cirq.TrialResult':
     """Poll for results jon the given job_id."""
+    self._last_get_fn = lambda: self.sample_job_results(job_id)
     data = self._get_job_results(schemas.JobType.SAMPLE, job_id)
     return cirq.read_json(json_text=data.result)
 
@@ -299,9 +300,9 @@ class BaseSimulator(cirq.SimulatesSamples):
   ) -> List[float]:
     try:
       data = schemas.ExpectationJobContext(
-          circuit=cirq.to_json(circuit),
+          circuit=self._cirq_to_json(circuit),
           operators=self._serialize_operators(observables),
-          param_resolver=cirq.to_json(cirq.ParamResolver(param_resolver)),
+          param_resolver=self._cirq_to_json(cirq.ParamResolver(param_resolver)),
       )
     except TypeError as e:
       raise TypeError(SERIAL_ERROR_MSG) from e
@@ -312,8 +313,14 @@ class BaseSimulator(cirq.SimulatesSamples):
 
   def expectation_job_results(self, job_id: schemas.UUID) -> List[float]:
     """Poll for results on the given job_id."""
+    self._last_get_fn = lambda: self.expectation_job_results(job_id)
     data = self._get_job_results(schemas.JobType.EXPECTATION, job_id)
     return data.result
+
+  def resume_polling(self):
+    if not self._last_get_fn:
+      raise SimulatorError('No jobs have been previously queried')
+    return self._last_get_fn()
 
   @staticmethod
   def _serialize_operators(
@@ -321,7 +328,8 @@ class BaseSimulator(cirq.SimulatesSamples):
   ) -> List[str]:
 
     def _dumps_paulisum(ps):
-      return json.dumps([cirq.to_json(term) for term in ps])
+      return json.dumps([BaseSimulator._cirq_to_json(term) for term in ps],
+                        separators=(',', ';'))
 
     if isinstance(operators, cirq.PauliSum):
       return [_dumps_paulisum(operators)]
@@ -334,3 +342,7 @@ class BaseSimulator(cirq.SimulatesSamples):
   @staticmethod
   def _decode(schema, data):
     return schema.loads(data)
+
+  @staticmethod
+  def _cirq_to_json(obj: Any) -> str:
+    return json.dumps(json.loads(cirq.to_json(obj)), separators=(',', ':'))
