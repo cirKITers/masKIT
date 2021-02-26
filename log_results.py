@@ -23,7 +23,7 @@ log_path.parent.mkdir(exist_ok=True)
 
 
 def serialize(o):
-    return repr(o)
+    return json.dumps(repr(o))
     # raise TypeError(f"Cannot serialize {o} to JSON")
 
 
