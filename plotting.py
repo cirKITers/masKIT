@@ -1,7 +1,6 @@
 import json
 import matplotlib.pyplot as plt
 
-
 def load_data(file):
     with open(file) as json_file:
         data = json.load(json_file)
@@ -66,7 +65,14 @@ def plot_cost_normalized(data):
                 steps.append(i + step_counter)
                 values.append(costs[key])
 
-        plt.plot(steps, values)
+        label = "With dropout" if d["call"][2]["use_dropout"] else "Without dropout"
+        plt.plot(steps, values, label=label)
+
+    plt.rcParams.update({'font.size': 15})
+    plt.legend(loc="upper right")
+    plt.title(label="Wires: {}, Layers: {}".format(d["call"][2]["wires"], d["call"][2]["layers"]), fontdict={"fontsize": 18})
+    plt.xlabel('Training steps', fontsize=16)
+    plt.ylabel('Cost', fontsize=16)
     plt.show()
 
 
@@ -79,6 +85,6 @@ if __name__ == "__main__":
     for f in files:
         data.append(load_data(f))
 
-    plot_cost(data)
-    plot_cost_stupid(data)
+    # plot_cost(data)
+    # plot_cost_stupid(data)
     plot_cost_normalized(data)
