@@ -10,14 +10,12 @@ from functools import wraps
 T = TypeVar('T')
 _JSON_Element = Union[str, int, float, bool, None, Dict[str, T], List[T]]
 JSON = _JSON_Element[_JSON_Element[_JSON_Element[Any]]]
+CJ = TypeVar('CJ', bound=Callable[..., JSON])
 
 # Analysen, die wir machen wollen (immer mit Ensembles/ohne Ensembles)
 # * Erzeugung von unterschiedlichen circuits via setzen des Random Seeds
 # * Parameterstudie unterschiedliche # wires, unterschiedliche # layers
 # * Wenn möglich Parameterstudie dazu, wie lange Kosten beobachtet werden sollen, bevor das Ensemble einsetzt
-
-
-C = TypeVar('C', bound=Callable[..., JSON])
 
 
 log_path = pathlib.Path(__file__).parent / "logs" / f"{time.time()}.json"
@@ -29,7 +27,7 @@ def serialize(o):
     # raise TypeError(f"Cannot serialize {o} to JSON")
 
 
-def log_results(executor: C) -> C:
+def log_results(executor: CJ) -> CJ:
     @wraps(executor)
     def wrapper(*args, **kwargs):
         wallclock, cpuclock = time.perf_counter, time.process_time
