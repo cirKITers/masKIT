@@ -6,36 +6,13 @@ from pennylane import numpy as np, GradientDescentOptimizer, AdamOptimizer
 from collections import deque
 
 from masked_parameters import MaskedParameters, PerturbationMode, PerturbationAxis
-from iris import load_iris, cross_entropy
-
+from iris import load_iris
+from utils import cross_entropy, check_params
+from circuits import variational_circuit, iris_circuit
 from log_results import log_results
+from optimizers import ExtendedAdamOptimizer, ExtendedGradientDescentOptimizer
 
 np.random.seed(1337)
-
-
-class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
-    def step_cost_and_grad(self, objective_fn, *args, grad_fn=None, **kwargs):
-        """
-        This function copies the functionality of the GradientDescentOptimizer
-        one-to-one but changes the return statement to also return the gradient.
-        """
-        gradient, forward = self.compute_grad(objective_fn, args, kwargs, grad_fn=grad_fn)
-        new_args = self.apply_grad(gradient, args)
-
-        if forward is None:
-            forward = objective_fn(*args, **kwargs)
-
-        # unwrap from list if one argument, cleaner return
-        if len(new_args) == 1:
-            return new_args[0], forward, gradient
-        return new_args, forward, gradient
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self._stepsize})"
-
-
-class ExtendedAdamOptimizer(ExtendedGradientDescentOptimizer, AdamOptimizer):
-    pass
 
 
 def get_device(sim_local, wires, analytic=True):
@@ -55,56 +32,6 @@ def get_device(sim_local, wires, analytic=True):
     return dev
 
 
-def variational_circuit(params, wires, layers, rotations, dropouts):
-    for w in range(wires):
-        qml.RY(np.pi/4, wires=w) 
-    r = -1
-    for l in range(layers):
-        for w in range(wires):
-            r += 1
-            if dropouts[l][w] == True:
-                continue
-            if rotations[r] == 0:
-                rotation = qml.RX
-            elif rotations[r] == 1:
-                rotation = qml.RY
-            else:
-                rotation = qml.RZ
-            rotation(params[l][w], wires=w)
-    
-        for w in range(0, wires - 1, 2):
-            qml.CZ(wires=[w, w + 1])
-        for w in range(1, wires - 1, 2):
-            qml.CZ(wires=[w, w + 1])
-    return qml.probs(wires=range(wires))
-
-
-def circuit_iris(params, data, wires, layers, rotations, dropouts):
-    qml.templates.embeddings.AngleEmbedding(features=data, wires=range(4), rotation="X")
-
-    for w in range(wires):
-        qml.RY(np.pi/4, wires=w) 
-    r = -1
-    for l in range(layers):
-        for w in range(wires):
-            r += 1
-            if dropouts[l][w] == True:
-                continue
-            if rotations[r] == 0:
-                rotation = qml.RX
-            elif rotations[r] == 1:
-                rotation = qml.RY
-            else:
-                rotation = qml.RZ
-            rotation(params[l][w], wires=w)
-    
-        for w in range(0, wires - 1, 2):
-            qml.CZ(wires=[w, w + 1])
-        for w in range(1, wires - 1, 2):
-            qml.CZ(wires=[w, w + 1])
-    return qml.probs(wires=[0,1])
-
-
 def cost(circuit, params, wires, layers, rotations, dropouts):
     return 1 - circuit(params, wires, layers, rotations, dropouts)[0]
 
@@ -112,79 +39,6 @@ def cost(circuit, params, wires, layers, rotations, dropouts):
 def cost_iris(circuit, params, data, target, wires, layers, rotations, dropouts):
     prediction = circuit(params, data, wires, layers, rotations, dropouts)
     return cross_entropy(predictions=prediction, targets=target)
-
-
-def train_iris(wires=5, layers=5, starting_layers=5, epochs=5, sim_local=True, use_dropout=False, use_classical_dropout=False, testing=True):
-    dev = get_device(sim_local, wires=wires)
-
-    rotation_choices = [0, 1, 2]
-    rotations = [np.random.choice(rotation_choices) for _ in range(layers*wires)]
-
-    current_layers = layers if use_dropout else starting_layers
-    params_uniform = np.random.uniform(low=-np.pi, high=np.pi, size=(current_layers, wires))
-    params_zero = np.zeros((layers-current_layers, wires))
-    params_combined = np.concatenate((params_uniform, params_zero))
-    masked_params = MaskedParameters(params_combined)
-    # masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
-    
-    # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
-    opt = ExtendedAdamOptimizer(stepsize=0.01)
-
-    circuit = qml.QNode(circuit_iris, dev)
-    x_train, y_train, x_test, y_test = load_iris()
-
-    for epoch in range(epochs):
-        for step, (data, target) in enumerate(zip(x_train, y_train)):
-            if use_dropout:
-                center_params = masked_params
-                left_branch_params = masked_params.copy()
-                right_branch_params = masked_params.copy()
-                # perturb the right params
-                left_branch_params.perturb(1, mode=PerturbationMode.REMOVE)
-                right_branch_params.perturb()
-                branches = [center_params, left_branch_params, right_branch_params]
-            elif use_classical_dropout:
-                masked_params.reset()
-                masked_params.perturb(masked_params.params.size // 10, mode=PerturbationMode.ADD)
-                branches = [masked_params]
-            else:
-                branches = [masked_params]
-
-            best_branch, minimum_cost, gradient = ensemble_step(
-                branches,
-                opt,
-                lambda params, mask=None: cost_iris(
-                    circuit, params, data, target, wires, current_layers, rotations, mask),
-                step_count=2)
-
-            masked_params = best_branch
-            current_cost = minimum_cost
-            # get the real gradients as gradients also contain values from dropped gates
-            real_gradients = masked_params.apply_mask(gradient)
-
-            print("Epoch: {:2d} | Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(epoch, step, current_cost, np.var(real_gradients[0:current_layers])))
-
-        if testing:
-            correct = 0
-            N = len(x_test)
-            costs = []
-            for step, (data, target) in enumerate(zip(x_test, y_test)):
-                test_mask = np.zeros_like(masked_params.params, dtype=bool, requires_grad=False) 
-                output = circuit(masked_params.params, data, wires, current_layers, rotations, test_mask)
-                c = cost_iris(circuit, masked_params.params, data, target, wires, current_layers, rotations, test_mask)
-                costs.append(c)
-                same = np.argmax(target) == np.argmax(output)
-                if same:
-                    correct += 1
-                print("Label: {} Output: {} Correct: {}".format(target, output, same))
-            print("Accuracy = {} / {} = {} \nAvg Cost: {}".format(correct, N, correct/N, np.average(costs)))
-
-        if epoch % 2 == 0 and epoch > 0 and current_layers < layers:
-            current_layers += 1
-            print(f"Increased number of layers from {current_layers-1} to {current_layers}")
-
-    print(masked_params.params)
-    print(masked_params.mask)
 
 
 def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
@@ -209,7 +63,7 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
 
 def train_test_iris(wires=5, layers=5, sim_local=True, percentage=0.05, epsilon=0.01, testing=True):
     dev = get_device(sim_local=sim_local, wires=wires)
-    circuit = qml.QNode(circuit_iris, dev)
+    circuit = qml.QNode(iris_circuit, dev)
     x_train, y_train, x_test, y_test = load_iris()
 
     # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
@@ -365,27 +219,39 @@ def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percenta
     }
 
 
-def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=True, use_dropout=False):
-    dev = get_device(sim_local, wires=wires)
+def train(train_params):
+    wires = train_params["wires"]
+    layers = train_params["layers"]
+    dev = get_device(train_params["sim_local"], wires=wires)
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers*wires)]
 
-    current_layers = layers if use_dropout else starting_layers
+    current_layers = layers if train_params["use_dropout"] else train_params["starting_layers"]
     params_uniform = np.random.uniform(low=-np.pi, high=np.pi, size=(current_layers, wires))
     params_zero = np.zeros((layers-current_layers, wires))
     params_combined = np.concatenate((params_uniform, params_zero))
     masked_params = MaskedParameters(params_combined)
-    # masked_params = MaskedParameters(np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
+
+    if train_params["optimizer"] == "gds":
+        opt = ExtendedGradientDescentOptimizer(train_params["step_size"])
+    elif train_params["optimizer"] == "adam":
+        opt = ExtendedAdamOptimizer(train_params["step_size"])
+
+    if train_params["dataset"] == "simple":
+        circuit = qml.QNode(variational_circuit, dev)
+        x_train, y_train, x_test, y_test = [], [], [], []
+    elif train_params["dataset"] == "iris":
+        circuit = qml.QNode(iris_circuit, dev)
+        x_train, y_train, x_test, y_test = load_iris()
+
+    steps = train_params["steps"] // 2 // 3 if train_params["use_dropout"] else train_params["steps"] // 2
     
-    # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
-    opt = ExtendedAdamOptimizer(stepsize=0.01)
-
-    circuit = qml.QNode(variational_circuit, dev)
-
-    step_count = steps // 2 // 3 if use_dropout else steps // 2
-    for step in range(step_count):
-        if use_dropout:
+    # -----------------------------
+    # ======= TRAINING LOOP =======
+    # -----------------------------
+    for step in range(steps):
+        if train_params["use_dropout"]:
             center_params = masked_params
             left_branch_params = masked_params.copy()
             right_branch_params = masked_params.copy()
@@ -393,15 +259,29 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
             left_branch_params.perturb(1, mode=PerturbationMode.REMOVE)
             right_branch_params.perturb()
             branches = [center_params, left_branch_params, right_branch_params]
+        # elif use_classical_dropout:
+        #     masked_params.reset()
+        #     masked_params.perturb(masked_params.params.size // 10, mode=PerturbationMode.ADD)
+        #     branches = [masked_params]
         else:
             branches = [masked_params]
 
-        best_branch, minimum_cost, gradient = ensemble_step(
+        if train_params["dataset"] == "simple":
+            best_branch, minimum_cost, gradient = ensemble_step(
             branches,
             opt,
             lambda params, mask=None: cost(
                 circuit, params, wires, current_layers, rotations, mask),
             step_count=2)
+        elif train_params["dataset"] == "iris":
+            data = x_train[step % len(x_train)]
+            target =  y_train[step % len(y_train)]
+            best_branch, minimum_cost, gradient = ensemble_step(
+                branches,
+                opt,
+                lambda params, mask=None: cost_iris(
+                    circuit, params, data, target, wires, current_layers, rotations, mask),
+                step_count=2)
 
         masked_params = best_branch
         current_cost = minimum_cost
@@ -410,11 +290,26 @@ def train_circuit(wires=5, layers=5, starting_layers=5, steps=500, sim_local=Tru
 
         print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(real_gradients[0:current_layers])))
 
-        if step % 40 == 0 and step > 0 and current_layers < layers:
-            current_layers += 1
-            print(f"Increased number of layers from {current_layers-1} to {current_layers}")
+    if train_params["testing"]:
+        if train_params["dataset"] == "simple":
+            pass
+        elif train_params["dataset"] == "iris":
+            correct = 0
+            N = len(x_test)
+            costs = []
+            for step, (data, target) in enumerate(zip(x_test, y_test)):
+                test_mask = np.zeros_like(masked_params.params, dtype=bool, requires_grad=False) 
+                output = circuit(masked_params.params, data, wires, current_layers, rotations, test_mask)
+                c = cost_iris(circuit, masked_params.params, data, target, wires, current_layers, rotations, test_mask)
+                costs.append(c)
+                same = np.argmax(target) == np.argmax(output)
+                if same:
+                    correct += 1
+                print("Label: {} Output: {} Correct: {}".format(target, output, same))
+            print("Accuracy = {} / {} = {} \nAvg Cost: {}".format(correct, N, correct/N, np.average(costs)))
 
-    # print(masked_params.params)
+
+    print(masked_params.params)
     print(masked_params.mask)
 
 
@@ -422,12 +317,26 @@ if __name__ == "__main__":
     opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
     # opt = ExtendedAdamOptimizer(stepsize=0.01)
 
-    # train_iris(sim_local=True, use_dropout=False, epochs=3)
-    # train_circuit(sim_local=True, use_dropout=False, steps=200, wires=10)
-    print(train_test(opt, steps=10, wires=5, sim_local=True))
+    # print(train_test(opt, steps=10, wires=5, sim_local=True))
     # train_test_iris(wires=20, layers=10, sim_local=True, percentage=0.01)
     # example values for layers = 15
     # steps | dropout = False | dropout = True
     # 20:     0.99600,          0.91500
     # 50:     0.98900,          0.81700
     # steps are normalised with regard to # branches
+
+    train_params = {
+        "wires": 5,
+        "layers": 5,
+        "starting_layers": 5,
+        "steps": 1200,
+        "dataset": "simple",
+        "testing": True,
+        "optimizer": "gds",
+        "step_size": 0.01,
+        "use_dropout": True,
+        "sim_local": True,
+        "logging": True
+    }
+    check_params(train_params)
+    train(train_params)
