@@ -12,8 +12,6 @@ from circuits import variational_circuit, iris_circuit
 from log_results import log_results
 from optimizers import ExtendedAdamOptimizer, ExtendedGradientDescentOptimizer
 
-#np.random.seed(1337)
-
 
 def get_device(sim_local, wires, analytic=True):
     if sim_local:
@@ -61,76 +59,8 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     return branches[minimum_index], branch_costs[minimum_index], gradients[minimum_index]
 
 
-def train_test_iris(wires=5, layers=5, sim_local=True, percentage=0.05, epsilon=0.01, testing=True, seed=1337):
-    np.random.seed(seed)
-    dev = get_device(sim_local=sim_local, wires=wires)
-    circuit = qml.QNode(iris_circuit, dev)
-    x_train, y_train, x_test, y_test = load_iris()
-
-    opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
-    # opt = ExtendedAdamOptimizer(stepsize=0.01)
-
-    rotation_choices = [0, 1, 2]
-    rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
-
-    cost_fn = lambda params, mask=None: cost_iris(
-                    circuit, params, data, target, wires, layers, rotations, mask)
-
-    amount = int(wires * layers * percentage)
-    masked_params = MaskedParameters(
-        np.random.uniform(low=-np.pi, high=np.pi, size=(layers, wires)))
-    masked_params.perturbation_axis = PerturbationAxis.RANDOM
-    masked_params.perturb(int(layers * wires * 0.5))
-
-    costs = deque(maxlen=5)
-    perturb = False
-    for step, (data, target) in enumerate(zip(x_train, y_train)):
-        if perturb:
-            left_branch = masked_params.copy()
-            left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
-            right_branch = masked_params.copy()
-            right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
-            branches = [masked_params, left_branch, right_branch]
-            perturb = False
-        else:
-            branches = [masked_params]
-        branch, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
-        masked_params = branch
-        costs.append(current_cost)
-        print("Step: {:4d} | Cost: {: .5f}".format(step, current_cost))
-        if len(costs) >= 5 and current_cost > .1:
-            if sum([abs(cost - costs[index + 1]) for index, cost in enumerate(list(costs)[:-1])]) < epsilon:
-                print("======== allowing to perturb =========")
-                if np.sum(masked_params.mask) >= layers * wires * .3:
-                    masked_params.perturb(1, mode=PerturbationMode.REMOVE)
-                elif current_cost < 0.25 and np.sum(masked_params.mask) >= layers * wires * .05:
-                    masked_params.perturb(1, mode=PerturbationMode.REMOVE)
-                costs.clear()
-                perturb = True
-
-    if testing:
-        correct = 0
-        N = len(x_test)
-        costs = []
-        for step, (data, target) in enumerate(zip(x_test, y_test)):
-            output = circuit(masked_params.params, data, wires, layers,
-                             rotations, masked_params.mask)
-            c = cost_iris(circuit, masked_params.params, data, target, wires,
-                          layers, rotations, masked_params.mask)
-            costs.append(c)
-            same = np.argmax(target) == np.argmax(output)
-            if same:
-                correct += 1
-            print("Label: {} Output: {} Correct: {}".format(target, output, same))
-        print("Accuracy = {} / {} = {} \nAvg Cost: {}".format(correct, N, correct / N,
-                                                              np.average(costs)))
-
-    print(masked_params.mask)
-    print(masked_params.params)
-
-
 @log_results
-def train_test(optimiser, wires=5, layers=5, sim_local=True, steps=100, percentage=0.05, epsilon=0.01, cost_span: int=5, log_interval: int=5, use_dropout=True, seed=1337):
+def train_test(optimiser, wires=5, layers=10, sim_local=True, steps=1000, percentage=0.05, epsilon=0.01, cost_span: int=5, log_interval: int=5, use_dropout=True, seed=1337):
     np.random.seed(seed)
 
     logging_costs = {}
@@ -237,9 +167,7 @@ def train(train_params):
         opt = ExtendedGradientDescentOptimizer(train_params["step_size"])
     elif train_params["optimizer"] == "adam":
         opt = ExtendedAdamOptimizer(train_params["step_size"])
-    # TODO
-    # steps = train_params["steps"] // 2 // 3 if train_params["use_dropout"] else train_params["steps"] // 2
-    # do we need this? Maybe if elif for every possiple "dropout"
+
     steps = train_params["steps"]
 
     if train_params["dataset"] == "simple":
@@ -261,7 +189,7 @@ def train(train_params):
     masked_params = MaskedParameters(params_combined)
 
     if train_params["dropout"] == "eileen":
-        masked_params.perturb(int(layers * wires * 0.5))
+        # masked_params.perturb(int(layers * wires * 0.5))
         amount = int(wires * layers * train_params["percentage"])
         perturb = False
         costs = deque(maxlen=5)
@@ -313,6 +241,7 @@ def train(train_params):
         print("Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(step, current_cost, np.var(real_gradients[0:current_layers])))
 
         if train_params["dropout"] == "eileen":
+            costs.append(current_cost)
             if len(costs) >= train_params["cost_span"] and current_cost > .1:
                 if sum([abs(cost - costs[index + 1]) for index, cost in enumerate(list(costs)[:-1])]) < train_params["epsilon"]:
                     print("======== allowing to perturb =========")
@@ -347,23 +276,15 @@ def train(train_params):
 
 
 if __name__ == "__main__":
-    opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
-    # opt = ExtendedAdamOptimizer(stepsize=0.01)
-
-    # print(train_test(opt, steps=120))
-
-    # example values for layers = 15
-    # steps | dropout = False | dropout = True
-    # 20:     0.99600,          0.91500
-    # 50:     0.98900,          0.81700
-    # steps are normalised with regard to # branches
+    # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
+    # train_test(opt, steps=1000, wires=10, layers=5, cost_span=5, log_interval=5, use_dropout=True, seed=1337)
 
     train_params = {
-        "wires": 5,
+        "wires": 10,
         "layers": 5,
-        "starting_layers": 5,
-        "steps": 20,
-        "dataset": "simple",
+        "starting_layers": 10, # only relevant if "dropout" == "growing"
+        "steps": 1000,
+        "dataset": "eileen",
         "testing": True,
         "optimizer": "gd",
         "step_size": 0.01,
