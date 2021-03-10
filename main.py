@@ -284,7 +284,7 @@ if __name__ == "__main__":
         "layers": 5,
         "starting_layers": 10, # only relevant if "dropout" == "growing"
         "steps": 1000,
-        "dataset": "eileen",
+        "dataset": "simple",
         "testing": True,
         "optimizer": "gd",
         "step_size": 0.01,
