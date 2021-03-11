@@ -150,7 +150,16 @@ def train_test(optimiser, wires=5, layers=10, sim_local=True, steps=1000, percen
     }
 
 
+@log_results
 def train(train_params):
+    logging_costs = {}
+    logging_branches = {}
+    logging_branch_selection = {}
+    logging_branch_enforcement = {}
+    logging_gate_count = {}
+    logging_cost_values = []
+    logging_gate_count_values = []
+
     np.random.seed(train_params["seed"])
 
     # set up circuit, training, dataset  
@@ -224,6 +233,11 @@ def train(train_params):
                 right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
                 branches = [masked_params, left_branch, right_branch]
                 perturb = False
+                logging_branches[step] = {
+                    "center": "No perturbation",
+                    "left": {"amount": 1, "mode": PerturbationMode.ADD, "axis": left_branch.perturbation_axis},
+                    "right": {"amount": amount, "mode": PerturbationMode.REMOVE, "axis": right_branch.perturbation_axis}
+                }
             else:
                 branches = [masked_params]
         else:
@@ -234,7 +248,18 @@ def train(train_params):
             target =  y_train[step % len(y_train)]
    
         masked_params, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
-   
+        branch_index = branches.index(masked_params)
+        logging_branch_selection[step] = "center" if branch_index == 0 else "left" if branch_index == 1 else "right"
+        
+        logging_cost_values.append(current_cost.unwrap())
+        logging_gate_count_values.append(np.sum(masked_params.mask))
+        if step % train_params["log_interval"] == 0:
+            # perform logging
+            logging_costs[step] = np.average(logging_cost_values)
+            logging_gate_count[step] = np.average(logging_gate_count_values)
+            logging_cost_values.clear()
+            logging_gate_count_values.clear()
+
         # get the real gradients as gradients also contain values from dropped gates
         real_gradients = masked_params.apply_mask(gradient)
 
@@ -247,8 +272,16 @@ def train(train_params):
                     print("======== allowing to perturb =========")
                     if np.sum(masked_params.mask) >= layers * wires * .3:
                         masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                        logging_branch_enforcement[step + 1] = {
+                                "amount": 1,
+                                "mode": PerturbationMode.REMOVE,
+                                "axis": masked_params.perturbation_axis}
                     elif current_cost < 0.25 and np.sum(masked_params.mask) >= layers * wires * .05:
                         masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                        logging_branch_enforcement[step + 1] = {
+                                "amount": 1,
+                                "mode": PerturbationMode.REMOVE,
+                                "axis": masked_params.perturbation_axis}
                     costs.clear()
                     perturb = True
 
@@ -274,6 +307,17 @@ def train(train_params):
     print(masked_params.params)
     print(masked_params.mask)
 
+    return {
+        "costs": logging_costs,
+        "final_cost": current_cost.unwrap(),
+        "branch_enforcements": logging_branch_enforcement,
+        "dropouts": logging_gate_count,
+        "branches": logging_branches,
+        "branch_selections": logging_branch_selection,
+        "params": masked_params.params.unwrap(),
+        "mask": masked_params.mask.unwrap()
+    }
+
 
 if __name__ == "__main__":
     # opt = ExtendedGradientDescentOptimizer(stepsize=0.01)
@@ -294,7 +338,8 @@ if __name__ == "__main__":
         "percentage": 0.05,
         "epsilon": 0.01,
         "seed": 1337,
-        "cost_span": 5
+        "cost_span": 5,
+        "log_interval": 5
     }
     check_params(train_params)
     train(train_params)
