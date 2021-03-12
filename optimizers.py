@@ -1,12 +1,15 @@
 from pennylane import GradientDescentOptimizer, AdamOptimizer
 
+
 class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
     def step_cost_and_grad(self, objective_fn, *args, grad_fn=None, **kwargs):
         """
         This function copies the functionality of the GradientDescentOptimizer
         one-to-one but changes the return statement to also return the gradient.
         """
-        gradient, forward = self.compute_grad(objective_fn, args, kwargs, grad_fn=grad_fn)
+        gradient, forward = self.compute_grad(
+            objective_fn, args, kwargs, grad_fn=grad_fn
+        )
         new_args = self.apply_grad(gradient, args)
 
         if forward is None:
