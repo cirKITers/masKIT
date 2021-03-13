@@ -75,7 +75,7 @@ class MaskedParameters(object):
     ):
         assert (
             amount is None or amount >= 0
-        ), "Negative values are not supported, plese use PerturbationMode.REMOVE"
+        ), "Negative values are not supported, please use PerturbationMode.REMOVE"
         if amount == 0:
             return
         if self.perturbation_axis == PerturbationAxis.WIRES:
