@@ -91,7 +91,7 @@ class MaskedParameters(object):
 
     def _perturb_layers(
         self,
-        amount: int = None,
+        amount: Optional[int] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
         random: bool = True,
     ):
