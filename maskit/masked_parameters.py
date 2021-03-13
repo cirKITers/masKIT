@@ -69,7 +69,7 @@ class MaskedParameters(object):
 
     def perturb(
         self,
-        amount: int = None,
+        amount: Optional[int] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
         random: bool = True,
     ):
