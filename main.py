@@ -4,12 +4,16 @@ import pennylane as qml
 from pennylane import numpy as np
 from collections import deque
 
-from masked_parameters import MaskedParameters, PerturbationMode, PerturbationAxis
-from iris import load_iris
-from utils import cross_entropy, check_params
-from circuits import variational_circuit, iris_circuit
-from log_results import log_results
-from optimizers import ExtendedAdamOptimizer, ExtendedGradientDescentOptimizer
+from maskit.masked_parameters import (
+    MaskedParameters,
+    PerturbationMode,
+    PerturbationAxis,
+)
+from maskit.iris import load_iris
+from maskit.utils import cross_entropy, check_params
+from maskit.circuits import variational_circuit, iris_circuit
+from maskit.log_results import log_results
+from maskit.optimizers import ExtendedAdamOptimizer, ExtendedGradientDescentOptimizer
 
 
 def get_device(sim_local, wires, analytic=True):
