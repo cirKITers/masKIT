@@ -85,7 +85,7 @@ class MaskedParameters(object):
         elif self.perturbation_axis == PerturbationAxis.RANDOM:
             self._perturb_random(amount, mode, random)
         else:
-            raise ValueError(
+            raise NotImplementedError(
                 f"The perturbation {self.perturbation_axis} is not supported"
             )
 
