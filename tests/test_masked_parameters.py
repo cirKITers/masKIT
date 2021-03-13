@@ -24,6 +24,12 @@ def test_init():
     assert mp
 
 
+def test_wrong_mode():
+    mp = _create_masked_parameter(perturbation_axis=PerturbationAxis.RANDOM)
+    with pytest.raises(NotImplementedError):
+        mp.perturb(mode=10)
+
+
 @pytest.mark.parametrize("perturbation", list(PerturbationAxis))
 def test_perturbation(perturbation):
     mp = _create_masked_parameter(perturbation_axis=perturbation)
