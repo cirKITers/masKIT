@@ -1,6 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
+from typing import Optional
 
 rand.seed(1337)
 
