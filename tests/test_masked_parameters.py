@@ -3,7 +3,11 @@ import pytest
 
 import pennylane.numpy as pnp
 
-from masked_parameters import MaskedParameters, PerturbationAxis, PerturbationMode
+from maskit.masked_parameters import (
+    MaskedParameters,
+    PerturbationAxis,
+    PerturbationMode,
+)
 
 # TODO: unit test für None
 # TODO: unit test für Entfernung der Maske, wenn keine angesetzt ist
