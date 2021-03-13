@@ -1,0 +1,22 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "maskit"
+author = "Eileen Kuehn, Christof Wendenius"
+author-email = "eileen.kuehn@kit.edu"
+home-page = "https://github.com/cirKITers/masKIT"
+classifiers = [ "License :: OSI Approved :: MIT License",]
+description-file = "README.md"
+requires = [
+    "pennylane ~= 0.14.1"
+]
+
+[tool.flit.metadata.requires-extra]
+test = [
+    "pytest >=4.3.0",
+    "flake8",
+    "flake8-bugbear",
+]
+dev = ["pre-commit"]
