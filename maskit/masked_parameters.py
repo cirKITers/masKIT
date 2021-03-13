@@ -104,8 +104,10 @@ class MaskedParameters(object):
             indices = [
                 index for index, value in enumerate(self._mask[:, 0]) if not value
             ]
-        else:
+        elif mode == PerturbationMode.INVERT:
             indices = np.arange(wire_count)
+        else:
+            raise NotImplementedError(f"The perturbation mode {mode} is not supported")
         if len(indices) == 0:
             return
         if random:
@@ -126,8 +128,10 @@ class MaskedParameters(object):
             indices = [index for index, value in enumerate(self._mask[0]) if value]
         elif mode == PerturbationMode.ADD:
             indices = [index for index, value in enumerate(self._mask[0]) if not value]
-        else:
+        elif mode == PerturbationMode.INVERT:
             indices = np.arange(layer_count)
+        else:
+            raise NotImplementedError(f"The perturbation mode {mode} is not supported")
         if len(indices) == 0:
             return
         if random:
@@ -180,7 +184,7 @@ class MaskedParameters(object):
                 )
             else:
                 random_indices = tuple(zip(*indices[:count]))
-        else:
+        elif mode == PerturbationMode.INVERT:
             indices = np.arange(self._params.size)
             if len(indices) == 0:
                 return
@@ -191,6 +195,8 @@ class MaskedParameters(object):
             else:
                 selection = indices[:count]
             random_indices = np.unravel_index(selection, self._mask.shape)
+        else:
+            raise NotImplementedError(f"The perturbation mode {mode} is not supported")
         self._mask[random_indices] = ~self._mask[random_indices]
 
     def apply_mask(self, params):
