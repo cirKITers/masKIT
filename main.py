@@ -52,6 +52,15 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     )
 
 
+def init_parameters(layers, current_layers, wires):
+    params_uniform = np.random.uniform(
+        low=-np.pi, high=np.pi, size=(current_layers, wires)
+    )
+    params_zero = np.zeros((layers - current_layers, wires))
+    params_combined = np.concatenate((params_uniform, params_zero))
+    return MaskedParameters(params_combined)
+
+
 @log_results
 def train(train_params):
     logging_costs = {}
@@ -96,12 +105,7 @@ def train(train_params):
             )
 
     # set up parameters
-    params_uniform = np.random.uniform(
-        low=-np.pi, high=np.pi, size=(current_layers, wires)
-    )
-    params_zero = np.zeros((layers - current_layers, wires))
-    params_combined = np.concatenate((params_uniform, params_zero))
-    masked_params = MaskedParameters(params_combined)
+    masked_params = init_parameters(layers, current_layers, wires)
 
     if train_params["dropout"] == "eileen":
         # masked_params.perturb(int(layers * wires * 0.5))
