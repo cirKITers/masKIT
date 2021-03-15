@@ -3,19 +3,12 @@ import time
 import json
 import pathlib
 from functools import wraps
-# TODO: Es sollte möglich sein, dass aus der Funktion heraus alle x Schritte Daten geloggt werden
-# TODO: Random Seed sollte geloggt werden
 
 # JSON compatibility type
-T = TypeVar('T')
+T = TypeVar("T")
 _JSON_Element = Union[str, int, float, bool, None, Dict[str, T], List[T]]
 JSON = _JSON_Element[_JSON_Element[_JSON_Element[Any]]]
-CJ = TypeVar('CJ', bound=Callable[..., JSON])
-
-# Analysen, die wir machen wollen (immer mit Ensembles/ohne Ensembles)
-# * Erzeugung von unterschiedlichen circuits via setzen des Random Seeds
-# * Parameterstudie unterschiedliche # wires, unterschiedliche # layers
-# * Wenn möglich Parameterstudie dazu, wie lange Kosten beobachtet werden sollen, bevor das Ensemble einsetzt
+CJ = TypeVar("CJ", bound=Callable[..., JSON])
 
 
 log_path = pathlib.Path(__file__).parent / "logs" / f"{time.time()}.json"
@@ -41,7 +34,7 @@ def log_results(executor: CJ) -> CJ:
                     "call": [
                         f"{executor.__module__}.{executor.__qualname__}",
                         args,
-                        kwargs
+                        kwargs,
                     ],
                     "result": result,
                     "walltime": end_time[0] - start_time[0],
@@ -51,4 +44,5 @@ def log_results(executor: CJ) -> CJ:
                 default=serialize,
             )
         return result
+
     return wrapper

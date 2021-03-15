@@ -1,0 +1,22 @@
+dist: xenial
+language: python
+python:
+  - "3.7"
+  - "3.8"
+os:
+  - linux
+before_script:
+  - python -m pip install pip --upgrade
+  - python -m pip list
+  - export PYTHONHASHSEED=${PYTHONHASHSEED:-${RANDOM}}
+  - echo "export PYTHONHASHSEED=${PYTHONHASHSEED}"
+  - python -m pip install .[test]
+  - python -m pip install codecov
+  - export COVERAGE_PROCESS_START=$(pwd)/.coveragerc
+  - export PYTEST_ADDOPTS=-v
+script:
+  - python -m flake8
+  - python -m black
+  - python -m coverage run -m pytest
+after_success:
+  - coverage report && codecov

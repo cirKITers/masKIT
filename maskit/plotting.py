@@ -1,6 +1,7 @@
 import json
 import matplotlib.pyplot as plt
 
+
 def load_data(file):
     with open(file) as json_file:
         data = json.load(json_file)
@@ -16,7 +17,7 @@ def plot_cost(data):
         for step, value in costs.items():
             steps.append(int(step))
             values.append(value)
-        steps.append(steps[-1]+5)
+        steps.append(steps[-1] + 5)
         values.append(final_costs)
 
         if d["call"][2]["use_dropout"]:
@@ -42,7 +43,7 @@ def plot_cost_stupid(data):
             values.append(costs[step])
 
         plt.plot(steps, values)
-    
+
     plt.show()
 
 
@@ -70,13 +71,19 @@ def plot_cost_normalized(data):
         label = "With dropout" if d["call"][2]["use_dropout"] else "Without dropout"
         plt.plot(steps, values, label=label)
 
-    plt.rcParams.update({'font.size': 15})
+    plt.rcParams.update({"font.size": 15})
     plt.legend()
-    plt.title(label="Wires: {}, Layers: {}".format(d["call"][2]["wires"], d["call"][2]["layers"]), fontdict={"fontsize": 18})
-    plt.xlabel('Training steps', fontsize=16)
-    plt.ylabel('Cost', fontsize=16)
+    plt.title(
+        label="Wires: {}, Layers: {}".format(
+            d["call"][2]["wires"], d["call"][2]["layers"]
+        ),
+        fontdict={"fontsize": 18},
+    )
+    plt.xlabel("Training steps", fontsize=16)
+    plt.ylabel("Cost", fontsize=16)
     plt.ylim((0, 1.1))
     plt.show()
+
 
 def plot_dropouts(data):
     real_data_length = 0
@@ -104,19 +111,23 @@ def plot_dropouts(data):
 
         plt.plot(steps, values, color="green")
 
-    plt.rcParams.update({'font.size': 15})
-    #plt.legend(loc="upper right")
-    plt.title(label="Wires: {}, Layers: {}, Number of Gates: {} ".format(d["call"][2]["wires"], 
-                                                                         d["call"][2]["layers"],
-                                                                         d["call"][2]["wires"]*d["call"][2]["layers"]), fontdict={"fontsize": 18})
-    plt.xlabel('Training steps', fontsize=16)
-    plt.ylabel('Number of dropped gates', fontsize=16)
+    plt.rcParams.update({"font.size": 15})
+    # plt.legend(loc="upper right")
+    plt.title(
+        label="Wires: {}, Layers: {}, Number of Gates: {} ".format(
+            d["call"][2]["wires"],
+            d["call"][2]["layers"],
+            d["call"][2]["wires"] * d["call"][2]["layers"],
+        ),
+        fontdict={"fontsize": 18},
+    )
+    plt.xlabel("Training steps", fontsize=16)
+    plt.ylabel("Number of dropped gates", fontsize=16)
     plt.show()
 
 
 if __name__ == "__main__":
-    files = ["logs/W5_L10_DOtrue.json",
-             "logs/W5_L10_DOfalse.json"]
+    files = ["logs/W5_L10_DOtrue.json", "logs/W5_L10_DOfalse.json"]
 
     data = []
 
@@ -127,5 +138,5 @@ if __name__ == "__main__":
     # plot_cost_stupid(data)
 
     plot_cost_normalized(data)
-    
+
     plot_dropouts(data)
