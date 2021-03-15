@@ -67,7 +67,9 @@ def train(train_params):
     # set up circuit, training, dataset
     wires = train_params["wires"]
     layers = train_params["layers"]
+    steps = train_params["steps"]
     dev = get_device(train_params["sim_local"], wires=wires)
+    opt = train_params["optimizer"].value(train_params["step_size"])
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
@@ -77,10 +79,6 @@ def train(train_params):
         if train_params["dropout"] is not ["growing"]
         else train_params["starting_layers"]
     )
-
-    opt = train_params["optimizer"].value(train_params["step_size"])
-
-    steps = train_params["steps"]
 
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
