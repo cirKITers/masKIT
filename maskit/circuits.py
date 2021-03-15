@@ -9,7 +9,7 @@ def variational_circuit(params, wires, layers, rotations, dropouts):
     for layer in range(layers):
         for wire in range(wires):
             r += 1
-            if dropouts[layer][wire] is True:
+            if dropouts[layer][wire]:
                 continue
             if rotations[r] == 0:
                 rotation = qml.RX
@@ -35,7 +35,7 @@ def iris_circuit(params, data, wires, layers, rotations, dropouts):
     for layer in range(layers):
         for wire in range(wires):
             r += 1
-            if dropouts[layer][wire] is True:
+            if dropouts[layer][wire]:
                 continue
             if rotations[r] == 0:
                 rotation = qml.RX
