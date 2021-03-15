@@ -52,6 +52,70 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     )
 
 
+def ensemble_branches(dropout, masked_params, amount=1, perturb=True):
+    description = {}
+    branches = None
+    if dropout == "random":
+        left_branch = masked_params.copy()
+        right_branch = masked_params.copy()
+        # randomly perturb branches
+        left_branch.perturb(1, mode=PerturbationMode.REMOVE)
+        right_branch.perturb()
+        branches = [masked_params, left_branch, right_branch]
+        description = {
+            "center": "No perturbation",
+            "left": {
+                "amount": 1,
+                "mode": PerturbationMode.REMOVE,
+                "axis": left_branch.perturbation_axis,
+            },
+            "right": {
+                "amount": None,
+                "mode": PerturbationMode.INVERT,
+                "axis": right_branch.perturbation_axis,
+            },
+        }
+    elif dropout == "classical":
+        masked_params.reset()
+        masked_params.perturb(
+            masked_params.params.size // 10, mode=PerturbationMode.ADD
+        )
+        branches = [masked_params]
+        description = {
+            "center": {
+                "amount": masked_params.params.size // 10,
+                "mode": PerturbationMode.ADD,
+                "axis": masked_params.perturbation_axis,
+                # TODO: added on empty mask...
+            },
+        }
+    elif dropout == "eileen" and perturb:
+        left_branch = masked_params.copy()
+        right_branch = masked_params.copy()
+        left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
+        right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+        branches = [masked_params, left_branch, right_branch]
+        description = {
+            "center": "No perturbation",
+            "left": {
+                "amount": 1,
+                "mode": PerturbationMode.ADD,
+                "axis": left_branch.perturbation_axis,
+            },
+            "right": {
+                "amount": amount,
+                "mode": PerturbationMode.REMOVE,
+                "axis": right_branch.perturbation_axis,
+            },
+        }
+    else:
+        branches = [masked_params]
+        description = {
+            "center": "No perturbation",
+        }
+    return branches, description
+
+
 def init_parameters(layers, current_layers, wires):
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
@@ -117,51 +181,16 @@ def train(train_params):
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dropout"] == "random":
-            center_params = masked_params
-            left_branch_params = masked_params.copy()
-            right_branch_params = masked_params.copy()
-            # perturb the right params
-            left_branch_params.perturb(1, mode=PerturbationMode.REMOVE)
-            right_branch_params.perturb()
-            branches = [center_params, left_branch_params, right_branch_params]
-        elif train_params["dropout"] == "classical":
-            masked_params.reset()
-            masked_params.perturb(
-                masked_params.params.size // 10, mode=PerturbationMode.ADD
-            )
-            branches = [masked_params]
-        elif train_params["dropout"] == "growing":
+        if train_params["dropout"] == "growing":
             # TODO useful condition
             # maybe combine with other dropouts
             if step > 0 and step % 1000 == 0:
                 current_layers += 1
-            branches = [masked_params]
-        elif train_params["dropout"] == "eileen":
-            if perturb:
-                left_branch = masked_params.copy()
-                left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
-                right_branch = masked_params.copy()
-                right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
-                branches = [masked_params, left_branch, right_branch]
-                perturb = False
-                logging_branches[step] = {
-                    "center": "No perturbation",
-                    "left": {
-                        "amount": 1,
-                        "mode": PerturbationMode.ADD,
-                        "axis": left_branch.perturbation_axis,
-                    },
-                    "right": {
-                        "amount": amount,
-                        "mode": PerturbationMode.REMOVE,
-                        "axis": right_branch.perturbation_axis,
-                    },
-                }
-            else:
-                branches = [masked_params]
-        else:
-            branches = [masked_params]
+        branches, description = ensemble_branches(
+            train_params["dropout"], masked_params, amount, perturb=perturb
+        )
+        perturb = False
+        logging_branches[step] = description
 
         if train_params["dataset"] == "iris":
             data = x_train[step % len(x_train)]
