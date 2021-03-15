@@ -358,46 +358,6 @@ def train(train_params):
                     costs.clear()
                     perturb = True
 
-    if train_params["testing"]:
-        if train_params["dataset"] == "simple":
-            pass
-        elif train_params["dataset"] == "iris":
-            correct = 0
-            N = len(x_test)
-            costs = []
-            for _step, (data, target) in enumerate(zip(x_test, y_test)):
-                test_mask = np.zeros_like(
-                    masked_params.params, dtype=bool, requires_grad=False
-                )
-                output = circuit(
-                    masked_params.params,
-                    data,
-                    wires,
-                    current_layers,
-                    rotations,
-                    test_mask,
-                )
-                c = cost_iris(
-                    circuit,
-                    masked_params.params,
-                    data,
-                    target,
-                    wires,
-                    current_layers,
-                    rotations,
-                    test_mask,
-                )
-                costs.append(c)
-                same = np.argmax(target) == np.argmax(output)
-                if same:
-                    correct += 1
-                print("Label: {} Output: {} Correct: {}".format(target, output, same))
-            print(
-                "Accuracy = {} / {} = {} \nAvg Cost: {}".format(
-                    correct, N, correct / N, np.average(costs)
-                )
-            )
-
     print(masked_params.params)
     print(masked_params.mask)
 
@@ -408,9 +368,54 @@ def train(train_params):
         "dropouts": logging_gate_count,
         "branches": logging_branches,
         "branch_selections": logging_branch_selection,
+        "final_layers": current_layers,
         "params": masked_params.params.unwrap(),
         "mask": masked_params.mask.unwrap(),
+        "__rotations": rotations,
     }
+
+
+def test(train_params, params, mask, layers, rotations):
+    if train_params["dataset"] == "simple":
+        pass
+    elif train_params["dataset"] == "iris":
+        wires = train_params["wires"]
+        dev = get_device(train_params["sim_local"], wires=wires)
+        circuit = qml.QNode(iris_circuit, dev)
+        _, _, x_test, y_test = load_iris()
+        correct = 0
+        N = len(x_test)
+        costs = []
+        for _step, (data, target) in enumerate(zip(x_test, y_test)):
+            test_mask = np.zeros_like(params, dtype=bool, requires_grad=False)
+            output = circuit(
+                params,
+                data,
+                wires,
+                layers,
+                rotations,
+                test_mask,
+            )
+            c = cost_iris(
+                circuit,
+                params,
+                data,
+                target,
+                wires,
+                layers,
+                rotations,
+                test_mask,
+            )
+            costs.append(c)
+            same = np.argmax(target) == np.argmax(output)
+            if same:
+                correct += 1
+            print("Label: {} Output: {} Correct: {}".format(target, output, same))
+        print(
+            "Accuracy = {} / {} = {} \nAvg Cost: {}".format(
+                correct, N, correct / N, np.average(costs)
+            )
+        )
 
 
 if __name__ == "__main__":
@@ -433,4 +438,12 @@ if __name__ == "__main__":
         "log_interval": 5,
     }
     check_params(train_params)
-    train(train_params)
+    result = train(train_params)
+    if train_params["testing"]:
+        test(
+            train_params,
+            result["params"],
+            result["mask"],
+            result["final_layers"],
+            result["__rotations"],
+        )
