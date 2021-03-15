@@ -32,16 +32,12 @@ def cost_iris(circuit, params, data, target, wires, layers, rotations, dropouts)
 
 
 def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
-    """
-    Targeting 26-32 Qubits on Floq is possible, so for the ensemble we might just
-    roll out the ensembles in the available range of Floq.
-    """
     branch_costs = []
     gradients = []
     for branch in branches:
         params = branch.params
         for _ in range(step_count):
-            params, cost, gradient = optimizer.step_cost_and_grad(
+            params, _cost, gradient = optimizer.step_cost_and_grad(
                 *args, params, mask=branch.mask
             )
         branch.params = params
