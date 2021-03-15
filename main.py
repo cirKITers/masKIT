@@ -12,7 +12,7 @@ from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
-from maskit.optimizers import ExtendedAdamOptimizer, ExtendedGradientDescentOptimizer
+from maskit.optimizers import ExtendedOptimizers
 
 
 def get_device(sim_local, wires, analytic=True):
@@ -78,10 +78,7 @@ def train(train_params):
         else train_params["starting_layers"]
     )
 
-    if train_params["optimizer"] == "gd":
-        opt = ExtendedGradientDescentOptimizer(train_params["step_size"])
-    elif train_params["optimizer"] == "adam":
-        opt = ExtendedAdamOptimizer(train_params["step_size"])
+    opt = train_params["optimizer"].value(train_params["step_size"])
 
     steps = train_params["steps"]
 
@@ -293,7 +290,7 @@ if __name__ == "__main__":
         "steps": 1000,
         "dataset": "simple",
         "testing": True,
-        "optimizer": "gd",
+        "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
         "dropout": "eileen",
         "sim_local": True,
