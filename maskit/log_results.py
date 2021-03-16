@@ -36,7 +36,13 @@ def log_results(executor: CJ) -> CJ:
                         args,
                         kwargs,
                     ],
-                    "result": result,
+                    "result": result
+                    if type(result) is not dict
+                    else {
+                        key: value
+                        for key, value in result.items()
+                        if type(key) is str and not key.startswith("__")
+                    },
                     "walltime": end_time[0] - start_time[0],
                     "cputime": end_time[1] - start_time[1],
                 },

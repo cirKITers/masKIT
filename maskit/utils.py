@@ -1,9 +1,11 @@
 from pennylane import numpy as np
 
+from maskit.optimizers import ExtendedOptimizers
+
 
 def check_params(train_params):
     assert train_params["dataset"] in ["simple", "iris"]
-    assert train_params["optimizer"] in ["gd", "adam"]
+    assert isinstance(train_params["optimizer"], ExtendedOptimizers)
     assert train_params["dropout"] in [None, "random", "classical", "growing", "eileen"]
 
 

@@ -1,4 +1,5 @@
 from pennylane import GradientDescentOptimizer, AdamOptimizer
+from enum import Enum
 
 
 class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
@@ -26,3 +27,8 @@ class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
 
 class ExtendedAdamOptimizer(ExtendedGradientDescentOptimizer, AdamOptimizer):
     pass
+
+
+class ExtendedOptimizers(Enum):
+    GD = ExtendedGradientDescentOptimizer
+    ADAM = ExtendedAdamOptimizer
