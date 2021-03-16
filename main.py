@@ -215,8 +215,7 @@ def train(
 
         if __debug__:
             print(
-                "Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(
-                    step, current_cost, np.var(real_gradients[0:current_layers])
+                f"Step: {step:4d} | Cost: {current_cost: .5f} | Gradient Variance: {np.var(real_gradients[0:current_layers]: .9f}"
                 )
             )
 
@@ -315,11 +314,10 @@ def test(
             if same:
                 correct += 1
             if __debug__:
-                print("Label: {} Output: {} Correct: {}".format(target, output, same))
+                print(f"Label: {target} Output: {output} Correct: {same}")
         if __debug__:
             print(
-                "Accuracy = {} / {} = {} \nAvg Cost: {}".format(
-                    correct, N, correct / N, np.average(costs)
+                f"Accuracy = {correct} / {N} = {correct/N} \nAvg Cost: {np.average(costs)}"
                 )
             )
 
