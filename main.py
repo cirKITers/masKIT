@@ -124,7 +124,6 @@ def init_parameters(layers: int, current_layers: int, wires: int):
     return MaskedParameters(params_combined)
 
 
-@log_results
 def train(
     train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
 ):
@@ -345,6 +344,8 @@ if __name__ == "__main__":
         "log_interval": 5,
     }
     check_params(train_params)
+    if train_params.get("logging", True):
+        train = log_results(train)
     train_data, train_target, test_data, test_target = (
         load_iris() if train_params["dataset"] == "iris" else [None, None, None, None]
     )
