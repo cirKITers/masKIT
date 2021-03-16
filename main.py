@@ -150,7 +150,7 @@ def train(
 
     current_layers = (
         layers
-        if train_params["dropout"] is not ["growing"]
+        if train_params["dropout"] != "growing"
         else train_params["starting_layers"]
     )
 
