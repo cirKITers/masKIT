@@ -124,7 +124,6 @@ def init_parameters(layers: int, current_layers: int, wires: int):
     return MaskedParameters(params_combined)
 
 
-@log_results
 def train(
     train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
 ):
@@ -214,11 +213,11 @@ def train(
         # get the real gradients as gradients also contain values from dropped gates
         real_gradients = masked_params.apply_mask(gradient)
 
-        print(
-            "Step: {:4d} | Cost: {: .5f} | Gradient Variance: {: .9f}".format(
-                step, current_cost, np.var(real_gradients[0:current_layers])
+        if __debug__:
+            print(
+                f"Step: {step:4d} | Cost: {current_cost:.5f} |",
+                f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
             )
-        )
 
         if train_params["dropout"] == "eileen":
             costs.append(current_cost)
@@ -232,7 +231,8 @@ def train(
                     )
                     < train_params["epsilon"]
                 ):
-                    print("======== allowing to perturb =========")
+                    if __debug__:
+                        print("======== allowing to perturb =========")
                     if np.sum(masked_params.mask) >= layers * wires * 0.3:
                         masked_params.perturb(1, mode=PerturbationMode.REMOVE)
                         logging_branch_enforcement[step + 1] = {
@@ -253,8 +253,9 @@ def train(
                     costs.clear()
                     perturb = True
 
-    print(masked_params.params)
-    print(masked_params.mask)
+    if __debug__:
+        print(masked_params.params)
+        print(masked_params.mask)
 
     return {
         "costs": logging_costs,
@@ -312,12 +313,13 @@ def test(
             same = np.argmax(target) == np.argmax(output)
             if same:
                 correct += 1
-            print("Label: {} Output: {} Correct: {}".format(target, output, same))
-        print(
-            "Accuracy = {} / {} = {} \nAvg Cost: {}".format(
-                correct, N, correct / N, np.average(costs)
+            if __debug__:
+                print(f"Label: {target} Output: {output} Correct: {same}")
+        if __debug__:
+            print(
+                f"Accuracy = {correct} / {N} = {correct/N} \n",
+                f"Avg Cost: {np.average(costs)}",
             )
-        )
 
 
 if __name__ == "__main__":
@@ -340,6 +342,8 @@ if __name__ == "__main__":
         "log_interval": 5,
     }
     check_params(train_params)
+    if train_params.get("logging", True):
+        train = log_results(train)
     train_data, train_target, test_data, test_target = (
         load_iris() if train_params["dataset"] == "iris" else [None, None, None, None]
     )
