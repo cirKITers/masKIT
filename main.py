@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import pennylane as qml
 from pennylane import numpy as np
@@ -126,7 +126,9 @@ def init_parameters(layers, current_layers, wires):
 
 
 @log_results
-def train(train_params):
+def train(
+    train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
+):
     logging_costs = {}
     logging_branches = {}
     logging_branch_selection = {}
@@ -161,7 +163,6 @@ def train(train_params):
 
     elif train_params["dataset"] == "iris":
         circuit = qml.QNode(iris_circuit, dev)
-        x_train, y_train, x_test, y_test = load_iris()
 
         def cost_fn(params, mask=None):
             return cost_iris(
@@ -193,8 +194,8 @@ def train(train_params):
         logging_branches[step] = description
 
         if train_params["dataset"] == "iris":
-            data = x_train[step % len(x_train)]
-            target = y_train[step % len(y_train)]
+            data = train_data[step % len(train_data)]
+            target = train_target[step % len(train_target)]
 
         masked_params, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
         branch_index = branches.index(masked_params)
@@ -270,18 +271,25 @@ def train(train_params):
     }
 
 
-def test(train_params, params, mask, layers, rotations):
+def test(
+    train_params,
+    params,
+    mask,
+    layers,
+    rotations,
+    test_data: Optional[List] = None,
+    test_target: Optional[List] = None,
+):
     if train_params["dataset"] == "simple":
         pass
     elif train_params["dataset"] == "iris":
         wires = train_params["wires"]
         dev = get_device(train_params["sim_local"], wires=wires)
         circuit = qml.QNode(iris_circuit, dev)
-        _, _, x_test, y_test = load_iris()
         correct = 0
-        N = len(x_test)
+        N = len(test_data)
         costs = []
-        for _step, (data, target) in enumerate(zip(x_test, y_test)):
+        for _step, (data, target) in enumerate(zip(test_data, test_target)):
             test_mask = np.zeros_like(params, dtype=bool, requires_grad=False)
             output = circuit(
                 params,
@@ -333,7 +341,10 @@ if __name__ == "__main__":
         "log_interval": 5,
     }
     check_params(train_params)
-    result = train(train_params)
+    train_data, train_target, test_data, test_target = (
+        load_iris() if train_params["dataset"] == "iris" else [None, None, None, None]
+    )
+    result = train(train_params, train_data=train_data, train_target=train_target)
     if train_params["testing"]:
         test(
             train_params,
@@ -341,4 +352,6 @@ if __name__ == "__main__":
             result["mask"],
             result["final_layers"],
             result["__rotations"],
+            test_data=test_data,
+            test_target=test_target,
         )
