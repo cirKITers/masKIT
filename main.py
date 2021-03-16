@@ -15,18 +15,20 @@ from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
 
 
-def get_device(sim_local, wires, analytic=True):
+def get_device(sim_local: bool, wires: int, analytic: bool = True):
     assert sim_local, "Currently only local simulation is supported"
     if sim_local:
         dev = qml.device("default.qubit", wires=wires, analytic=analytic)
     return dev
 
 
-def cost(circuit, params, wires, layers, rotations, dropouts):
+def cost(circuit, params, wires: int, layers: int, rotations: List, dropouts):
     return 1 - circuit(params, wires, layers, rotations, dropouts)[0]
 
 
-def cost_iris(circuit, params, data, target, wires, layers, rotations, dropouts):
+def cost_iris(
+    circuit, params, data, target, wires: int, layers: int, rotations: List, dropouts
+):
     prediction = circuit(params, data, wires, layers, rotations, dropouts)
     return cross_entropy(predictions=prediction, targets=target)
 
@@ -43,8 +45,7 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
         branch.params = params
         branch_costs.append(args[0](params, mask=branch.mask))
         gradients.append(gradient)
-    minimum_cost = min(branch_costs)
-    minimum_index = branch_costs.index(minimum_cost)
+    minimum_index = branch_costs.index(min(branch_costs))
     return (
         branches[minimum_index],
         branch_costs[minimum_index],
@@ -52,9 +53,7 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     )
 
 
-def ensemble_branches(dropout, masked_params, amount=1, perturb=True):
-    description = {}
-    branches = None
+def ensemble_branches(dropout, masked_params, amount: int = 1, perturb: bool = True):
     if dropout == "random":
         left_branch = masked_params.copy()
         right_branch = masked_params.copy()
@@ -116,7 +115,7 @@ def ensemble_branches(dropout, masked_params, amount=1, perturb=True):
     return branches, description
 
 
-def init_parameters(layers, current_layers, wires):
+def init_parameters(layers: int, current_layers: int, wires: int):
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
     )
@@ -275,8 +274,8 @@ def test(
     train_params,
     params,
     mask,
-    layers,
-    rotations,
+    layers: int,
+    rotations: List,
     test_data: Optional[List] = None,
     test_target: Optional[List] = None,
 ):
