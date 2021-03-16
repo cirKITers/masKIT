@@ -215,8 +215,8 @@ def train(
 
         if __debug__:
             print(
-                f"Step: {step:4d} | Cost: {current_cost: .5f} | Gradient Variance: {np.var(real_gradients[0:current_layers]: .9f}"
-                )
+                f"Step: {step:4d} | Cost: {current_cost:.5f} |",
+                f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
             )
 
         if train_params["dropout"] == "eileen":
@@ -317,8 +317,8 @@ def test(
                 print(f"Label: {target} Output: {output} Correct: {same}")
         if __debug__:
             print(
-                f"Accuracy = {correct} / {N} = {correct/N} \nAvg Cost: {np.average(costs)}"
-                )
+                f"Accuracy = {correct} / {N} = {correct/N} \n",
+                f"Avg Cost: {np.average(costs)}",
             )
 
 
