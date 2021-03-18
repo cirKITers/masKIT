@@ -97,12 +97,15 @@ class TestMaskedCircuits:
             mp.apply_mask(pnp.ones((size, size - 1)))
         mp.wire_mask[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
+        assert pnp.sum(~mp.mask) == size
         assert pnp.sum(result) == size
         mp.layer_mask[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
+        assert pnp.sum(~mp.mask) == 1
         assert pnp.sum(result) == 1
         mp.parameter_mask[(size - 1, size - 1)] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
+        assert pnp.sum(~mp.mask) == 0
         assert pnp.sum(result) == 0
 
     def _create_circuit(self, size):

@@ -301,6 +301,13 @@ class MaskedCircuit(object):
         self._wires = MaskedWire(layers=layers)
 
     @property
+    def mask(self):
+        mask = self.parameter_mask.copy()
+        mask[self.layer_mask] = True
+        mask[:, self.wire_mask] = True
+        return mask
+
+    @property
     def layer_mask(self):
         return self._layers.mask
 
@@ -358,10 +365,7 @@ class MaskedCircuit(object):
         :type params: [type]
         """
         assert params.shape == self.parameter_mask.shape, "The given shape must match"
-        mask = self.parameter_mask.copy()
-        mask[self.layer_mask] = True
-        mask[:, self.wire_mask] = True
-        return params[~mask]
+        return params[~self.mask]
 
 
 if __name__ == "__main__":
