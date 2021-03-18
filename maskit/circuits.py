@@ -2,14 +2,16 @@ import pennylane as qml
 from pennylane import numpy as np
 
 
-def basic_variational_circuit(params, wires, layers, rotations, dropouts):
-    for wire in range(wires):
+def basic_variational_circuit(params, rotations, masked_circuit):
+    wires = len(masked_circuit.wire_mask)
+    mask = masked_circuit.mask
+    for wire, _is_masked in enumerate(masked_circuit.wire_mask):
         qml.RY(np.pi / 4, wires=wire)
     r = -1
-    for layer in range(layers):
-        for wire in range(wires):
+    for layer, _is_layer_masked in enumerate(masked_circuit.layer_mask):
+        for wire, _is_wire_masked in enumerate(masked_circuit.wire_mask):
             r += 1
-            if dropouts[layer][wire]:
+            if mask[layer][wire]:
                 continue
             if rotations[r] == 0:
                 rotation = qml.RX
@@ -25,24 +27,18 @@ def basic_variational_circuit(params, wires, layers, rotations, dropouts):
             qml.CZ(wires=[wire, wire + 1])
 
 
-def variational_circuit(params, wires, layers, rotations, dropouts):
+def variational_circuit(params, wires, layers, rotations, dropouts, masked_circuit):
     basic_variational_circuit(
         params=params,
-        wires=wires,
-        layers=layers,
         rotations=rotations,
-        dropouts=dropouts,
+        masked_circuit=masked_circuit.unwrap(),
     )
     return qml.probs(wires=range(wires))
 
 
-def iris_circuit(params, data, wires, layers, rotations, dropouts):
+def iris_circuit(params, data, wires, layers, rotations, dropouts, masked_circuit):
     qml.templates.embeddings.AngleEmbedding(features=data, wires=range(4), rotation="X")
     basic_variational_circuit(
-        params=params,
-        wires=wires,
-        layers=layers,
-        rotations=rotations,
-        dropouts=dropouts,
+        params=params, rotations=rotations, masked_circuit=masked_circuit
     )
     return qml.probs(wires=[0, 1])
