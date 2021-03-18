@@ -263,12 +263,30 @@ class MaskedObject(object):
         )
         self._mask[indices] = ~self._mask[indices]
 
+    def copy(self) -> "MaskedObject":
+        clone = object.__new__(type(self))
+        clone._mask = self._mask.copy()
+        return clone
+
 
 class MaskedParameter(MaskedObject):
     def __init__(self, parameters):
         super().__init__()
         self._parameters = parameters
         self._mask = np.zeros_like(parameters, dtype=bool, requires_grad=False)
+
+    @property
+    def parameters(self):
+        return self._parameters
+
+    @parameters.setter
+    def parameters(self, values):
+        self._parameters = values
+
+    def copy(self) -> "MaskedParameter":
+        clone = super().copy()
+        clone._parameters = self._parameters.copy()
+        return clone
 
 
 class MaskedLayer(MaskedObject):
@@ -299,6 +317,14 @@ class MaskedCircuit(object):
         self._parameters = MaskedParameter(parameters)
         self._layers = MaskedLayer(layers=layers)
         self._wires = MaskedWire(wires=wires)
+
+    @property
+    def parameters(self):
+        return self._parameters.parameters
+
+    @parameters.setter
+    def parameters(self, values):
+        self._parameters.parameters = values
 
     @property
     def mask(self):
@@ -366,6 +392,13 @@ class MaskedCircuit(object):
         """
         assert params.shape == self.parameter_mask.shape, "The given shape must match"
         return params[~self.mask]
+
+    def copy(self) -> "MaskedCircuit":
+        clone = object.__new__(type(self))
+        clone._parameters = self._parameters.copy()
+        clone._layers = self._layers.copy()
+        clone._wires = self._wires.copy()
+        return clone
 
 
 if __name__ == "__main__":
