@@ -321,7 +321,7 @@ class MaskedCircuit(object):
         assert (
             amount is None or amount >= 0
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
-        assert mode in PerturbationMode, "The selected mode is not supported."
+        assert mode in list(PerturbationMode), "The selected mode is not supported."
         if amount == 0:
             return
         if axis == PerturbationAxis.LAYERS:
