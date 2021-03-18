@@ -4,7 +4,7 @@ import pennylane as qml
 from pennylane import numpy as np
 from collections import deque
 
-from maskit.masked_parameters import (
+from maskit.masks import (
     MaskedParameters,
     PerturbationMode,
 )
