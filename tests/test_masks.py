@@ -79,6 +79,17 @@ class TestMaskedCircuits:
             == 0
         )
 
+    @pytest.mark.parametrize("axis", list(PerturbationAxis))
+    def test_zero_amount(self, axis):
+        mp = self._create_circuit(3)
+        pre_sum = (
+            pnp.sum(mp.wire_mask) + pnp.sum(mp.layer_mask) + pnp.sum(mp.parameter_mask)
+        )
+        mp.perturb(axis=axis, amount=0)
+        assert pre_sum == pnp.sum(mp.wire_mask) + pnp.sum(mp.layer_mask) + pnp.sum(
+            mp.parameter_mask
+        )
+
     def test_apply_mask(self):
         size = 3
         mp = self._create_circuit(size)
