@@ -272,15 +272,15 @@ class MaskedParameter(MaskedObject):
 
 
 class MaskedLayer(MaskedObject):
-    def __init__(self, wires: int):
-        super().__init__()
-        self._mask = np.zeros(wires, dtype=bool, requires_grad=False)
-
-
-class MaskedWire(MaskedObject):
     def __init__(self, layers: int):
         super().__init__()
         self._mask = np.zeros(layers, dtype=bool, requires_grad=False)
+
+
+class MaskedWire(MaskedObject):
+    def __init__(self, wires: int):
+        super().__init__()
+        self._mask = np.zeros(wires, dtype=bool, requires_grad=False)
 
 
 class MaskedCircuit(object):
@@ -297,8 +297,8 @@ class MaskedCircuit(object):
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
         self._parameters = MaskedParameter(parameters)
-        self._layers = MaskedLayer(wires=wires)
-        self._wires = MaskedWire(layers=layers)
+        self._layers = MaskedLayer(layers=layers)
+        self._wires = MaskedWire(wires=wires)
 
     @property
     def mask(self):
