@@ -11,7 +11,7 @@ class PerturbationAxis(Enum):
     WIRES = 0
     #: Perturbation affects whole layers
     LAYERS = 1
-    #: Perturbation affects random locations
+    #: Perturbation affects random locations in parameter mask
     RANDOM = 2
 
 
@@ -25,27 +25,50 @@ class PerturbationMode(Enum):
 
 
 class MaskedObject(object):
+    """
+    A MaskedObject encapsulates a :py:attr:`~.mask` storing boolean value if
+    a specific value is masked or not. In case a specific position is `True`,
+    the according value is masked, otherwise it is not.
+    """
+
     __slots__ = "_mask"
 
     def __setitem__(self, key, value: bool):
+        """
+        Convenience function to set the value of a specific position of the
+        encapsulated :py:attr:`~.mask`.
+        """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
             self._mask[key] = value
         else:
             raise NotImplementedError
 
     def __getitem__(self, key):
+        """
+        Convenience function to get the value of a specific position of the
+        encapsulated :py:attr:`~.mask`.
+        """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
             return self._mask[key]
         raise NotImplementedError
 
     @property
     def mask(self):
+        """
+        Returns the encapsulated :py:attr:`~.mask`
+        """
         return self._mask
 
-    def apply_mask(self, values):
+    def apply_mask(self, values: np.ndarray):
+        """
+        Applies the encapsulated py:attr:`~.mask` to the given ``values``.
+        Note that the values should have the same shape as the py:attr:`~.mask`.
+
+        :param values: Values where the mask should be applied to
+        """
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self) -> None:
         """Resets the mask to not mask anything."""
         self._mask = np.zeros_like(self._mask, dtype=bool, requires_grad=False)
 
@@ -54,6 +77,18 @@ class MaskedObject(object):
         amount: Optional[int] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
+        """
+        Perturbs the MaskedObject by the given ``mode`` of type
+        :py:class:`~.PerturbationMode` ``amount`` times. If no amount is given,
+        that is ``amount=None``, a random ``amount`` is determined given by the
+        actual size of the py:attr:`~.mask`. The ``amount`` is automatically
+        limited to the actual size of the py:attr:`~.mask`.
+
+        :param amount: Number of items to perturb, defaults to None
+        :param mode: How to perturb, defaults to PerturbationMode.INVERT
+        :raises AssertionError: Raised for negative amounts
+        :raises NotImplementedError: Raised in case of an unknown mode
+        """
         assert (
             amount is None or amount >= 0
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
@@ -84,12 +119,18 @@ class MaskedObject(object):
         self._mask[indices] = ~self._mask[indices]
 
     def copy(self) -> "MaskedObject":
+        """Returns a copy of the current MaskedObject."""
         clone = object.__new__(type(self))
         clone._mask = self._mask.copy()
         return clone
 
 
 class MaskedParameter(MaskedObject):
+    """
+    A MaskedParameter encapsulates not only the :py:attr:`~.mask` but also the
+    according :py:attr:`~.parameters` being masked.
+    """
+
     def __init__(self, parameters):
         super().__init__()
         self._parameters = parameters
@@ -110,12 +151,20 @@ class MaskedParameter(MaskedObject):
 
 
 class MaskedLayer(MaskedObject):
+    """
+    Logical representation of a MaskedLayer.
+    """
+
     def __init__(self, layers: int):
         super().__init__()
         self._mask = np.zeros(layers, dtype=bool, requires_grad=False)
 
 
 class MaskedWire(MaskedObject):
+    """
+    Logical representation of a MaskedWire.
+    """
+
     def __init__(self, wires: int):
         super().__init__()
         self._mask = np.zeros(wires, dtype=bool, requires_grad=False)
@@ -127,7 +176,7 @@ class MaskedCircuit(object):
     layers, and parameters.
     """
 
-    def __init__(self, parameters, layers: int, wires: int):
+    def __init__(self, parameters: np.ndarray, layers: int, wires: int):
         assert (
             layers == parameters.shape[0]
         ), "First dimension of parameters shape must be equal to number of layers"
@@ -147,7 +196,11 @@ class MaskedCircuit(object):
         self._parameters.parameters = values
 
     @property
-    def mask(self):
+    def mask(self) -> np.ndarray:
+        """
+        Accumulated mask of layer, wire, and parameter masks.
+        Note that this mask is readonly.
+        """
         mask = self.parameter_mask.copy()
         mask[self.layer_mask] = True
         mask[:, self.wire_mask] = True
@@ -155,14 +208,17 @@ class MaskedCircuit(object):
 
     @property
     def layer_mask(self):
+        """Returns the encapsulated layer mask."""
         return self._layers.mask
 
     @property
     def wire_mask(self):
+        """Returns the encapsulated wire mask."""
         return self._wires.mask
 
     @property
     def parameter_mask(self):
+        """Returns the encapsulated parameter mask."""
         return self._parameters.mask
 
     def perturb(
@@ -171,6 +227,20 @@ class MaskedCircuit(object):
         amount: Optional[int] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
+        """
+        Perturbs the MaskedCircuit for a given ``axis`` that is of type
+        :py:class:`~.PerturbationAxis`. The perturbation is applied ``amount``times
+        and depends on the given ``mode`` of type :py:class:`~.PerturbationMode`.
+        If no amount is given, that is ``amount=None``, a random ``amount`` is
+        determined given by the actual size of the py:attr:`~.mask`. The ``amount``
+        is automatically limited to the actual size of the py:attr:`~.mask`.
+
+        :param amount: Number of items to perturb, defaults to None
+        :param axis: Which mask to perturb
+        :param mode: How to perturb, defaults to PerturbationMode.INVERT
+        :raises AssertionError: Raised for negative amounts
+        :raises NotImplementedError: Raised in case of an unknown mode
+        """
         assert (
             amount is None or amount >= 0
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
@@ -202,18 +272,19 @@ class MaskedCircuit(object):
         self._wires.reset()
         self._parameters.reset()
 
-    def apply_mask(self, params):
+    def apply_mask(self, values: np.ndarray):
         """
-        Applies the masks for wires, layers, and parameters to the given instance of
-        parameters.
+        Applies the encapsulated py:attr:`~.mask`s to the given ``values``.
+        Note that the values should have the same shape as the py:attr:`~.mask`.
 
-        :param params: Parameters to apply the mask to
-        :type params: [type]
+        :param values: Values where the mask should be applied to
+        :raises AssertionError: In case the shape of values and mask don't match.
         """
-        assert params.shape == self.parameter_mask.shape, "The given shape must match"
-        return params[~self.mask]
+        assert values.shape == self.parameter_mask.shape, "The given shape must match"
+        return values[~self.mask]
 
     def copy(self) -> "MaskedCircuit":
+        """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
         clone._parameters = self._parameters.copy()
         clone._layers = self._layers.copy()
