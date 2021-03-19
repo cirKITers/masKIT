@@ -27,16 +27,18 @@ def basic_variational_circuit(params, rotations, masked_circuit):
             qml.CZ(wires=[wire, wire + 1])
 
 
-def variational_circuit(params, wires, layers, rotations, dropouts, masked_circuit):
+def variational_circuit(params, rotations, masked_circuit):
+    masked_circuit = masked_circuit.unwrap()
     basic_variational_circuit(
         params=params,
         rotations=rotations,
-        masked_circuit=masked_circuit.unwrap(),
+        masked_circuit=masked_circuit,
     )
-    return qml.probs(wires=range(wires))
+    return qml.probs(wires=range(len(masked_circuit.wire_mask)))
 
 
-def iris_circuit(params, data, wires, layers, rotations, dropouts, masked_circuit):
+def iris_circuit(params, data, rotations, masked_circuit):
+    masked_circuit = masked_circuit.unwrap()
     qml.templates.embeddings.AngleEmbedding(features=data, wires=range(4), rotation="X")
     basic_variational_circuit(
         params=params, rotations=rotations, masked_circuit=masked_circuit

@@ -26,13 +26,10 @@ def get_device(sim_local: bool, wires: int, analytic: bool = True):
 def cost(
     circuit,
     params,
-    wires: int,
-    layers: int,
     rotations: List,
-    dropouts,
     masked_circuit: MaskedCircuit,
 ):
-    return 1 - circuit(params, wires, layers, rotations, dropouts, masked_circuit)[0]
+    return 1 - circuit(params, rotations, masked_circuit)[0]
 
 
 def cost_iris(
@@ -40,15 +37,10 @@ def cost_iris(
     params,
     data,
     target,
-    wires: int,
-    layers: int,
     rotations: List,
-    dropouts,
     masked_circuit: MaskedCircuit,
 ):
-    prediction = circuit(
-        params, data, wires, layers, rotations, dropouts, masked_circuit
-    )
+    prediction = circuit(params, data, rotations, masked_circuit)
     return cross_entropy(predictions=prediction, targets=target)
 
 
@@ -72,7 +64,9 @@ def ensemble_step(branches: List[MaskedCircuit], optimizer, *args, step_count=1)
     )
 
 
-def ensemble_branches(dropout, masked_params, amount: int = 1, perturb: bool = True):
+def ensemble_branches(
+    dropout: str, masked_params: MaskedCircuit, amount: int = 1, perturb: bool = True
+):
     if dropout == "random":
         left_branch = masked_params.copy()
         right_branch = masked_params.copy()
@@ -189,10 +183,7 @@ def train(
             return cost(
                 circuit,
                 params,
-                wires,
-                current_layers,
                 rotations,
-                masked_circuit.mask,
                 masked_circuit,
             )
 
@@ -205,18 +196,14 @@ def train(
                 params,
                 data,
                 target,
-                wires,
-                current_layers,
                 rotations,
-                masked_circuit.mask,
                 masked_circuit,
             )
 
     # set up parameters
-    masked_params = init_parameters(layers, current_layers, wires)
+    masked_circuit = init_parameters(layers, current_layers, wires)
 
     if train_params["dropout"] == "eileen":
-        # masked_params.perturb(int(layers * wires * 0.5))
         amount = int(wires * layers * train_params["percentage"])
         perturb = False
         costs = deque(maxlen=5)
@@ -230,8 +217,9 @@ def train(
             # maybe combine with other dropouts
             if step > 0 and step % 1000 == 0:
                 current_layers += 1
+                masked_circuit.layer_mask[current_layers] = False
         branches, description = ensemble_branches(
-            train_params["dropout"], masked_params, amount, perturb=perturb
+            train_params["dropout"], masked_circuit, amount, perturb=perturb
         )
         perturb = False
         logging_branches[step] = description
@@ -240,14 +228,14 @@ def train(
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
-        masked_params, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
-        branch_index = branches.index(masked_params)
+        masked_circuit, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
+        branch_index = branches.index(masked_circuit)
         logging_branch_selection[step] = (
             "center" if branch_index == 0 else "left" if branch_index == 1 else "right"
         )
 
         logging_cost_values.append(current_cost.unwrap())
-        logging_gate_count_values.append(np.sum(masked_params.mask))
+        logging_gate_count_values.append(np.sum(masked_circuit.mask))
         if step % train_params["log_interval"] == 0:
             # perform logging
             logging_costs[step] = np.average(logging_cost_values)
@@ -256,7 +244,7 @@ def train(
             logging_gate_count_values.clear()
 
         # get the real gradients as gradients also contain values from dropped gates
-        real_gradients = masked_params.apply_mask(gradient[0])
+        real_gradients = masked_circuit.apply_mask(gradient[0])
 
         if __debug__:
             print(
@@ -278,8 +266,8 @@ def train(
                 ):
                     if __debug__:
                         print("======== allowing to perturb =========")
-                    if np.sum(masked_params.mask) >= layers * wires * 0.3:
-                        masked_params.perturb(
+                    if np.sum(masked_circuit.mask) >= layers * wires * 0.3:
+                        masked_circuit.perturb(
                             axis=PerturbationAxis.RANDOM,
                             amount=1,
                             mode=PerturbationMode.REMOVE,
@@ -291,9 +279,9 @@ def train(
                         }
                     elif (
                         current_cost < 0.25
-                        and np.sum(masked_params.mask) >= layers * wires * 0.05
+                        and np.sum(masked_circuit.mask) >= layers * wires * 0.05
                     ):
-                        masked_params.perturb(
+                        masked_circuit.perturb(
                             axis=PerturbationAxis.RANDOM,
                             amount=1,
                             mode=PerturbationMode.REMOVE,
@@ -307,8 +295,8 @@ def train(
                     perturb = True
 
     if __debug__:
-        print(masked_params.parameters)
-        print(masked_params.mask)
+        print(masked_circuit.parameters)
+        print(masked_circuit.mask)
 
     return {
         "costs": logging_costs,
@@ -318,8 +306,8 @@ def train(
         "branches": logging_branches,
         "branch_selections": logging_branch_selection,
         "final_layers": current_layers,
-        "params": masked_params.parameters.unwrap(),
-        "mask": masked_params.mask.unwrap(),
+        "params": masked_circuit.parameters.unwrap(),
+        "mask": masked_circuit.mask.unwrap(),
         "__rotations": rotations,
     }
 
@@ -342,25 +330,21 @@ def test(
         correct = 0
         N = len(test_data)
         costs = []
+        masked_circuit = MaskedCircuit(parameters=params, layers=layers, wires=wires)
         for _step, (data, target) in enumerate(zip(test_data, test_target)):
-            test_mask = np.zeros_like(params, dtype=bool, requires_grad=False)
             output = circuit(
                 params,
                 data,
-                wires,
-                layers,
                 rotations,
-                test_mask,
+                masked_circuit,
             )
             c = cost_iris(
                 circuit,
                 params,
                 data,
                 target,
-                wires,
-                layers,
                 rotations,
-                test_mask,
+                masked_circuit,
             )
             costs.append(c)
             same = np.argmax(target) == np.argmax(output)
