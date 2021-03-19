@@ -107,6 +107,31 @@ class TestMaskedCircuits:
         assert pnp.sum(~mp.mask) == 0
         assert pnp.sum(result) == 0
 
+    def test_copy(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.layer_mask[0] = True
+        new_mp = mp.copy()
+
+        mp.wire_mask[0] = True
+        mp.parameter_mask[0, 0] = True
+
+        assert pnp.sum(mp.mask) > pnp.sum(new_mp.mask)
+        assert pnp.sum(new_mp.wire_mask) == 0
+        assert pnp.sum(new_mp.layer_mask) == pnp.sum(mp.layer_mask)
+        assert pnp.sum(new_mp.parameter_mask) == 0
+
+    def test_parameters(self):
+        size = 3
+        mp = self._create_circuit(size)
+
+        new_random_values = pnp.random.uniform(
+            low=-pnp.pi, high=pnp.pi, size=(size, size)
+        )
+        assert (mp.parameters != new_random_values).all()
+        mp.parameters = new_random_values
+        assert (mp.parameters == new_random_values).all()
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
@@ -249,6 +274,17 @@ class TestMaskedObject:
             mp.perturb(amount=amount, mode=mode[0])
             mp.perturb(amount=amount, mode=mode[1])
             assert pnp.sum(mp.mask) == 0
+
+    @pytest.mark.parametrize(
+        "masked_object", [MaskedLayer, MaskedWire, MaskedParameter]
+    )
+    def test_copy(self, masked_object):
+        size = 3
+        _, mp = self._create_masked_object(masked_object, size)
+        new_mp = mp.copy()
+        mp[0] = True
+        assert pnp.sum(mp.mask) > pnp.sum(new_mp.mask)
+        assert pnp.sum(new_mp.mask) == 0
 
     def _create_masked_object(self, masked_object, size):
         if masked_object == MaskedParameter:
