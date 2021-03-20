@@ -31,7 +31,7 @@ class MaskedObject(object):
     the according value is masked, otherwise it is not.
     """
 
-    __slots__ = "_mask"
+    __slots__ = ("_mask",)
 
     def __setitem__(self, key, value: bool):
         """
@@ -41,7 +41,7 @@ class MaskedObject(object):
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
             self._mask[key] = value
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f"key {key}")
 
     def __getitem__(self, key):
         """
@@ -50,7 +50,7 @@ class MaskedObject(object):
         """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
             return self._mask[key]
-        raise NotImplementedError
+        raise NotImplementedError(f"key {key}")
 
     @property
     def mask(self):
@@ -130,7 +130,7 @@ class MaskedParameter(MaskedObject):
     A MaskedParameter encapsulates not only the :py:attr:`~.mask` but also the
     according :py:attr:`~.parameters` being masked.
     """
-
+    __slots__ = ("_parameters",)
     def __init__(self, parameters):
         super().__init__()
         self._parameters = parameters
