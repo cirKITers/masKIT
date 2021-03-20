@@ -236,9 +236,7 @@ class MaskedCircuit(object):
         Note that the values should have the same shape as the py:attr:`~.mask`.
 
         :param values: Values where the mask should be applied to
-        :raises AssertionError: In case the shape of values and mask don't match.
         """
-        assert values.shape == self.parameter_mask.shape, "The given shape must match"
         return values[~self.mask]
 
     def copy(self) -> "MaskedCircuit":

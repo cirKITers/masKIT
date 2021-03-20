@@ -90,7 +90,7 @@ class TestMaskedCircuits:
     def test_apply_mask(self):
         size = 3
         mp = self._create_circuit(size)
-        with pytest.raises(AssertionError):
+        with pytest.raises(IndexError):
             mp.apply_mask(pnp.ones((size, size - 1)))
         mp.wire_mask[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
