@@ -232,3 +232,13 @@ class TestMask:
         mp[0] = True
         assert pnp.sum(mp.mask) > pnp.sum(new_mp.mask)
         assert pnp.sum(new_mp.mask) == 0
+
+    def test_apply_mask(self):
+        size = 3
+        mp = Mask((size,))
+        with pytest.raises(IndexError):
+            mp.apply_mask(pnp.ones((size - 1, size)))
+        mp.mask[1] = True
+        result = mp.apply_mask(pnp.ones((size,), dtype=bool))
+        assert pnp.sum(mp.mask) == 1
+        assert pnp.sum(result) == size - 1
