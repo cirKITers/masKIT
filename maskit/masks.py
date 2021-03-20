@@ -83,7 +83,6 @@ class Mask(object):
 
         :param amount: Number of items to perturb, defaults to None
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
-        :raises AssertionError: Raised for negative amounts
         :raises NotImplementedError: Raised in case of an unknown mode
         """
         assert (
@@ -188,12 +187,8 @@ class MaskedCircuit(object):
         :param amount: Number of items to perturb, defaults to None
         :param axis: Which mask to perturb
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
-        :raises AssertionError: Raised for negative amounts
         :raises NotImplementedError: Raised in case of an unknown mode
         """
-        assert (
-            amount is None or amount >= 0
-        ), "Negative values are not supported, please use PerturbationMode.REMOVE"
         assert mode in list(PerturbationMode), "The selected mode is not supported."
         if amount == 0:
             return
