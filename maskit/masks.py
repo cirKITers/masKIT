@@ -1,7 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Optional
+from typing import Optional, Tuple
 
 rand.seed(1337)
 
@@ -24,7 +24,7 @@ class PerturbationMode(Enum):
     INVERT = 2
 
 
-class MaskedObject(object):
+class Mask(object):
     """
     A MaskedObject encapsulates a :py:attr:`~.mask` storing boolean value if
     a specific value is masked or not. In case a specific position is `True`,
@@ -32,6 +32,10 @@ class MaskedObject(object):
     """
 
     __slots__ = ("_mask",)
+
+    def __init__(self, shape: Tuple[int, ...]):
+        super().__init__()
+        self._mask = np.zeros(shape, dtype=bool, requires_grad=False)
 
     def __setitem__(self, key, value: bool):
         """
@@ -118,56 +122,11 @@ class MaskedObject(object):
         )
         self._mask[indices] = ~self._mask[indices]
 
-    def copy(self) -> "MaskedObject":
+    def copy(self) -> "Mask":
         """Returns a copy of the current MaskedObject."""
         clone = object.__new__(type(self))
         clone._mask = self._mask.copy()
         return clone
-
-
-class MaskedParameter(MaskedObject):
-    """
-    A MaskedParameter encapsulates not only the :py:attr:`~.mask` but also the
-    according :py:attr:`~.parameters` being masked.
-    """
-    __slots__ = ("_parameters",)
-    def __init__(self, parameters):
-        super().__init__()
-        self._parameters = parameters
-        self._mask = np.zeros_like(parameters, dtype=bool, requires_grad=False)
-
-    @property
-    def parameters(self):
-        return self._parameters
-
-    @parameters.setter
-    def parameters(self, values):
-        self._parameters = values
-
-    def copy(self) -> "MaskedParameter":
-        clone = super().copy()
-        clone._parameters = self._parameters.copy()
-        return clone
-
-
-class MaskedLayer(MaskedObject):
-    """
-    Logical representation of a MaskedLayer.
-    """
-
-    def __init__(self, layers: int):
-        super().__init__()
-        self._mask = np.zeros(layers, dtype=bool, requires_grad=False)
-
-
-class MaskedWire(MaskedObject):
-    """
-    Logical representation of a MaskedWire.
-    """
-
-    def __init__(self, wires: int):
-        super().__init__()
-        self._mask = np.zeros(wires, dtype=bool, requires_grad=False)
 
 
 class MaskedCircuit(object):
@@ -176,6 +135,13 @@ class MaskedCircuit(object):
     layers, and parameters.
     """
 
+    __slots__ = (
+        "_layer_mask",
+        "_wire_mask",
+        "_parameter_mask",
+        "_parameters",
+    )
+
     def __init__(self, parameters: np.ndarray, layers: int, wires: int):
         assert (
             layers == parameters.shape[0]
@@ -183,17 +149,18 @@ class MaskedCircuit(object):
         assert (
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
-        self._parameters = MaskedParameter(parameters)
-        self._layers = MaskedLayer(layers=layers)
-        self._wires = MaskedWire(wires=wires)
+        self._parameters = parameters
+        self._parameter_mask = Mask(shape=parameters.shape)
+        self._layer_mask = Mask(shape=(layers,))
+        self._wire_mask = Mask(shape=(wires,))
 
     @property
     def parameters(self):
-        return self._parameters.parameters
+        return self._parameters
 
     @parameters.setter
     def parameters(self, values):
-        self._parameters.parameters = values
+        self._parameters = values
 
     @property
     def mask(self) -> np.ndarray:
@@ -209,17 +176,17 @@ class MaskedCircuit(object):
     @property
     def layer_mask(self):
         """Returns the encapsulated layer mask."""
-        return self._layers.mask
+        return self._layer_mask.mask
 
     @property
     def wire_mask(self):
         """Returns the encapsulated wire mask."""
-        return self._wires.mask
+        return self._wire_mask.mask
 
     @property
     def parameter_mask(self):
         """Returns the encapsulated parameter mask."""
-        return self._parameters.mask
+        return self._parameter_mask.mask
 
     def perturb(
         self,
@@ -258,19 +225,19 @@ class MaskedCircuit(object):
         mask_fn(amount=amount, mode=mode)
 
     def _mask_layers(self, amount, mode):
-        self._layers.perturb(amount=amount, mode=mode)
+        self._layer_mask.perturb(amount=amount, mode=mode)
 
     def _mask_wires(self, amount, mode):
-        self._wires.perturb(amount=amount, mode=mode)
+        self._wire_mask.perturb(amount=amount, mode=mode)
 
     def _mask_parameters(self, amount, mode):
-        self._parameters.perturb(amount=amount, mode=mode)
+        self._parameter_mask.perturb(amount=amount, mode=mode)
 
     def reset(self):
         """Resets all masks."""
-        self._layers.reset()
-        self._wires.reset()
-        self._parameters.reset()
+        self._layer_mask.reset()
+        self._wire_mask.reset()
+        self._parameter_mask.reset()
 
     def apply_mask(self, values: np.ndarray):
         """
@@ -286,11 +253,14 @@ class MaskedCircuit(object):
     def copy(self) -> "MaskedCircuit":
         """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
+        clone._parameter_mask = self._parameter_mask.copy()
+        clone._layer_mask = self._layer_mask.copy()
+        clone._wire_mask = self._wire_mask.copy()
         clone._parameters = self._parameters.copy()
-        clone._layers = self._layers.copy()
-        clone._wires = self._wires.copy()
         return clone
 
 
 if __name__ == "__main__":
-    parameter = MaskedParameter(np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])))
+    parameter = MaskedCircuit(
+        np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
+    )
