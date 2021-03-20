@@ -31,11 +31,11 @@ class Mask(object):
     the according value is masked, otherwise it is not.
     """
 
-    __slots__ = ("_mask",)
+    __slots__ = ("mask",)
 
     def __init__(self, shape: Tuple[int, ...]):
         super().__init__()
-        self._mask = np.zeros(shape, dtype=bool, requires_grad=False)
+        self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
 
     def __setitem__(self, key, value: bool):
         """
@@ -43,7 +43,7 @@ class Mask(object):
         encapsulated :py:attr:`~.mask`.
         """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
-            self._mask[key] = value
+            self.mask[key] = value
         else:
             raise NotImplementedError(f"key {key}")
 
@@ -53,15 +53,8 @@ class Mask(object):
         encapsulated :py:attr:`~.mask`.
         """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
-            return self._mask[key]
+            return self.mask[key]
         raise NotImplementedError(f"key {key}")
-
-    @property
-    def mask(self):
-        """
-        Returns the encapsulated :py:attr:`~.mask`
-        """
-        return self._mask
 
     def apply_mask(self, values: np.ndarray):
         """
@@ -70,11 +63,11 @@ class Mask(object):
 
         :param values: Values where the mask should be applied to
         """
-        raise NotImplementedError
+        return values[~self.mask]
 
     def reset(self) -> None:
         """Resets the mask to not mask anything."""
-        self._mask = np.zeros_like(self._mask, dtype=bool, requires_grad=False)
+        self.mask = np.zeros_like(self.mask, dtype=bool, requires_grad=False)
 
     def perturb(
         self,
@@ -98,15 +91,13 @@ class Mask(object):
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
         if amount == 0:
             return
-        count = (
-            abs(amount) if amount is not None else rand.randrange(0, self._mask.size)
-        )
+        count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
         if mode == PerturbationMode.ADD:
-            indices = np.argwhere(~self._mask)
+            indices = np.argwhere(~self.mask)
         elif mode == PerturbationMode.INVERT:
-            indices = np.array([list(index) for index in np.ndindex(*self._mask.shape)])
+            indices = np.array([list(index) for index in np.ndindex(*self.mask.shape)])
         elif mode == PerturbationMode.REMOVE:
-            indices = np.argwhere(self._mask)
+            indices = np.argwhere(self.mask)
         else:
             raise NotImplementedError(f"The perturbation mode {mode} is not supported")
         if len(indices) == 0:
@@ -120,12 +111,12 @@ class Mask(object):
                 ]
             )
         )
-        self._mask[indices] = ~self._mask[indices]
+        self.mask[indices] = ~self.mask[indices]
 
     def copy(self) -> "Mask":
         """Returns a copy of the current MaskedObject."""
         clone = object.__new__(type(self))
-        clone._mask = self._mask.copy()
+        clone.mask = self.mask.copy()
         return clone
 
 
