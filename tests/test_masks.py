@@ -62,7 +62,7 @@ class TestMaskedCircuits:
             mp.perturb(axis=10)
 
     @pytest.mark.parametrize("axis", list(PerturbationAxis))
-    def test_reset(self, axis):
+    def test_clear(self, axis):
         size = 3
         mp = self._create_circuit(size)
         mp.perturb(axis=axis, amount=size)
@@ -70,7 +70,7 @@ class TestMaskedCircuits:
             pnp.sum(mp.layer_mask) + pnp.sum(mp.wire_mask) + pnp.sum(mp.parameter_mask)
             == size
         )
-        mp.reset()
+        mp.clear()
         assert (
             pnp.sum(mp.layer_mask) + pnp.sum(mp.wire_mask) + pnp.sum(mp.parameter_mask)
             == 0
@@ -148,14 +148,14 @@ class TestMask:
         with pytest.raises(IndexError):
             mp[size] = True
         assert pnp.sum(mp.mask) == 1
-        mp.reset()
+        mp.clear()
         assert pnp.sum(mp.mask) == 0
         mp[:] = True
         result = mp[:]
         assert len(result) == size
         assert pnp.all(result)
         assert pnp.sum(mp.mask) == size
-        mp.reset()
+        mp.clear()
         with pytest.raises(IndexError):
             mp[1, 2] = True
 
@@ -187,7 +187,7 @@ class TestMask:
             assert pnp.sum(mp.mask) == 0
             mp.perturb(amount=amount, mode=PerturbationMode.ADD)
             assert pnp.sum(mp.mask) == min(amount, size)
-            mp.reset()
+            mp.clear()
 
     def test_perturbation_invert_remove(self):
         size = 3

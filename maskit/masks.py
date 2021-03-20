@@ -65,7 +65,7 @@ class Mask(object):
         """
         return values[~self.mask]
 
-    def reset(self) -> None:
+    def clear(self) -> None:
         """Resets the mask to not mask anything."""
         self.mask = np.zeros_like(self.mask, dtype=bool, requires_grad=False)
 
@@ -216,11 +216,11 @@ class MaskedCircuit(object):
     def _mask_parameters(self, amount, mode):
         self._parameter_mask.perturb(amount=amount, mode=mode)
 
-    def reset(self):
+    def clear(self):
         """Resets all masks."""
-        self._layer_mask.reset()
-        self._wire_mask.reset()
-        self._parameter_mask.reset()
+        self._layer_mask.clear()
+        self._wire_mask.clear()
+        self._parameter_mask.clear()
 
     def apply_mask(self, values: np.ndarray):
         """
