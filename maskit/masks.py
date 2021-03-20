@@ -130,7 +130,7 @@ class MaskedCircuit(object):
         "_layer_mask",
         "_wire_mask",
         "_parameter_mask",
-        "_parameters",
+        "parameters",
     )
 
     def __init__(self, parameters: np.ndarray, layers: int, wires: int):
@@ -140,18 +140,10 @@ class MaskedCircuit(object):
         assert (
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
-        self._parameters = parameters
+        self.parameters = parameters
         self._parameter_mask = Mask(shape=parameters.shape)
         self._layer_mask = Mask(shape=(layers,))
         self._wire_mask = Mask(shape=(wires,))
-
-    @property
-    def parameters(self):
-        return self._parameters
-
-    @parameters.setter
-    def parameters(self, values):
-        self._parameters = values
 
     @property
     def mask(self) -> np.ndarray:
@@ -245,7 +237,7 @@ class MaskedCircuit(object):
         clone._parameter_mask = self._parameter_mask.copy()
         clone._layer_mask = self._layer_mask.copy()
         clone._wire_mask = self._wire_mask.copy()
-        clone._parameters = self._parameters.copy()
+        clone.parameters = self.parameters.copy()
         return clone
 
 
