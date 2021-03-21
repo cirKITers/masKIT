@@ -26,7 +26,7 @@ class PerturbationMode(Enum):
 
 class Mask(object):
     """
-    A MaskedObject encapsulates a :py:attr:`~.mask` storing boolean value if
+    A Mask encapsulates a :py:attr:`~.mask` storing boolean value if
     a specific value is masked or not. In case a specific position is `True`,
     the according value is masked, otherwise it is not.
     """
@@ -75,9 +75,9 @@ class Mask(object):
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
         """
-        Perturbs the MaskedObject by the given ``mode`` of type
-        :py:class:`~.PerturbationMode` ``amount`` times. If no amount is given,
-        that is ``amount=None``, a random ``amount`` is determined given by the
+        Perturbs the Mask by the given ``mode`` of type
+        :py:class:`~.PerturbationMode` ``amount`` times. If no amount is given
+        or ``amount=None``, a random ``amount`` is determined given by the
         actual size of the py:attr:`~.mask`. The ``amount`` is automatically
         limited to the actual size of the py:attr:`~.mask`.
 
@@ -113,7 +113,7 @@ class Mask(object):
         self.mask[indices] = ~self.mask[indices]
 
     def copy(self) -> "Mask":
-        """Returns a copy of the current MaskedObject."""
+        """Returns a copy of the current Mask."""
         clone = object.__new__(type(self))
         clone.mask = self.mask.copy()
         return clone
