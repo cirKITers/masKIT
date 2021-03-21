@@ -95,9 +95,9 @@ class Mask(object):
             if amount < 1:
                 amount *= self.mask.size
             amount = int(amount)
-        if amount == 0:
-            return
         count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
+        if count == 0:
+            return
         if mode == PerturbationMode.ADD:
             indices = np.argwhere(~self.mask)
         elif mode == PerturbationMode.INVERT:
