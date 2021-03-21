@@ -193,23 +193,13 @@ class MaskedCircuit(object):
         if amount == 0:
             return
         if axis == PerturbationAxis.LAYERS:
-            mask_fn = self._mask_layers
+            self._layer_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.WIRES:
-            mask_fn = self._mask_wires
+            self._wire_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
-            mask_fn = self._mask_parameters
+            self._parameter_mask.perturb(amount=amount, mode=mode)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
-        mask_fn(amount=amount, mode=mode)
-
-    def _mask_layers(self, amount, mode):
-        self._layer_mask.perturb(amount=amount, mode=mode)
-
-    def _mask_wires(self, amount, mode):
-        self._wire_mask.perturb(amount=amount, mode=mode)
-
-    def _mask_parameters(self, amount, mode):
-        self._parameter_mask.perturb(amount=amount, mode=mode)
 
     def clear(self):
         """Resets all masks."""
