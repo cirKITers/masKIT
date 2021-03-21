@@ -1,7 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 rand.seed(1337)
 
@@ -71,22 +71,30 @@ class Mask(object):
 
     def perturb(
         self,
-        amount: Optional[int] = None,
+        amount: Optional[Union[int, float]] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
         """
         Perturbs the Mask by the given ``mode`` of type :py:class:`~.PerturbationMode`
         ``amount`` times. If no amount is given or ``amount=None``, a random ``amount``
-        is determined given by the actual size of the py:attr:`~.mask`. The ``amount``
-        is automatically limited to the actual size of the py:attr:`~.mask`.
+        is determined given by the actual size of the py:attr:`~.mask`. If ``amount``
+        is smaller than `1`, it is interpreted as the fraction of the py:attr:`~.mask`s
+        size.
+        Note that the ``amount`` is automatically limited to the actual size of the
+        py:attr:`~.mask`.
 
-        :param amount: Number of items to perturb, defaults to None
+        :param amount: Number of items to perturb given either by an absolute amount
+            when amount >= 1 or a fraction of the mask, defaults to None
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
         :raises NotImplementedError: Raised in case of an unknown mode
         """
         assert (
             amount is None or amount >= 0
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
+        if amount is not None:
+            if amount < 1:
+                amount *= self.mask.size
+            amount = int(amount)
         if amount == 0:
             return
         count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
@@ -172,7 +180,7 @@ class MaskedCircuit(object):
     def perturb(
         self,
         axis: PerturbationAxis,
-        amount: Optional[int] = None,
+        amount: Optional[Union[int, float]] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
         """
