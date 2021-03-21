@@ -173,6 +173,24 @@ class TestMask:
             mp.perturb(i, mode=PerturbationMode.REMOVE)
             assert pnp.sum(mp.mask) == 0
 
+    def test_percentage_perturbation(self):
+        size = 3
+        mp = Mask((size,))
+
+        for i in [0.01, 0.1, 0.5, 0.9]:
+            mp.perturb(amount=i)
+            assert pnp.sum(mp.mask) == int(i * mp.mask.size)
+            mp.clear()
+
+    def test_wrong_percentage_perturbation(self):
+        size = 3
+        mp = Mask((size,))
+
+        for i in [1.1, 1.5, 3.1]:
+            mp.perturb(amount=i)
+            assert pnp.sum(mp.mask) == int(i)
+            mp.clear()
+
     def test_negative_perturbation(self):
         mp = Mask((3,))
         with pytest.raises(AssertionError):
