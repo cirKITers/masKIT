@@ -99,7 +99,7 @@ class Mask(object):
             indices = np.argwhere(self.mask)
         else:
             raise NotImplementedError(f"The perturbation mode {mode} is not supported")
-        if len(indices) == 0:
+        if indices.size == 0:
             return
         indices = tuple(
             zip(
