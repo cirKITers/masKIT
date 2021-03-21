@@ -151,7 +151,7 @@ class MaskedCircuit(object):
         Note that this mask is readonly.
         """
         mask = self.parameter_mask.copy()
-        mask[self.layer_mask] = True
+        mask[self.layer_mask, :] = True
         mask[:, self.wire_mask] = True
         return mask
 
