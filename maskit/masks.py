@@ -26,9 +26,9 @@ class PerturbationMode(Enum):
 
 class Mask(object):
     """
-    A Mask encapsulates a :py:attr:`~.mask` storing boolean value if
-    a specific value is masked or not. In case a specific position is `True`,
-    the according value is masked, otherwise it is not.
+    A Mask encapsulates a :py:attr:`~.mask` storing boolean value if a specific value
+    is masked or not. In case a specific position is `True`, the according value is
+    masked, otherwise it is not.
     """
 
     __slots__ = ("mask",)
@@ -75,11 +75,10 @@ class Mask(object):
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
         """
-        Perturbs the Mask by the given ``mode`` of type
-        :py:class:`~.PerturbationMode` ``amount`` times. If no amount is given
-        or ``amount=None``, a random ``amount`` is determined given by the
-        actual size of the py:attr:`~.mask`. The ``amount`` is automatically
-        limited to the actual size of the py:attr:`~.mask`.
+        Perturbs the Mask by the given ``mode`` of type :py:class:`~.PerturbationMode`
+        ``amount`` times. If no amount is given or ``amount=None``, a random ``amount``
+        is determined given by the actual size of the py:attr:`~.mask`. The ``amount``
+        is automatically limited to the actual size of the py:attr:`~.mask`.
 
         :param amount: Number of items to perturb, defaults to None
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
@@ -121,8 +120,8 @@ class Mask(object):
 
 class MaskedCircuit(object):
     """
-    A MaskedCircuit supports masking of different components including wires,
-    layers, and parameters.
+    A MaskedCircuit supports masking of different components including wires, layers,
+    and parameters.
     """
 
     __slots__ = (
