@@ -4,9 +4,10 @@ import pennylane as qml
 from pennylane import numpy as np
 from collections import deque
 
-from maskit.masked_parameters import (
-    MaskedParameters,
+from maskit.masks import (
+    MaskedCircuit,
     PerturbationMode,
+    PerturbationAxis,
 )
 from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
@@ -22,28 +23,38 @@ def get_device(sim_local: bool, wires: int, analytic: bool = True):
     return dev
 
 
-def cost(circuit, params, wires: int, layers: int, rotations: List, dropouts):
-    return 1 - circuit(params, wires, layers, rotations, dropouts)[0]
+def cost(
+    circuit,
+    params,
+    rotations: List,
+    masked_circuit: MaskedCircuit,
+):
+    return 1 - circuit(params, rotations, masked_circuit)[0]
 
 
 def cost_iris(
-    circuit, params, data, target, wires: int, layers: int, rotations: List, dropouts
+    circuit,
+    params,
+    data,
+    target,
+    rotations: List,
+    masked_circuit: MaskedCircuit,
 ):
-    prediction = circuit(params, data, wires, layers, rotations, dropouts)
+    prediction = circuit(params, data, rotations, masked_circuit)
     return cross_entropy(predictions=prediction, targets=target)
 
 
-def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count=1):
+def ensemble_step(branches: List[MaskedCircuit], optimizer, *args, step_count=1):
     branch_costs = []
     gradients = []
     for branch in branches:
-        params = branch.params
+        params = branch.parameters
         for _ in range(step_count):
             params, _cost, gradient = optimizer.step_cost_and_grad(
-                *args, params, mask=branch.mask
+                *args, params, masked_circuit=branch
             )
-        branch.params = params
-        branch_costs.append(args[0](params, mask=branch.mask))
+        branch.parameters = params
+        branch_costs.append(args[0](params, masked_circuit=branch))
         gradients.append(gradient)
     minimum_index = branch_costs.index(min(branch_costs))
     return (
@@ -53,58 +64,68 @@ def ensemble_step(branches: List[MaskedParameters], optimizer, *args, step_count
     )
 
 
-def ensemble_branches(dropout, masked_params, amount: int = 1, perturb: bool = True):
+def ensemble_branches(
+    dropout: str, masked_params: MaskedCircuit, amount: int = 1, perturb: bool = True
+):
     if dropout == "random":
         left_branch = masked_params.copy()
         right_branch = masked_params.copy()
         # randomly perturb branches
-        left_branch.perturb(1, mode=PerturbationMode.REMOVE)
-        right_branch.perturb()
+        left_branch.perturb(
+            axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.REMOVE
+        )
+        right_branch.perturb(axis=PerturbationAxis.RANDOM)
         branches = [masked_params, left_branch, right_branch]
         description = {
             "center": "No perturbation",
             "left": {
                 "amount": 1,
                 "mode": PerturbationMode.REMOVE,
-                "axis": left_branch.perturbation_axis,
+                "axis": PerturbationAxis.RANDOM,
             },
             "right": {
                 "amount": None,
                 "mode": PerturbationMode.INVERT,
-                "axis": right_branch.perturbation_axis,
+                "axis": PerturbationAxis.RANDOM,
             },
         }
     elif dropout == "classical":
         masked_params.reset()
         masked_params.perturb(
-            masked_params.params.size // 10, mode=PerturbationMode.ADD
+            axis=PerturbationAxis.RANDOM,
+            amount=masked_params.parameters.size // 10,
+            mode=PerturbationMode.ADD,
         )
         branches = [masked_params]
         description = {
             "center": {
-                "amount": masked_params.params.size // 10,
+                "amount": masked_params.parameters.size // 10,
                 "mode": PerturbationMode.ADD,
-                "axis": masked_params.perturbation_axis,
+                "axis": PerturbationAxis.RANDOM,
                 # TODO: added on empty mask...
             },
         }
     elif dropout == "eileen" and perturb:
         left_branch = masked_params.copy()
         right_branch = masked_params.copy()
-        left_branch.perturb(amount=1, mode=PerturbationMode.ADD)
-        right_branch.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+        left_branch.perturb(
+            axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.ADD
+        )
+        right_branch.perturb(
+            axis=PerturbationAxis.RANDOM, amount=amount, mode=PerturbationMode.REMOVE
+        )
         branches = [masked_params, left_branch, right_branch]
         description = {
             "center": "No perturbation",
             "left": {
                 "amount": 1,
                 "mode": PerturbationMode.ADD,
-                "axis": left_branch.perturbation_axis,
+                "axis": PerturbationAxis.RANDOM,
             },
             "right": {
                 "amount": amount,
                 "mode": PerturbationMode.REMOVE,
-                "axis": right_branch.perturbation_axis,
+                "axis": PerturbationAxis.RANDOM,
             },
         }
     else:
@@ -115,13 +136,15 @@ def ensemble_branches(dropout, masked_params, amount: int = 1, perturb: bool = T
     return branches, description
 
 
-def init_parameters(layers: int, current_layers: int, wires: int):
+def init_parameters(layers: int, current_layers: int, wires: int) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
     )
     params_zero = np.zeros((layers - current_layers, wires))
     params_combined = np.concatenate((params_uniform, params_zero))
-    return MaskedParameters(params_combined)
+    mc = MaskedCircuit(parameters=params_combined, layers=layers, wires=wires)
+    mc.layer_mask[current_layers:] = True
+    return mc
 
 
 def train(
@@ -156,22 +179,31 @@ def train(
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
 
-        def cost_fn(params, mask=None):
-            return cost(circuit, params, wires, current_layers, rotations, mask)
+        def cost_fn(params, masked_circuit=None):
+            return cost(
+                circuit,
+                params,
+                rotations,
+                masked_circuit,
+            )
 
     elif train_params["dataset"] == "iris":
         circuit = qml.QNode(iris_circuit, dev)
 
-        def cost_fn(params, mask=None):
+        def cost_fn(params, masked_circuit=None):
             return cost_iris(
-                circuit, params, data, target, wires, current_layers, rotations, mask
+                circuit,
+                params,
+                data,
+                target,
+                rotations,
+                masked_circuit,
             )
 
     # set up parameters
-    masked_params = init_parameters(layers, current_layers, wires)
+    masked_circuit = init_parameters(layers, current_layers, wires)
 
     if train_params["dropout"] == "eileen":
-        # masked_params.perturb(int(layers * wires * 0.5))
         amount = int(wires * layers * train_params["percentage"])
         perturb = False
         costs = deque(maxlen=5)
@@ -185,8 +217,9 @@ def train(
             # maybe combine with other dropouts
             if step > 0 and step % 1000 == 0:
                 current_layers += 1
+                masked_circuit.layer_mask[current_layers] = False
         branches, description = ensemble_branches(
-            train_params["dropout"], masked_params, amount, perturb=perturb
+            train_params["dropout"], masked_circuit, amount, perturb=perturb
         )
         perturb = False
         logging_branches[step] = description
@@ -195,14 +228,14 @@ def train(
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
-        masked_params, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
-        branch_index = branches.index(masked_params)
+        masked_circuit, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
+        branch_index = branches.index(masked_circuit)
         logging_branch_selection[step] = (
             "center" if branch_index == 0 else "left" if branch_index == 1 else "right"
         )
 
         logging_cost_values.append(current_cost.unwrap())
-        logging_gate_count_values.append(np.sum(masked_params.mask))
+        logging_gate_count_values.append(np.sum(masked_circuit.mask))
         if step % train_params["log_interval"] == 0:
             # perform logging
             logging_costs[step] = np.average(logging_cost_values)
@@ -211,7 +244,7 @@ def train(
             logging_gate_count_values.clear()
 
         # get the real gradients as gradients also contain values from dropped gates
-        real_gradients = masked_params.apply_mask(gradient)
+        real_gradients = masked_circuit.apply_mask(gradient[0])
 
         if __debug__:
             print(
@@ -233,29 +266,37 @@ def train(
                 ):
                     if __debug__:
                         print("======== allowing to perturb =========")
-                    if np.sum(masked_params.mask) >= layers * wires * 0.3:
-                        masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                    if np.sum(masked_circuit.mask) >= layers * wires * 0.3:
+                        masked_circuit.perturb(
+                            axis=PerturbationAxis.RANDOM,
+                            amount=1,
+                            mode=PerturbationMode.REMOVE,
+                        )
                         logging_branch_enforcement[step + 1] = {
                             "amount": 1,
                             "mode": PerturbationMode.REMOVE,
-                            "axis": masked_params.perturbation_axis,
+                            "axis": PerturbationAxis.RANDOM,
                         }
                     elif (
                         current_cost < 0.25
-                        and np.sum(masked_params.mask) >= layers * wires * 0.05
+                        and np.sum(masked_circuit.mask) >= layers * wires * 0.05
                     ):
-                        masked_params.perturb(1, mode=PerturbationMode.REMOVE)
+                        masked_circuit.perturb(
+                            axis=PerturbationAxis.RANDOM,
+                            amount=1,
+                            mode=PerturbationMode.REMOVE,
+                        )
                         logging_branch_enforcement[step + 1] = {
                             "amount": 1,
                             "mode": PerturbationMode.REMOVE,
-                            "axis": masked_params.perturbation_axis,
+                            "axis": PerturbationAxis.RANDOM,
                         }
                     costs.clear()
                     perturb = True
 
     if __debug__:
-        print(masked_params.params)
-        print(masked_params.mask)
+        print(masked_circuit.parameters)
+        print(masked_circuit.mask)
 
     return {
         "costs": logging_costs,
@@ -265,8 +306,8 @@ def train(
         "branches": logging_branches,
         "branch_selections": logging_branch_selection,
         "final_layers": current_layers,
-        "params": masked_params.params.unwrap(),
-        "mask": masked_params.mask.unwrap(),
+        "params": masked_circuit.parameters.unwrap(),
+        "mask": masked_circuit.mask.unwrap(),
         "__rotations": rotations,
     }
 
@@ -289,25 +330,21 @@ def test(
         correct = 0
         N = len(test_data)
         costs = []
+        masked_circuit = MaskedCircuit(parameters=params, layers=layers, wires=wires)
         for _step, (data, target) in enumerate(zip(test_data, test_target)):
-            test_mask = np.zeros_like(params, dtype=bool, requires_grad=False)
             output = circuit(
                 params,
                 data,
-                wires,
-                layers,
                 rotations,
-                test_mask,
+                masked_circuit,
             )
             c = cost_iris(
                 circuit,
                 params,
                 data,
                 target,
-                wires,
-                layers,
                 rotations,
-                test_mask,
+                masked_circuit,
             )
             costs.append(c)
             same = np.argmax(target) == np.argmax(output)
