@@ -196,7 +196,9 @@ class MaskedCircuit(object):
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
         :raises NotImplementedError: Raised in case of an unknown mode
         """
-        assert mode in list(PerturbationMode), "The selected mode is not supported."
+        assert mode in list(
+            PerturbationMode
+        ), f"The selected perturbation mode {mode} is not supported."
         if amount == 0:
             return
         if axis == PerturbationAxis.LAYERS:
