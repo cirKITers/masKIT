@@ -179,7 +179,7 @@ class MaskedCircuit(object):
 
     def perturb(
         self,
-        axis: PerturbationAxis,
+        axis: PerturbationAxis = PerturbationAxis.RANDOM,
         amount: Optional[Union[int, float]] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
