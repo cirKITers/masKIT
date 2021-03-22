@@ -14,6 +14,7 @@ from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
+from maskit.ensembles import ensemble_branches, EnsembleMaskDefinitions
 
 
 def get_device(sim_local: bool, wires: int, analytic: bool = True):
@@ -62,78 +63,6 @@ def ensemble_step(branches: List[MaskedCircuit], optimizer, *args, step_count=1)
         branch_costs[minimum_index],
         gradients[minimum_index],
     )
-
-
-def ensemble_branches(
-    dropout: str, masked_params: MaskedCircuit, amount: int = 1, perturb: bool = True
-):
-    if dropout == "random":
-        left_branch = masked_params.copy()
-        right_branch = masked_params.copy()
-        # randomly perturb branches
-        left_branch.perturb(
-            axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.REMOVE
-        )
-        right_branch.perturb(axis=PerturbationAxis.RANDOM)
-        branches = [masked_params, left_branch, right_branch]
-        description = {
-            "center": "No perturbation",
-            "left": {
-                "amount": 1,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
-            },
-            "right": {
-                "amount": None,
-                "mode": PerturbationMode.INVERT,
-                "axis": PerturbationAxis.RANDOM,
-            },
-        }
-    elif dropout == "classical":
-        masked_params.reset()
-        masked_params.perturb(
-            axis=PerturbationAxis.RANDOM,
-            amount=masked_params.parameters.size // 10,
-            mode=PerturbationMode.ADD,
-        )
-        branches = [masked_params]
-        description = {
-            "center": {
-                "amount": masked_params.parameters.size // 10,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
-                # TODO: added on empty mask...
-            },
-        }
-    elif dropout == "eileen" and perturb:
-        left_branch = masked_params.copy()
-        right_branch = masked_params.copy()
-        left_branch.perturb(
-            axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.ADD
-        )
-        right_branch.perturb(
-            axis=PerturbationAxis.RANDOM, amount=amount, mode=PerturbationMode.REMOVE
-        )
-        branches = [masked_params, left_branch, right_branch]
-        description = {
-            "center": "No perturbation",
-            "left": {
-                "amount": 1,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
-            },
-            "right": {
-                "amount": amount,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
-            },
-        }
-    else:
-        branches = [masked_params]
-        description = {
-            "center": "No perturbation",
-        }
-    return branches, description
 
 
 def init_parameters(layers: int, current_layers: int, wires: int) -> MaskedCircuit:
@@ -203,8 +132,8 @@ def train(
     # set up parameters
     masked_circuit = init_parameters(layers, current_layers, wires)
 
-    if train_params["dropout"] == "eileen":
-        amount = int(wires * layers * train_params["percentage"])
+    perturb = True
+    if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
         perturb = False
         costs = deque(maxlen=5)
 
@@ -218,11 +147,13 @@ def train(
             if step > 0 and step % 1000 == 0:
                 current_layers += 1
                 masked_circuit.layer_mask[current_layers] = False
-        branches, description = ensemble_branches(
-            train_params["dropout"], masked_circuit, amount, perturb=perturb
-        )
-        perturb = False
-        logging_branches[step] = description
+        if perturb:
+            branches = ensemble_branches(train_params["dropout"], masked_circuit)
+            if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
+                perturb = False
+        else:
+            branches = [masked_circuit]
+        logging_branches[step] = train_params["dropout"].value
 
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
@@ -252,7 +183,7 @@ def train(
                 f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
             )
 
-        if train_params["dropout"] == "eileen":
+        if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
             costs.append(current_cost)
             if len(costs) >= train_params["cost_span"] and current_cost > 0.1:
                 if (
@@ -369,7 +300,7 @@ if __name__ == "__main__":
         "testing": True,
         "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
-        "dropout": "eileen",
+        "dropout": EnsembleMaskDefinitions.EILEEN,
         "sim_local": True,
         "logging": True,
         "percentage": 0.05,

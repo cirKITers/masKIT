@@ -1,12 +1,16 @@
 from pennylane import numpy as np
 
 from maskit.optimizers import ExtendedOptimizers
+from maskit.ensembles import EnsembleMaskDefinitions
 
 
 def check_params(train_params):
     assert train_params["dataset"] in ["simple", "iris"]
     assert isinstance(train_params["optimizer"], ExtendedOptimizers)
-    assert train_params["dropout"] in [None, "random", "classical", "growing", "eileen"]
+    assert (
+        isinstance(train_params["dropout"], EnsembleMaskDefinitions)
+        or train_params["dropout"] is None
+    )
 
 
 def cross_entropy(predictions, targets, epsilon=1e-12):
