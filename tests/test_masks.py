@@ -145,6 +145,11 @@ class TestMaskedCircuits:
         mp.shrink(amount=1, axis=PerturbationAxis.RANDOM)
         assert pnp.sum(mp.mask) == mp.mask.size - 1
 
+    def test_shrink_wrong_axis(self):
+        mp = self._create_circuit(3)
+        with pytest.raises(NotImplementedError):
+            mp.shrink(amount=1, axis=10)
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
