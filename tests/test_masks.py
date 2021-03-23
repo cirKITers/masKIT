@@ -124,6 +124,27 @@ class TestMaskedCircuits:
         mp.parameters = new_random_values
         assert (mp.parameters == new_random_values).all()
 
+    def test_shrink_layer(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.layer_mask[:] = True
+        mp.shrink(amount=1, axis=PerturbationAxis.LAYERS)
+        assert pnp.sum(mp.mask) == mp.mask.size - size
+
+    def test_shrink_wire(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.wire_mask[:] = True
+        mp.shrink(amount=1, axis=PerturbationAxis.WIRES)
+        assert pnp.sum(mp.mask) == mp.mask.size - size
+
+    def test_shrink_parameter(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.parameter_mask[:] = True
+        mp.shrink(amount=1, axis=PerturbationAxis.RANDOM)
+        assert pnp.sum(mp.mask) == mp.mask.size - 1
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
