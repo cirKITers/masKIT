@@ -120,14 +120,10 @@ class Mask(object):
         self.mask[indices] = ~self.mask[indices]
 
     def shrink(self, amount: int = 1):
-        try:
-            index = np.argwhere(self.mask)
-            index = index[:amount]
-        except IndexError:
-            pass
-        else:
-            if index.size > 0:
-                self.mask[tuple(zip(*index))] = False
+        index = np.argwhere(self.mask)
+        index = index[:amount]
+        if index.size > 0:
+            self.mask[tuple(zip(*index))] = False
 
     def copy(self) -> "Mask":
         """Returns a copy of the current Mask."""
