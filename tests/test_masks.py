@@ -10,12 +10,6 @@ from maskit.masks import (
     PerturbationMode,
 )
 
-# TODO: unit test für None
-# TODO: unit test für Entfernung der Maske, wenn keine angesetzt ist
-# TODO: test len indices == 0
-# TODO: check if it is the row/column as selected
-# TODO: test auf None
-
 
 class TestMaskedCircuits:
     def test_init(self):
@@ -242,6 +236,23 @@ class TestMask:
             mp.perturb(amount=amount, mode=mode[0])
             mp.perturb(amount=amount, mode=mode[1])
             assert pnp.sum(mp.mask) == 0
+
+    def test_shrink(self):
+        size = 3
+        mp = Mask((size,))
+
+        for amount in range(size + 1):
+            mp[:] = True
+            mp.shrink(amount)
+            assert pnp.sum(mp.mask) == size - amount
+
+    def test_shrink_nd(self):
+        size = 3
+        mp = Mask((size, size - 1))
+        for amount in range(mp.mask.size + 1):
+            mp[:] = True
+            mp.shrink(amount)
+            assert pnp.sum(mp.mask) == mp.mask.size - amount
 
     def test_copy(self):
         size = 3

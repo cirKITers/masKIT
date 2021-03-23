@@ -101,7 +101,7 @@ def train(
 
     current_layers = (
         layers
-        if train_params["dropout"] != "growing"
+        if train_params["dropout"] != EnsembleMaskDefinitions.GROWING
         else train_params["starting_layers"]
     )
 
@@ -141,12 +141,13 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dropout"] == "growing":
+        if train_params["dropout"] == EnsembleMaskDefinitions.GROWING:
             # TODO useful condition
             # maybe combine with other dropouts
             if step > 0 and step % 1000 == 0:
-                current_layers += 1
-                masked_circuit.layer_mask[current_layers] = False
+                perturb = True
+            else:
+                perturb = False
         if perturb:
             branches = ensemble_branches(train_params["dropout"], masked_circuit)
             if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
@@ -161,9 +162,8 @@ def train(
 
         masked_circuit, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
         branch_index = branches.index(masked_circuit)
-        logging_branch_selection[step] = (
-            "center" if branch_index == 0 else "left" if branch_index == 1 else "right"
-        )
+        # currently branches have no name, so log selected index
+        logging_branch_selection[step] = branch_index
 
         logging_cost_values.append(current_cost.unwrap())
         logging_gate_count_values.append(np.sum(masked_circuit.mask))

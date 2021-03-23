@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union, Dict
 
 from maskit.masks import PerturbationAxis, PerturbationMode, MaskedCircuit
 
@@ -63,14 +64,15 @@ class EnsembleMaskDefinitions(Enum):
             },
         ],
     }
+    GROWING = {"center": [{"shrink": {"amount": 1, "axis": PerturbationAxis.LAYERS}}]}
 
 
 def ensemble_branches(
-    dropout: EnsembleMaskDefinitions,
+    dropout: Union[EnsembleMaskDefinitions, Dict],
     masked_params: MaskedCircuit,
 ):
     branches = []
-    dropout = dropout.value
+    dropout = dropout.value if isinstance(dropout, EnsembleMaskDefinitions) else dropout
     for key in dropout:
         operations = dropout[key]
         new_branch = masked_params

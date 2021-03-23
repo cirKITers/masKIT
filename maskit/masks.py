@@ -119,6 +119,16 @@ class Mask(object):
         )
         self.mask[indices] = ~self.mask[indices]
 
+    def shrink(self, amount: int = 1):
+        try:
+            index = np.argwhere(self.mask)
+            index = index[:amount]
+        except IndexError:
+            pass
+        else:
+            if index.size > 0:
+                self.mask[tuple(zip(*index))] = False
+
     def copy(self) -> "Mask":
         """Returns a copy of the current Mask."""
         clone = object.__new__(type(self))
@@ -209,6 +219,14 @@ class MaskedCircuit(object):
             self._parameter_mask.perturb(amount=amount, mode=mode)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
+
+    def shrink(self, axis: PerturbationAxis = PerturbationAxis.LAYERS, amount: int = 1):
+        if axis == PerturbationAxis.LAYERS:
+            self._layer_mask.shrink(amount)
+        elif axis == PerturbationAxis.WIRES:
+            self._wire_mask.shrink(amount)
+        elif axis == PerturbationAxis.RANDOM:
+            self._parameter_mask.shrink(amount)
 
     def clear(self):
         """Resets all masks."""
