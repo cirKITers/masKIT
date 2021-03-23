@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import pennylane as qml
 from pennylane import numpy as np
@@ -14,7 +14,7 @@ from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
-from maskit.ensembles import ensemble_branches, EnsembleMaskDefinitions
+from maskit.ensembles import ensemble_branches, EILEEN, GROWING
 
 
 def get_device(sim_local: bool, wires: int, analytic: bool = True):
@@ -45,10 +45,10 @@ def cost_iris(
     return cross_entropy(predictions=prediction, targets=target)
 
 
-def ensemble_step(branches: List[MaskedCircuit], optimizer, *args, step_count=1):
+def ensemble_step(branches: Dict[str, MaskedCircuit], optimizer, *args, step_count=1):
     branch_costs = []
     gradients = []
-    for branch in branches:
+    for branch in branches.values():
         params = branch.parameters
         for _ in range(step_count):
             params, _cost, gradient = optimizer.step_cost_and_grad(
@@ -58,8 +58,10 @@ def ensemble_step(branches: List[MaskedCircuit], optimizer, *args, step_count=1)
         branch_costs.append(args[0](params, masked_circuit=branch))
         gradients.append(gradient)
     minimum_index = branch_costs.index(min(branch_costs))
+    branch_name = list(branches.keys())[minimum_index]
     return (
-        branches[minimum_index],
+        branches[branch_name],
+        branch_name,
         branch_costs[minimum_index],
         gradients[minimum_index],
     )
@@ -101,7 +103,7 @@ def train(
 
     current_layers = (
         layers
-        if train_params["dropout"] != EnsembleMaskDefinitions.GROWING
+        if train_params["dropout"] != GROWING
         else train_params["starting_layers"]
     )
 
@@ -133,7 +135,7 @@ def train(
     masked_circuit = init_parameters(layers, current_layers, wires)
 
     perturb = True
-    if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
+    if train_params["dropout"] == EILEEN:
         perturb = False
         costs = deque(maxlen=5)
 
@@ -141,7 +143,7 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dropout"] == EnsembleMaskDefinitions.GROWING:
+        if train_params["dropout"] == GROWING:
             # TODO useful condition
             # maybe combine with other dropouts
             if step > 0 and step % 1000 == 0:
@@ -150,20 +152,22 @@ def train(
                 perturb = False
         if perturb:
             branches = ensemble_branches(train_params["dropout"], masked_circuit)
-            if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
+            if train_params["dropout"] == EILEEN:
                 perturb = False
         else:
-            branches = [masked_circuit]
-        logging_branches[step] = train_params["dropout"].value
+            branches = {"center": masked_circuit}
+        # TODO: it is sufficient to log only once
+        logging_branches[step] = train_params["dropout"]
 
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
-        masked_circuit, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
-        branch_index = branches.index(masked_circuit)
+        masked_circuit, branch_name, current_cost, gradient = ensemble_step(
+            branches, opt, cost_fn
+        )
         # currently branches have no name, so log selected index
-        logging_branch_selection[step] = branch_index
+        logging_branch_selection[step] = branch_name
 
         logging_cost_values.append(current_cost.unwrap())
         logging_gate_count_values.append(np.sum(masked_circuit.mask))
@@ -183,7 +187,7 @@ def train(
                 f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
             )
 
-        if train_params["dropout"] == EnsembleMaskDefinitions.EILEEN:
+        if train_params["dropout"] == EILEEN:
             costs.append(current_cost)
             if len(costs) >= train_params["cost_span"] and current_cost > 0.1:
                 if (
@@ -300,7 +304,7 @@ if __name__ == "__main__":
         "testing": True,
         "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
-        "dropout": EnsembleMaskDefinitions.EILEEN,
+        "dropout": EILEEN,
         "sim_local": True,
         "logging": True,
         "percentage": 0.05,
