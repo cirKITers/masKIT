@@ -82,7 +82,6 @@ def train(
     train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
 ):
     logging_costs = {}
-    logging_branches = {}
     logging_branch_selection = {}
     logging_branch_enforcement = {}
     logging_gate_count = {}
@@ -97,15 +96,12 @@ def train(
     steps = train_params["steps"]
     dev = get_device(train_params["sim_local"], wires=wires)
     opt = train_params["optimizer"].value(train_params["step_size"])
+    dropout = train_params["dropout"]
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
-    current_layers = (
-        layers
-        if train_params["dropout"] != GROWING
-        else train_params["starting_layers"]
-    )
+    current_layers = layers if dropout != GROWING else train_params["starting_layers"]
 
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
@@ -135,7 +131,7 @@ def train(
     masked_circuit = init_parameters(layers, current_layers, wires)
 
     perturb = True
-    if train_params["dropout"] == EILEEN:
+    if dropout == EILEEN:
         perturb = False
         costs = deque(maxlen=5)
 
@@ -143,21 +139,19 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dropout"] == GROWING:
+        if dropout == GROWING:
             # TODO useful condition
             # maybe combine with other dropouts
-            if step > 0 and step % 1000 == 0:
+            if step > 0 and step % (steps // layers) == 0:
                 perturb = True
             else:
                 perturb = False
-        if perturb:
-            branches = ensemble_branches(train_params["dropout"], masked_circuit)
-            if train_params["dropout"] == EILEEN:
+        if perturb and dropout is not None:
+            branches = ensemble_branches(dropout, masked_circuit)
+            if dropout == EILEEN:
                 perturb = False
         else:
             branches = {"center": masked_circuit}
-        # TODO: it is sufficient to log only once
-        logging_branches[step] = train_params["dropout"]
 
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
@@ -187,7 +181,7 @@ def train(
                 f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
             )
 
-        if train_params["dropout"] == EILEEN:
+        if dropout == EILEEN:
             costs.append(current_cost)
             if len(costs) >= train_params["cost_span"] and current_cost > 0.1:
                 if (
@@ -238,7 +232,6 @@ def train(
         "final_cost": current_cost.unwrap(),
         "branch_enforcements": logging_branch_enforcement,
         "dropouts": logging_gate_count,
-        "branches": logging_branches,
         "branch_selections": logging_branch_selection,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
