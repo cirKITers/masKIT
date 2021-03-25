@@ -1,7 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 rand.seed(1337)
 
@@ -249,6 +249,18 @@ class MaskedCircuit(object):
         clone._wire_mask = self._wire_mask.copy()
         clone.parameters = self.parameters.copy()
         return clone
+
+    @classmethod
+    def execute(cls, masked_circuit: "MaskedCircuit", operations: List[Dict]):
+        # TODO: add check for supported operations and error handling
+        result = masked_circuit
+        if operations is not None:
+            for operation_dict in operations:
+                for operation, parameters in operation_dict.items():
+                    value = result.__getattribute__(operation)(**parameters)
+                    if value is not None:
+                        result = value
+        return result
 
 
 if __name__ == "__main__":
