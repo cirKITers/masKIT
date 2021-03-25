@@ -2,14 +2,15 @@ import pytest
 import pennylane.numpy as pnp
 
 from maskit.masks import MaskedCircuit
-from maskit.ensembles import ensemble_branches, EILEEN, GROWING, RANDOM, CLASSICAL
+from maskit.ensembles import Ensemble, EILEEN, GROWING, RANDOM, CLASSICAL
 
 
 @pytest.mark.parametrize("definition", [EILEEN, GROWING, RANDOM, CLASSICAL])
 def test_ensemble_branches(definition):
     size = 3
     mp = _create_circuit(size)
-    branches = ensemble_branches(dropout=definition, masked_params=mp)
+    ensemble = Ensemble(dropout=definition)
+    branches = ensemble.branch(masked_circuit=mp)
     assert len(definition) == len(branches)
 
 

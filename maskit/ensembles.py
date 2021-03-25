@@ -1,7 +1,18 @@
-from typing import Dict
+from collections import deque
+from typing import Dict, List
+import pennylane.numpy as np
 
 from maskit.masks import PerturbationAxis, PerturbationMode, MaskedCircuit
 
+ENFORCEMENT = [
+    {
+        "perturb": {
+            "axis": PerturbationAxis.RANDOM,
+            "amount": 1,
+            "mode": PerturbationMode.REMOVE,
+        }
+    }
+]
 
 RANDOM = {
     "center": None,
@@ -67,19 +78,101 @@ EILEEN = {
 GROWING = {"center": [{"shrink": {"amount": 1, "axis": PerturbationAxis.LAYERS}}]}
 
 
-def ensemble_branches(
-    dropout: Dict,
-    masked_params: MaskedCircuit,
-) -> Dict[str, MaskedCircuit]:
-    branches = {}
-    for key in dropout:
-        operations = dropout[key]
-        new_branch = masked_params
-        if operations is not None:
-            for operation_dict in operations:
-                for operation, parameters in operation_dict.items():
-                    value = new_branch.__getattribute__(operation)(**parameters)
-                    if value is not None:
-                        new_branch = value
-        branches[key] = new_branch
-    return branches
+class Ensemble(object):
+    __slots__ = ("dropout", "perturb")
+
+    def __init__(self, dropout: Dict, *args, **kwargs):
+        super().__init__()
+        self.dropout = dropout
+        self.perturb = True
+
+    def branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
+        if not self.perturb or self.dropout is None:
+            return {"center": masked_circuit}
+        branches = {}
+        for key in self.dropout:
+            branches[key] = MaskedCircuit.execute(masked_circuit, self.dropout[key])
+        return branches
+
+    def step(self, branches: Dict[str, MaskedCircuit], optimizer, *args, step_count=1):
+        branch_costs = []
+        gradients = []
+        for branch in branches.values():
+            params = branch.parameters
+            for _ in range(step_count):
+                params, _cost, gradient = optimizer.step_cost_and_grad(
+                    *args, params, masked_circuit=branch
+                )
+            branch.parameters = params
+            branch_costs.append(args[0](params, masked_circuit=branch))
+            gradients.append(gradient)
+        minimum_index = branch_costs.index(min(branch_costs))
+        branch_name = list(branches.keys())[minimum_index]
+        selected_branch = branches[branch_name]
+        # FIXME: as soon as real (in terms of masked) parameters are used,
+        #   no mask has to be applied
+        #   until then real gradients must be calculated as gradients also
+        #   contain values from dropped gates
+        gradient = selected_branch.apply_mask(gradients[minimum_index][0])
+        return (selected_branch, branch_name, branch_costs[minimum_index], gradient)
+
+
+class AdaptiveEnsemble(Ensemble):
+    __slots__ = ("_cost", "epsilon", "enforcement_dropout", "perturb")
+
+    def __init__(
+        self, dropout: Dict, size: int, epsilon: float, enforcement_dropout: List[Dict]
+    ):
+        super().__init__(dropout)
+        self._cost = deque(maxlen=size)
+        self.epsilon = epsilon
+        self.enforcement_dropout = enforcement_dropout
+        self.perturb = False
+
+    def branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
+        result = super().branch(masked_circuit)
+        self.perturb = False
+        return result
+
+    def step(self, branches: Dict[str, MaskedCircuit], optimizer, *args, step_count=1):
+        branch, branch_name, branch_cost, gradients = super().step(
+            branches, optimizer, *args, step_count=step_count
+        )
+        self._cost.append(branch_cost)
+        if self._cost.maxlen and len(self._cost) >= self._cost.maxlen:
+            if branch_cost > 0.1:  # evaluate current cost
+                if (
+                    sum(
+                        [
+                            abs(cost - self._cost[index + 1])
+                            for index, cost in enumerate(list(self._cost)[:-1])
+                        ]
+                    )
+                    < self.epsilon
+                ):
+                    if __debug__:
+                        print("======== allowing to perturb =========")
+                    if (
+                        np.sum(branch.mask)
+                        >= branch.layer_mask.size * branch.wire_mask.size * 0.3
+                    ):
+                        branch = MaskedCircuit.execute(branch, self.enforcement_dropout)
+                        # logging_branch_enforcement[step + 1] = {  # TODO
+                        #     "amount": 1,
+                        #     "mode": PerturbationMode.REMOVE,
+                        #     "axis": PerturbationAxis.RANDOM,
+                        # }
+                    elif (
+                        branch_cost < 0.25
+                        and np.sum(branch.mask)
+                        >= branch.layer_mask.size * branch.wire_mask.size * 0.05
+                    ):
+                        branch = MaskedCircuit.execute(branch, self.enforcement_dropout)
+                        # logging_branch_enforcement[step + 1] = {  # TODO
+                        #     "amount": 1,
+                        #     "mode": PerturbationMode.REMOVE,
+                        #     "axis": PerturbationAxis.RANDOM,
+                        # }
+                    self._cost.clear()
+                    self.perturb = True
+        return (branch, branch_name, branch_cost, gradients)

@@ -1,20 +1,15 @@
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import pennylane as qml
 from pennylane import numpy as np
-from collections import deque
 
-from maskit.masks import (
-    MaskedCircuit,
-    PerturbationMode,
-    PerturbationAxis,
-)
+from maskit.masks import MaskedCircuit
 from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
-from maskit.ensembles import ensemble_branches, EILEEN, GROWING
+from maskit.ensembles import AdaptiveEnsemble, EILEEN, ENFORCEMENT, Ensemble, GROWING
 
 
 def get_device(sim_local: bool, wires: int, analytic: bool = True):
@@ -43,28 +38,6 @@ def cost_iris(
 ):
     prediction = circuit(params, data, rotations, masked_circuit)
     return cross_entropy(predictions=prediction, targets=target)
-
-
-def ensemble_step(branches: Dict[str, MaskedCircuit], optimizer, *args, step_count=1):
-    branch_costs = []
-    gradients = []
-    for branch in branches.values():
-        params = branch.parameters
-        for _ in range(step_count):
-            params, _cost, gradient = optimizer.step_cost_and_grad(
-                *args, params, masked_circuit=branch
-            )
-        branch.parameters = params
-        branch_costs.append(args[0](params, masked_circuit=branch))
-        gradients.append(gradient)
-    minimum_index = branch_costs.index(min(branch_costs))
-    branch_name = list(branches.keys())[minimum_index]
-    return (
-        branches[branch_name],
-        branch_name,
-        branch_costs[minimum_index],
-        gradients[minimum_index],
-    )
 
 
 def init_parameters(layers: int, current_layers: int, wires: int) -> MaskedCircuit:
@@ -96,12 +69,24 @@ def train(
     steps = train_params["steps"]
     dev = get_device(train_params["sim_local"], wires=wires)
     opt = train_params["optimizer"].value(train_params["step_size"])
-    dropout = train_params["dropout"]
+    if train_params.get("adaptive", False):
+        dropout_ensemble = AdaptiveEnsemble(
+            dropout=train_params["dropout"],
+            size=train_params["cost_span"],
+            epsilon=train_params["epsilon"],
+            enforcement_dropout=ENFORCEMENT,
+        )
+    else:
+        dropout_ensemble = Ensemble(dropout=train_params["dropout"])
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
-    current_layers = layers if dropout != GROWING else train_params["starting_layers"]
+    current_layers = (
+        layers
+        if dropout_ensemble.dropout != GROWING
+        else train_params["starting_layers"]
+    )
 
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
@@ -130,34 +115,27 @@ def train(
     # set up parameters
     masked_circuit = init_parameters(layers, current_layers, wires)
 
-    perturb = True
-    if dropout == EILEEN:
-        perturb = False
-        costs = deque(maxlen=5)
-
     # -----------------------------
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if dropout == GROWING:
+        # TODO: how to describe this?!
+        if dropout_ensemble.dropout == GROWING:
             # TODO useful condition
             # maybe combine with other dropouts
             if step > 0 and step % (steps // layers) == 0:
-                perturb = True
+                dropout_ensemble.perturb = True
             else:
-                perturb = False
-        if perturb and dropout is not None:
-            branches = ensemble_branches(dropout, masked_circuit)
-            if dropout == EILEEN:
-                perturb = False
-        else:
-            branches = {"center": masked_circuit}
+                dropout_ensemble.perturb = False
+
+        branches = dropout_ensemble.branch(masked_circuit)
 
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
-        masked_circuit, branch_name, current_cost, gradient = ensemble_step(
+        # TODO: add logging for adaptive ensembles
+        masked_circuit, branch_name, current_cost, gradient = dropout_ensemble.step(
             branches, opt, cost_fn
         )
         # currently branches have no name, so log selected index
@@ -172,56 +150,11 @@ def train(
             logging_cost_values.clear()
             logging_gate_count_values.clear()
 
-        # get the real gradients as gradients also contain values from dropped gates
-        real_gradients = masked_circuit.apply_mask(gradient[0])
-
         if __debug__:
             print(
                 f"Step: {step:4d} | Cost: {current_cost:.5f} |",
-                f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
+                f"Gradient Variance: {np.var(gradient[0:current_layers]):.9f}",
             )
-
-        if dropout == EILEEN:
-            costs.append(current_cost)
-            if len(costs) >= train_params["cost_span"] and current_cost > 0.1:
-                if (
-                    sum(
-                        [
-                            abs(cost - costs[index + 1])
-                            for index, cost in enumerate(list(costs)[:-1])
-                        ]
-                    )
-                    < train_params["epsilon"]
-                ):
-                    if __debug__:
-                        print("======== allowing to perturb =========")
-                    if np.sum(masked_circuit.mask) >= layers * wires * 0.3:
-                        masked_circuit.perturb(
-                            axis=PerturbationAxis.RANDOM,
-                            amount=1,
-                            mode=PerturbationMode.REMOVE,
-                        )
-                        logging_branch_enforcement[step + 1] = {
-                            "amount": 1,
-                            "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.RANDOM,
-                        }
-                    elif (
-                        current_cost < 0.25
-                        and np.sum(masked_circuit.mask) >= layers * wires * 0.05
-                    ):
-                        masked_circuit.perturb(
-                            axis=PerturbationAxis.RANDOM,
-                            amount=1,
-                            mode=PerturbationMode.REMOVE,
-                        )
-                        logging_branch_enforcement[step + 1] = {
-                            "amount": 1,
-                            "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.RANDOM,
-                        }
-                    costs.clear()
-                    perturb = True
 
     if __debug__:
         print(masked_circuit.parameters)
@@ -295,6 +228,7 @@ if __name__ == "__main__":
         "steps": 1000,
         "dataset": "simple",
         "testing": True,
+        "adaptive": True,
         "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
         "dropout": EILEEN,
