@@ -130,6 +130,8 @@ class AdaptiveEnsemble(Ensemble):
         epsilon: float,
         enforcement_dropout: List[Dict],
     ):
+        if size <= 0:
+            raise ValueError(f"Size must be bigger than 0 (received {size})")
         super().__init__(dropout)
         self._cost = deque(maxlen=size)
         self.epsilon = epsilon
