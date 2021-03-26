@@ -10,7 +10,7 @@ def test_ensemble_branches(definition):
     size = 3
     mp = _create_circuit(size)
     ensemble = Ensemble(dropout=definition)
-    branches = ensemble.branch(masked_circuit=mp)
+    branches = ensemble._branch(masked_circuit=mp)
     assert len(definition) == len(branches)
 
 

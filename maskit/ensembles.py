@@ -1,5 +1,5 @@
 from collections import deque
-from typing import Dict, List
+from typing import Dict, List, Optional
 import pennylane.numpy as np
 
 from maskit.masks import PerturbationAxis, PerturbationMode, MaskedCircuit
@@ -81,12 +81,12 @@ GROWING = {"center": [{"shrink": {"amount": 1, "axis": PerturbationAxis.LAYERS}}
 class Ensemble(object):
     __slots__ = ("dropout", "perturb")
 
-    def __init__(self, dropout: Dict, *args, **kwargs):
+    def __init__(self, dropout: Optional[Dict], *args, **kwargs):
         super().__init__()
         self.dropout = dropout
         self.perturb = True
 
-    def branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
+    def _branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
         if not self.perturb or self.dropout is None:
             return {"center": masked_circuit}
         branches = {}
@@ -94,7 +94,10 @@ class Ensemble(object):
             branches[key] = MaskedCircuit.execute(masked_circuit, self.dropout[key])
         return branches
 
-    def step(self, branches: Dict[str, MaskedCircuit], optimizer, *args, step_count=1):
+    def step(
+        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
+    ):
+        branches = self._branch(masked_circuit=masked_circuit)
         branch_costs = []
         gradients = []
         for branch in branches.values():
@@ -121,7 +124,11 @@ class AdaptiveEnsemble(Ensemble):
     __slots__ = ("_cost", "epsilon", "enforcement_dropout", "perturb")
 
     def __init__(
-        self, dropout: Dict, size: int, epsilon: float, enforcement_dropout: List[Dict]
+        self,
+        dropout: Optional[Dict[str, Dict]],
+        size: int,
+        epsilon: float,
+        enforcement_dropout: List[Dict],
     ):
         super().__init__(dropout)
         self._cost = deque(maxlen=size)
@@ -129,14 +136,16 @@ class AdaptiveEnsemble(Ensemble):
         self.enforcement_dropout = enforcement_dropout
         self.perturb = False
 
-    def branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
-        result = super().branch(masked_circuit)
+    def _branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
+        result = super()._branch(masked_circuit)
         self.perturb = False
         return result
 
-    def step(self, branches: Dict[str, MaskedCircuit], optimizer, *args, step_count=1):
+    def step(
+        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
+    ):
         branch, branch_name, branch_cost, gradients = super().step(
-            branches, optimizer, *args, step_count=step_count
+            masked_circuit, optimizer, *args, step_count=step_count
         )
         self._cost.append(branch_cost)
         if self._cost.maxlen and len(self._cost) >= self._cost.maxlen:

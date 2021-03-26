@@ -74,7 +74,7 @@ def train(
             dropout=train_params["dropout"],
             size=train_params["cost_span"],
             epsilon=train_params["epsilon"],
-            enforcement_dropout=ENFORCEMENT,
+            enforcement_dropout=train_params.get("enforcement", []),
         )
     else:
         dropout_ensemble = Ensemble(dropout=train_params["dropout"])
@@ -128,15 +128,13 @@ def train(
             else:
                 dropout_ensemble.perturb = False
 
-        branches = dropout_ensemble.branch(masked_circuit)
-
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
         # TODO: add logging for adaptive ensembles
         masked_circuit, branch_name, current_cost, gradient = dropout_ensemble.step(
-            branches, opt, cost_fn
+            masked_circuit, opt, cost_fn
         )
         # currently branches have no name, so log selected index
         logging_branch_selection[step] = branch_name
@@ -239,6 +237,7 @@ if __name__ == "__main__":
         "seed": 1337,
         "cost_span": 5,
         "log_interval": 5,
+        "enforcement": ENFORCEMENT,  # Enforcements are relevant if adaptive is True
     }
     check_params(train_params)
     if train_params.get("logging", True):
