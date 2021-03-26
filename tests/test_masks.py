@@ -150,6 +150,30 @@ class TestMaskedCircuits:
         with pytest.raises(NotImplementedError):
             mp.shrink(amount=1, axis=10)
 
+    def test_execute(self):
+        mp = self._create_circuit(3)
+        perturb_operation = {
+            "perturb": {
+                "amount": 1,
+                "axis": PerturbationAxis.RANDOM,
+                "mode": PerturbationMode.ADD,
+            }
+        }
+        # test empty operations
+        assert MaskedCircuit.execute(mp, []) == mp
+        # test existing method
+        MaskedCircuit.execute(mp, [perturb_operation])
+        assert pnp.sum(mp.mask) == 1
+        # test existing method with copy
+        new_mp = MaskedCircuit.execute(
+            mp, [{"clear": {}}, {"copy": {}}, perturb_operation]
+        )
+        assert mp != new_mp
+        assert pnp.sum(new_mp.mask) == 1
+        # test non-existing method
+        with pytest.raises(AttributeError):
+            MaskedCircuit.execute(mp, [{"non_existent": {"test": 1}}])
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
