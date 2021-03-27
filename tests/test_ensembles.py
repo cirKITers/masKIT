@@ -44,6 +44,16 @@ class TestAdaptiveEnsemble:
         assert ensemble
         assert ensemble.perturb is False
 
+    def test_branch(self):
+        mp = _create_circuit(3)
+        ensemble = AdaptiveEnsemble(
+            size=2, dropout={"center": {}}, epsilon=0.1, enforcement_dropout=[{}]
+        )
+        ensemble.perturb = True
+        branch = ensemble._branch(masked_circuit=mp)
+        assert ensemble.perturb is False
+        assert len(branch) == 1
+
 
 def _create_circuit(size):
     parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))

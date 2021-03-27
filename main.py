@@ -9,7 +9,12 @@ from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
-from maskit.ensembles import AdaptiveEnsemble, EILEEN, ENFORCEMENT, Ensemble, GROWING
+from maskit.ensembles import (
+    AdaptiveEnsemble,
+    EILEEN,
+    ENFORCEMENT,
+    Ensemble,
+)
 
 
 def get_device(sim_local: bool, wires: int, analytic: bool = True):
@@ -66,27 +71,17 @@ def train(
     # set up circuit, training, dataset
     wires = train_params["wires"]
     layers = train_params["layers"]
-    steps = train_params["steps"]
-    dev = get_device(train_params["sim_local"], wires=wires)
+    steps = train_params.get("steps", 1000)
+    dev = get_device(train_params.get("sim_local", True), wires=wires)
     opt = train_params["optimizer"].value(train_params["step_size"])
-    if train_params.get("adaptive", False):
-        dropout_ensemble = AdaptiveEnsemble(
-            dropout=train_params["dropout"],
-            size=train_params["cost_span"],
-            epsilon=train_params["epsilon"],
-            enforcement_dropout=train_params.get("enforcement", []),
-        )
-    else:
-        dropout_ensemble = Ensemble(dropout=train_params["dropout"])
+    dropout_ensemble = train_params.get("ensemble_type", Ensemble)(
+        **train_params.get("ensemble_kwargs")
+    )
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
-    current_layers = (
-        layers
-        if dropout_ensemble.dropout != GROWING
-        else train_params["starting_layers"]
-    )
+    current_layers = train_params.get("starting_layers", layers)
 
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
@@ -119,15 +114,6 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        # TODO: how to describe this?!
-        if dropout_ensemble.dropout == GROWING:
-            # TODO useful condition
-            # maybe combine with other dropouts
-            if step > 0 and step % (steps // layers) == 0:
-                dropout_ensemble.perturb = True
-            else:
-                dropout_ensemble.perturb = False
-
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
@@ -222,22 +208,23 @@ if __name__ == "__main__":
     train_params = {
         "wires": 10,
         "layers": 5,
-        "starting_layers": 10,  # only relevant if "dropout" == "growing"
+        # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
         "dataset": "simple",
         "testing": True,
-        "adaptive": True,
+        "ensemble_type": AdaptiveEnsemble,
+        "ensemble_kwargs": {
+            "dropout": EILEEN,
+            "size": 5,
+            "epsilon": 0.01,
+            "enforcement_dropout": ENFORCEMENT,
+        },
         "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
-        "dropout": EILEEN,
         "sim_local": True,
         "logging": True,
-        "percentage": 0.05,
-        "epsilon": 0.01,
         "seed": 1337,
-        "cost_span": 5,
         "log_interval": 5,
-        "enforcement": ENFORCEMENT,  # Enforcements are relevant if adaptive is True
     }
     check_params(train_params)
     if train_params.get("logging", True):

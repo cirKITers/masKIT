@@ -120,6 +120,31 @@ class Ensemble(object):
         return (selected_branch, branch_name, branch_costs[minimum_index], gradient)
 
 
+class IntervalEnsemble(Ensemble):
+    __slots__ = ("_interval", "_counter")
+
+    def __init__(self, dropout: Optional[Dict], interval: int):
+        super().__init__(dropout)
+        self._interval = interval
+        self._counter = 0
+        self.perturb = False
+
+    def _check_interval(self):
+        if self._counter % self._interval == 0:
+            self.perturb = True
+            self._counter = 0  # reset the counter
+        else:
+            self.perturb = False
+
+    def step(
+        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
+    ):
+        self._counter += 1
+        self._check_interval()
+        result = super().step(masked_circuit, optimizer, *args, step_count=step_count)
+        return result
+
+
 class AdaptiveEnsemble(Ensemble):
     __slots__ = ("_cost", "epsilon", "enforcement_dropout", "perturb")
 
