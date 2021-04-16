@@ -1,15 +1,52 @@
 import pytest
 import pennylane.numpy as pnp
 
-from maskit.masks import MaskedCircuit
+from maskit.masks import MaskedCircuit, PerturbationMode, PerturbationAxis
 from maskit.ensembles import (
     AdaptiveEnsemble,
     Ensemble,
     EILEEN,
-    GROWING,
-    RANDOM,
-    CLASSICAL,
 )
+
+
+CLASSICAL = {
+    "center": [
+        {"clear": {}},
+        {
+            "perturb": {
+                "amount": 0.1,
+                "mode": PerturbationMode.ADD,
+                "axis": PerturbationAxis.RANDOM,
+            }
+        },
+    ],
+}
+
+GROWING = {"center": [{"shrink": {"amount": 1, "axis": PerturbationAxis.LAYERS}}]}
+
+RANDOM = {
+    "center": None,
+    "left": [
+        {"copy": {}},
+        {
+            "perturb": {
+                "amount": 1,
+                "mode": PerturbationMode.REMOVE,
+                "axis": PerturbationAxis.RANDOM,
+            }
+        },
+    ],
+    "right": [
+        {"copy": {}},
+        {
+            "perturb": {
+                "amount": None,
+                "mode": PerturbationMode.INVERT,
+                "axis": PerturbationAxis.RANDOM,
+            }
+        },
+    ],
+}
 
 
 class TestEnsemble:
