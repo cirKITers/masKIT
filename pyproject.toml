@@ -10,7 +10,8 @@ home-page = "https://github.com/cirKITers/masKIT"
 classifiers = [ "License :: OSI Approved :: MIT License",]
 description-file = "README.md"
 requires = [
-    "pennylane ~= 0.14.1"
+    "pennylane ~= 0.14.1",
+    "typing_extensions",
 ]
 
 [tool.flit.metadata.requires-extra]
