@@ -223,7 +223,7 @@ class TestMask:
 
         for i in [0.01, 0.1, 0.5, 0.9]:
             mp.perturb(amount=i)
-            assert pnp.sum(mp.mask) == int(i * mp.mask.size)
+            assert pnp.sum(mp.mask) == round(i * mp.mask.size)
             mp.clear()
 
     def test_wrong_percentage_perturbation(self):
@@ -232,7 +232,7 @@ class TestMask:
 
         for i in [1.1, 1.5, 3.1]:
             mp.perturb(amount=i)
-            assert pnp.sum(mp.mask) == int(i)
+            assert pnp.sum(mp.mask) == round(i)
             mp.clear()
 
     def test_negative_perturbation(self):
@@ -257,7 +257,7 @@ class TestMask:
 
         for amount in [random.randrange(size), 0, size, size + 1]:
             mp.perturb(amount=amount, mode=PerturbationMode.INVERT)
-            reversed_amount = pnp.sum(mp.mask)
+            reversed_amount = pnp.sum(mp.mask).unwrap()  # unwrap tensor
             mp.perturb(amount=reversed_amount, mode=PerturbationMode.REMOVE)
             assert pnp.sum(mp.mask) == 0
 

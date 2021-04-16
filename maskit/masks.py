@@ -94,7 +94,7 @@ class Mask(object):
         if amount is not None:
             if amount < 1:
                 amount *= self.mask.size
-            amount = int(amount)
+            amount = round(amount)
         count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
         if count == 0:
             return
