@@ -14,30 +14,6 @@ ENFORCEMENT = [
     }
 ]
 
-EILEEN = {
-    "center": None,
-    "left": [
-        {"copy": {}},
-        {
-            "perturb": {
-                "amount": 1,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
-            },
-        },
-    ],
-    "right": [
-        {"copy": {}},
-        {
-            "perturb": {
-                "amount": 0.05,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
-            }
-        },
-    ],
-}
-
 
 class Ensemble(object):
     __slots__ = ("dropout", "perturb")

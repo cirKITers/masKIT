@@ -1,13 +1,11 @@
 import pytest
+import random
+import pennylane as qml
 import pennylane.numpy as pnp
 
 from maskit.masks import MaskedCircuit, PerturbationMode, PerturbationAxis
-from maskit.ensembles import (
-    AdaptiveEnsemble,
-    Ensemble,
-    EILEEN,
-)
-
+from maskit.ensembles import AdaptiveEnsemble, Ensemble
+from maskit.optimizers import ExtendedGradientDescentOptimizer
 
 CLASSICAL = {
     "center": [
@@ -49,13 +47,42 @@ RANDOM = {
 }
 
 
+QHACK = {
+    "center": None,
+    "left": [
+        {"copy": {}},
+        {
+            "perturb": {
+                "amount": 1,
+                "mode": PerturbationMode.ADD,
+                "axis": PerturbationAxis.RANDOM,
+            },
+        },
+    ],
+    "right": [
+        {"copy": {}},
+        {
+            "perturb": {
+                "amount": 0.05,
+                "mode": PerturbationMode.REMOVE,
+                "axis": PerturbationAxis.RANDOM,
+            }
+        },
+    ],
+}
+
+
+# TODO: remove explicit tests for private methods
+# TODO: add tests for step
+
+
 class TestEnsemble:
     def test_init(self):
         ensemble = Ensemble(dropout={})
         assert ensemble
         assert ensemble.perturb is True
 
-    @pytest.mark.parametrize("definition", [EILEEN, GROWING, RANDOM, CLASSICAL])
+    @pytest.mark.parametrize("definition", [QHACK, GROWING, RANDOM, CLASSICAL])
     def test_ensemble_branches(self, definition):
         size = 3
         mp = _create_circuit(size)
@@ -92,6 +119,122 @@ class TestAdaptiveEnsemble:
         assert len(branch) == 1
 
 
-def _create_circuit(size):
-    parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
+class TestEnsembleUseCases:
+    def test_classical(self):
+        random.seed(1234)
+        pnp.random.seed(1234)
+        mp = _create_circuit(3, layer_size=2)
+        ensemble = Ensemble(dropout=CLASSICAL)
+        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        optimizer = ExtendedGradientDescentOptimizer()
+
+        def cost_fn(params, masked_circuit=None):
+            return self._cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        current_cost = 1.0
+        for _ in range(10):
+            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+        assert current_cost == 0.8484392624942663
+
+    def test_growing(self):
+        random.seed(1234)
+        pnp.random.seed(1234)
+        mp = _create_circuit(3, layer_size=2)
+        mp.layer_mask[1:] = True
+        ensemble = Ensemble(dropout=GROWING)
+        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        optimizer = ExtendedGradientDescentOptimizer()
+
+        def cost_fn(params, masked_circuit=None):
+            return self._cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        current_cost = 1.0
+        assert pnp.sum(mp.layer_mask) == 2
+        for _ in range(len(mp.layer_mask) - 1):
+            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+        assert current_cost == 0.8614084884971068
+        assert pnp.sum(mp.layer_mask) == 0
+
+    def test_random(self):
+        random.seed(1234)
+        pnp.random.seed(1234)
+        mp = _create_circuit(3, layer_size=2)
+        ensemble = Ensemble(dropout=RANDOM)
+        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        optimizer = ExtendedGradientDescentOptimizer()
+
+        def cost_fn(params, masked_circuit=None):
+            return self._cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        current_cost = 1.0
+        for _ in range(10):
+            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+        assert current_cost == 0.609286792628519
+
+    def test_qhack(self):
+        random.seed(1234)
+        pnp.random.seed(1234)
+        mp = _create_circuit(3, layer_size=2)
+        ensemble = Ensemble(dropout=QHACK)
+        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        optimizer = ExtendedGradientDescentOptimizer()
+
+        def cost_fn(params, masked_circuit=None):
+            return self._cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        current_cost = 1.0
+        for _ in range(10):
+            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+        assert current_cost == 0.6361425084438272
+
+    def _device(self, wires: int):
+        return qml.device("default.qubit", wires=wires)
+
+    def _circuit(self, params, masked_circuit: MaskedCircuit = None):
+        for layer, layer_hidden in enumerate(masked_circuit.layer_mask):
+            if not layer_hidden:
+                for wire, wire_hidden in enumerate(masked_circuit.wire_mask):
+                    if (
+                        not wire_hidden
+                        and not masked_circuit.parameter_mask[layer][wire][0]
+                    ):
+                        qml.RX(params[layer][wire][0], wires=wire)
+                    if (
+                        not wire_hidden
+                        and not masked_circuit.parameter_mask[layer][wire][1]
+                    ):
+                        qml.RY(params[layer][wire][1], wires=wire)
+                for wire in range(0, masked_circuit.layer_mask.size - 1, 2):
+                    qml.CZ(wires=[wire, wire + 1])
+                for wire in range(1, masked_circuit.layer_mask.size - 1, 2):
+                    qml.CZ(wires=[wire, wire + 1])
+        return qml.probs(wires=range(len(masked_circuit.wire_mask)))
+
+    def _cost(self, params, circuit, masked_circuit: MaskedCircuit) -> float:
+        return 1.0 - circuit(params, masked_circuit=masked_circuit)[0]
+
+
+def _create_circuit(size: int, layer_size: int = 1):
+    if layer_size == 1:
+        parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
+    else:
+        parameters = pnp.random.uniform(
+            low=-pnp.pi, high=pnp.pi, size=(size, size, layer_size)
+        )
     return MaskedCircuit(parameters=parameters, layers=size, wires=size)

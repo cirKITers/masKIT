@@ -3,7 +3,7 @@ from typing import List, Optional
 import pennylane as qml
 from pennylane import numpy as np
 
-from maskit.masks import MaskedCircuit
+from maskit.masks import MaskedCircuit, PerturbationAxis, PerturbationMode
 from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
@@ -11,7 +11,6 @@ from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
 from maskit.ensembles import (
     AdaptiveEnsemble,
-    EILEEN,
     ENFORCEMENT,
     Ensemble,
 )
@@ -214,7 +213,29 @@ if __name__ == "__main__":
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
         "ensemble_kwargs": {
-            "dropout": EILEEN,
+            "dropout": {
+                "center": None,
+                "left": [
+                    {"copy": {}},
+                    {
+                        "perturb": {
+                            "amount": 1,
+                            "mode": PerturbationMode.ADD,
+                            "axis": PerturbationAxis.RANDOM,
+                        },
+                    },
+                ],
+                "right": [
+                    {"copy": {}},
+                    {
+                        "perturb": {
+                            "amount": 0.05,
+                            "mode": PerturbationMode.REMOVE,
+                            "axis": PerturbationAxis.RANDOM,
+                        }
+                    },
+                ],
+            },
             "size": 5,
             "epsilon": 0.01,
             "enforcement_dropout": ENFORCEMENT,
