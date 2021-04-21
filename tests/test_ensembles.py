@@ -138,7 +138,7 @@ class TestEnsembleUseCases:
         current_cost = 1.0
         for _ in range(10):
             mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
-        assert current_cost == 0.8484392624942663
+        assert current_cost == pytest.approx(0.84843926)
 
     def test_growing(self):
         random.seed(1234)
@@ -160,7 +160,7 @@ class TestEnsembleUseCases:
         assert pnp.sum(mp.layer_mask) == 2
         for _ in range(len(mp.layer_mask) - 1):
             mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
-        assert current_cost == 0.8614084884971068
+        assert current_cost == pytest.approx(0.86140848)
         assert pnp.sum(mp.layer_mask) == 0
 
     def test_random(self):
@@ -181,7 +181,7 @@ class TestEnsembleUseCases:
         current_cost = 1.0
         for _ in range(10):
             mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
-        assert current_cost == 0.609286792628519
+        assert current_cost == pytest.approx(0.60928679)
 
     def test_qhack(self):
         random.seed(1234)
@@ -201,7 +201,7 @@ class TestEnsembleUseCases:
         current_cost = 1.0
         for _ in range(10):
             mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
-        assert current_cost == 0.6361425084438272
+        assert current_cost == pytest.approx(0.6361425)
 
     def _device(self, wires: int):
         return qml.device("default.qubit", wires=wires)
