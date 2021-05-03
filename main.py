@@ -136,7 +136,7 @@ def train(
         if __debug__:
             print(
                 f"Step: {step:4d} | Cost: {current_cost:.5f} |",
-                f"Gradient Variance: {np.var(gradient[0:current_layers]):.9f}",
+                # f"Gradient Variance: {np.var(gradient[0:current_layers]):.9f}",
             )
 
     if __debug__:

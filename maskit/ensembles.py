@@ -34,18 +34,20 @@ class Ensemble(object):
     def step(
         self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
     ):
+        # TODO: step_count is undefined, does it mean how often it is disturbed or
+        #   how often the disturbance is trained before being evaluated
+        # first one trainingstep
+        params, _cost, gradient = optimizer.step_cost_and_grad(
+            *args, masked_circuit.parameters, masked_circuit=masked_circuit
+        )
+        masked_circuit.parameters = params
+
+        # then branching
         branches = self._branch(masked_circuit=masked_circuit)
         branch_costs = []
-        gradients = []
         for branch in branches.values():
-            params = branch.parameters
-            for _ in range(step_count):
-                params, _cost, gradient = optimizer.step_cost_and_grad(
-                    *args, params, masked_circuit=branch
-                )
-            branch.parameters = params
-            branch_costs.append(args[0](params, masked_circuit=branch))
-            gradients.append(gradient)
+            branch_costs.append(args[0](branch.parameters, masked_circuit=branch))
+
         minimum_index = branch_costs.index(min(branch_costs))
         branch_name = list(branches.keys())[minimum_index]
         selected_branch = branches[branch_name]
@@ -53,8 +55,7 @@ class Ensemble(object):
         #   no mask has to be applied
         #   until then real gradients must be calculated as gradients also
         #   contain values from dropped gates
-        gradient = selected_branch.apply_mask(gradients[minimum_index][0])
-        return (selected_branch, branch_name, branch_costs[minimum_index], gradient)
+        return (selected_branch, branch_name, branch_costs[minimum_index], 0)
 
 
 class IntervalEnsemble(Ensemble):
