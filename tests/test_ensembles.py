@@ -46,7 +46,6 @@ RANDOM = {
     ],
 }
 
-
 QHACK = {
     "center": None,
     "left": [
@@ -210,16 +209,11 @@ class TestEnsembleUseCases:
         for layer, layer_hidden in enumerate(masked_circuit.layer_mask):
             if not layer_hidden:
                 for wire, wire_hidden in enumerate(masked_circuit.wire_mask):
-                    if (
-                        not wire_hidden
-                        and not masked_circuit.parameter_mask[layer][wire][0]
-                    ):
-                        qml.RX(params[layer][wire][0], wires=wire)
-                    if (
-                        not wire_hidden
-                        and not masked_circuit.parameter_mask[layer][wire][1]
-                    ):
-                        qml.RY(params[layer][wire][1], wires=wire)
+                    if not wire_hidden:
+                        if not masked_circuit.parameter_mask[layer][wire][0]:
+                            qml.RX(params[layer][wire][0], wires=wire)
+                        if not masked_circuit.parameter_mask[layer][wire][1]:
+                            qml.RY(params[layer][wire][1], wires=wire)
                 for wire in range(0, masked_circuit.layer_mask.size - 1, 2):
                     qml.CZ(wires=[wire, wire + 1])
                 for wire in range(1, masked_circuit.layer_mask.size - 1, 2):
