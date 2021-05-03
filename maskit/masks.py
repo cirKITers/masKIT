@@ -3,8 +3,6 @@ import pennylane.numpy as np
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-rand.seed(1337)
-
 
 class PerturbationAxis(Enum):
     #: Perturbation affects whole wires
