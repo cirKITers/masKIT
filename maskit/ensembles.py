@@ -1,6 +1,5 @@
 from collections import deque
 from typing import Dict, List, Optional
-import pennylane.numpy as np
 
 from maskit.masks import PerturbationAxis, PerturbationMode, MaskedCircuit
 
@@ -99,7 +98,7 @@ class AdaptiveEnsemble(Ensemble):
         dropout: Optional[Dict[str, Dict]],
         size: int,
         epsilon: float,
-        enforcement_dropout: List[Dict],
+        enforcement_dropout: List[Dict],  # FIXME: not used anymore
     ):
         if size <= 0:
             raise ValueError(f"Size must be bigger than 0 (received {size})")
@@ -134,27 +133,6 @@ class AdaptiveEnsemble(Ensemble):
                 ):
                     if __debug__:
                         print("======== allowing to perturb =========")
-                    if (
-                        np.sum(branch.mask)
-                        >= branch.layer_mask.size * branch.wire_mask.size * 0.3
-                    ):
-                        branch = MaskedCircuit.execute(branch, self.enforcement_dropout)
-                        # logging_branch_enforcement[step + 1] = {  # TODO
-                        #     "amount": 1,
-                        #     "mode": PerturbationMode.REMOVE,
-                        #     "axis": PerturbationAxis.RANDOM,
-                        # }
-                    elif (
-                        branch_cost < 0.25
-                        and np.sum(branch.mask)
-                        >= branch.layer_mask.size * branch.wire_mask.size * 0.05
-                    ):
-                        branch = MaskedCircuit.execute(branch, self.enforcement_dropout)
-                        # logging_branch_enforcement[step + 1] = {  # TODO
-                        #     "amount": 1,
-                        #     "mode": PerturbationMode.REMOVE,
-                        #     "axis": PerturbationAxis.RANDOM,
-                        # }
                     self._cost.clear()
                     self.perturb = True
         return (branch, branch_name, branch_cost, gradients)
