@@ -32,12 +32,15 @@ class Ensemble(object):
         return branches
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
+        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 0
     ):
-        # TODO: step_count is undefined, does it mean how often it is disturbed or
-        #   how often the disturbance is trained before being evaluated
+        """
+        The parameter `step_count` defines the number of training steps that are
+        executed for each ensemble branch in addition to one training step
+        that is done before the branching.
+        """
         # first one trainingstep
-        params, _cost, gradient = optimizer.step_cost_and_grad(
+        params, _cost, _gradient = optimizer.step_cost_and_grad(
             *args, masked_circuit.parameters, masked_circuit=masked_circuit
         )
         masked_circuit.parameters = params
@@ -46,6 +49,11 @@ class Ensemble(object):
         branches = self._branch(masked_circuit=masked_circuit)
         branch_costs = []
         for branch in branches.values():
+            for _ in range(step_count):
+                params, _cost, _gradient = optimizer.step_cost_and_grad(
+                    *args, branch.parameters, masked_circuit=branch
+                )
+                branch.parameters = params
             branch_costs.append(args[0](branch.parameters, masked_circuit=branch))
 
         minimum_index = branch_costs.index(min(branch_costs))
