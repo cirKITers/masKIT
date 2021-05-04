@@ -119,7 +119,7 @@ def train(
 
         # TODO: add logging for adaptive ensembles
         masked_circuit, branch_name, current_cost, gradient = dropout_ensemble.step(
-            masked_circuit, opt, cost_fn
+            masked_circuit, opt, cost_fn, step_count=1
         )
         # currently branches have no name, so log selected index
         logging_branch_selection[step] = branch_name
