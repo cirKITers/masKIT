@@ -4,7 +4,7 @@ import pennylane as qml
 import pennylane.numpy as pnp
 
 from maskit.masks import MaskedCircuit, PerturbationMode, PerturbationAxis
-from maskit.ensembles import AdaptiveEnsemble, Ensemble
+from maskit.ensembles import AdaptiveEnsemble, Ensemble, IntervalEnsemble
 from maskit.optimizers import ExtendedGradientDescentOptimizer
 
 CLASSICAL = {
@@ -96,6 +96,44 @@ class TestEnsemble:
         assert len(branches) == 1
         assert list(branches.values())[0] == mp
 
+    @pytest.mark.parametrize("dropout", [QHACK, RANDOM])
+    def test_ensemble_step(self, dropout):
+        mp = _create_circuit(3, layer_size=2)
+        optimizer = ExtendedGradientDescentOptimizer()
+        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
+        ensemble = Ensemble(dropout=dropout)
+
+        def cost_fn(params, masked_circuit=None):
+            return _cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        # compare for different steps
+        cost = 1.0
+        for steps in range(3):
+            random.seed(1234)
+            pnp.random.seed(1234)
+            _params, _name, current_cost, _gradients = ensemble.step(
+                mp.copy(), optimizer, cost_fn, step_count=steps
+            )
+            assert current_cost < cost
+            cost = current_cost
+
+
+class TestIntervalEnsemble:
+    def test_init(self):
+        with pytest.raises(ValueError):
+            IntervalEnsemble(dropout={}, interval=0)
+        assert IntervalEnsemble(dropout={}, interval=1)
+
+    def test_branch(self):
+        assert False
+
+    def test_check_interval(self):
+        assert False
+
 
 class TestAdaptiveEnsemble:
     def test_init(self):
@@ -120,11 +158,11 @@ class TestEnsembleUseCases:
         pnp.random.seed(1234)
         mp = _create_circuit(3, layer_size=2)
         ensemble = Ensemble(dropout=CLASSICAL)
-        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
-            return self._cost(
+            return _cost(
                 params,
                 circuit,
                 masked_circuit,
@@ -141,11 +179,11 @@ class TestEnsembleUseCases:
         mp = _create_circuit(3, layer_size=2)
         mp.layer_mask[1:] = True
         ensemble = Ensemble(dropout=GROWING)
-        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
-            return self._cost(
+            return _cost(
                 params,
                 circuit,
                 masked_circuit,
@@ -163,11 +201,11 @@ class TestEnsembleUseCases:
         pnp.random.seed(1234)
         mp = _create_circuit(3, layer_size=2)
         ensemble = Ensemble(dropout=RANDOM)
-        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
-            return self._cost(
+            return _cost(
                 params,
                 circuit,
                 masked_circuit,
@@ -183,11 +221,11 @@ class TestEnsembleUseCases:
         pnp.random.seed(1234)
         mp = _create_circuit(3, layer_size=2)
         ensemble = Ensemble(dropout=QHACK)
-        circuit = qml.QNode(self._circuit, self._device(mp.wire_mask.size))
+        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
-            return self._cost(
+            return _cost(
                 params,
                 circuit,
                 masked_circuit,
@@ -198,26 +236,29 @@ class TestEnsembleUseCases:
             mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
         assert current_cost == pytest.approx(0.63792393)
 
-    def _device(self, wires: int):
-        return qml.device("default.qubit", wires=wires)
 
-    def _circuit(self, params, masked_circuit: MaskedCircuit = None):
-        for layer, layer_hidden in enumerate(masked_circuit.layer_mask):
-            if not layer_hidden:
-                for wire, wire_hidden in enumerate(masked_circuit.wire_mask):
-                    if not wire_hidden:
-                        if not masked_circuit.parameter_mask[layer][wire][0]:
-                            qml.RX(params[layer][wire][0], wires=wire)
-                        if not masked_circuit.parameter_mask[layer][wire][1]:
-                            qml.RY(params[layer][wire][1], wires=wire)
-                for wire in range(0, masked_circuit.layer_mask.size - 1, 2):
-                    qml.CZ(wires=[wire, wire + 1])
-                for wire in range(1, masked_circuit.layer_mask.size - 1, 2):
-                    qml.CZ(wires=[wire, wire + 1])
-        return qml.probs(wires=range(len(masked_circuit.wire_mask)))
+def _cost(params, circuit, masked_circuit: MaskedCircuit) -> float:
+    return 1.0 - circuit(params, masked_circuit=masked_circuit)[0]
 
-    def _cost(self, params, circuit, masked_circuit: MaskedCircuit) -> float:
-        return 1.0 - circuit(params, masked_circuit=masked_circuit)[0]
+
+def _device(wires: int):
+    return qml.device("default.qubit", wires=wires)
+
+
+def _variational_circuit(params, masked_circuit: MaskedCircuit = None):
+    for layer, layer_hidden in enumerate(masked_circuit.layer_mask):
+        if not layer_hidden:
+            for wire, wire_hidden in enumerate(masked_circuit.wire_mask):
+                if not wire_hidden:
+                    if not masked_circuit.parameter_mask[layer][wire][0]:
+                        qml.RX(params[layer][wire][0], wires=wire)
+                    if not masked_circuit.parameter_mask[layer][wire][1]:
+                        qml.RY(params[layer][wire][1], wires=wire)
+            for wire in range(0, masked_circuit.layer_mask.size - 1, 2):
+                qml.CZ(wires=[wire, wire + 1])
+            for wire in range(1, masked_circuit.layer_mask.size - 1, 2):
+                qml.CZ(wires=[wire, wire + 1])
+    return qml.probs(wires=range(len(masked_circuit.wire_mask)))
 
 
 def _create_circuit(size: int, layer_size: int = 1):
