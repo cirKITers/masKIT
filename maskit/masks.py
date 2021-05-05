@@ -260,8 +260,67 @@ class MaskedCircuit(object):
                         result = value
         return result
 
+    def __repr__(self) -> str:
+        def format_value(value):
+            return f"{value: .8f}"
+
+        result = ""
+        length = 0
+        first_layer = True
+        result += "["
+        for layer, layer_hidden in enumerate(self.layer_mask):
+            if first_layer:
+                result += "["
+                first_layer = False
+            else:
+                result += "\n ["
+            first_wire = True
+            first_value = True
+            for wire, wire_hidden in enumerate(self.wire_mask):
+                if isinstance(self.parameter_mask[layer][wire].unwrap(), np.ndarray):
+                    if first_wire:
+                        result += "["
+                        first_wire = False
+                    else:
+                        result += "\n  ["
+                    first_value = True
+                    for parameter, parameter_hidden in enumerate(
+                        self.parameter_mask[layer][wire]
+                    ):
+                        if not (layer_hidden or wire_hidden or parameter_hidden):
+                            value = format_value(
+                                self.parameters[layer][wire][parameter]
+                            )
+                            length = len(value)
+                        else:
+                            value = "{placeholder}"
+                        if first_value:
+                            result += value
+                            first_value = False
+                        else:
+                            result += f" {value}"
+                    result += "]"
+                else:
+                    if not (
+                        layer_hidden or wire_hidden or self.parameter_mask[layer][wire]
+                    ):
+                        value = format_value(self.parameters[layer][wire])
+                        length = len(value)
+                    else:
+                        value = "{placeholder}"
+                    if first_value:
+                        result += value
+                        first_value = False
+                    else:
+                        result += f" {value}"
+            result += "]"
+        result += "]"
+        return result.format(placeholder="-" * length)
+
 
 if __name__ == "__main__":
     parameter = MaskedCircuit(
         np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
     )
+    parameter.wire_mask[1] = True
+    print(parameter)
