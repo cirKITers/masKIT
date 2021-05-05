@@ -100,18 +100,14 @@ class TestEnsemble:
 class TestAdaptiveEnsemble:
     def test_init(self):
         with pytest.raises(ValueError):
-            AdaptiveEnsemble(size=0, dropout={}, epsilon=0, enforcement_dropout=[{}])
-        ensemble = AdaptiveEnsemble(
-            size=5, dropout={}, epsilon=0, enforcement_dropout=[{}]
-        )
+            AdaptiveEnsemble(size=0, dropout={}, epsilon=0)
+        ensemble = AdaptiveEnsemble(size=5, dropout={}, epsilon=0)
         assert ensemble
         assert ensemble.perturb is False
 
     def test_branch(self):
         mp = _create_circuit(3)
-        ensemble = AdaptiveEnsemble(
-            size=2, dropout={"center": {}}, epsilon=0.1, enforcement_dropout=[{}]
-        )
+        ensemble = AdaptiveEnsemble(size=2, dropout={"center": {}}, epsilon=0.1)
         ensemble.perturb = True
         branch = ensemble._branch(masked_circuit=mp)
         assert ensemble.perturb is False
