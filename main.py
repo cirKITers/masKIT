@@ -74,7 +74,7 @@ def train(
     dev = get_device(train_params.get("sim_local", True), wires=wires)
     opt = train_params["optimizer"].value(train_params["step_size"])
     dropout_ensemble = train_params.get("ensemble_type", Ensemble)(
-        **train_params.get("ensemble_kwargs")
+        **train_params.get("ensemble_kwargs", {"dropout": None})
     )
 
     rotation_choices = [0, 1, 2]
