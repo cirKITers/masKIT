@@ -1,5 +1,6 @@
 from collections import deque
 from typing import Dict, Optional
+from pennylane import numpy as np
 
 from maskit.masks import MaskedCircuit
 
@@ -12,9 +13,11 @@ class Ensemble(object):
         self.dropout = dropout
         self.perturb = True
 
-    def _branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
+    def _branch(
+        self, masked_circuit: MaskedCircuit
+    ) -> Optional[Dict[str, MaskedCircuit]]:
         if not self.perturb or self.dropout is None:
-            return {"center": masked_circuit}
+            return None
         branches = {}
         for key in self.dropout:
             branches[key] = MaskedCircuit.execute(masked_circuit, self.dropout[key])
@@ -36,7 +39,15 @@ class Ensemble(object):
 
         # then branching
         branches = self._branch(masked_circuit=masked_circuit)
+        if branches is None:
+            return (
+                masked_circuit,
+                "center",
+                args[0](masked_circuit.parameters, masked_circuit=masked_circuit),
+                _gradient,
+            )
         branch_costs = []
+        branch_gradients = []
         for branch in branches.values():
             for _ in range(step_count):
                 params, _cost, _gradient = optimizer.step_cost_and_grad(
@@ -44,7 +55,7 @@ class Ensemble(object):
                 )
                 branch.parameters = params
             branch_costs.append(args[0](branch.parameters, masked_circuit=branch))
-
+            branch_gradients.append(_gradient)
         minimum_index = branch_costs.index(min(branch_costs))
         branch_name = list(branches.keys())[minimum_index]
         selected_branch = branches[branch_name]
@@ -52,7 +63,12 @@ class Ensemble(object):
         #   no mask has to be applied
         #   until then real gradients must be calculated as gradients also
         #   contain values from dropped gates
-        return (selected_branch, branch_name, branch_costs[minimum_index], 0)
+        return (
+            selected_branch,
+            branch_name,
+            branch_costs[minimum_index],
+            branch_gradients[minimum_index],
+        )
 
 
 class IntervalEnsemble(Ensemble):
@@ -80,8 +96,7 @@ class IntervalEnsemble(Ensemble):
     ):
         self._counter += 1
         self._check_interval()
-        result = super().step(masked_circuit, optimizer, *args, step_count=step_count)
-        return result
+        return super().step(masked_circuit, optimizer, *args, step_count=step_count)
 
 
 class AdaptiveEnsemble(Ensemble):
@@ -100,10 +115,16 @@ class AdaptiveEnsemble(Ensemble):
         self.epsilon = epsilon
         self.perturb = False
 
-    def _branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:
-        result = super()._branch(masked_circuit)
+    def _check_cost(self, current_cost):
         self.perturb = False
-        return result
+        self._cost.append(current_cost)
+        if self._cost.maxlen and len(self._cost) >= self._cost.maxlen:
+            if current_cost > 0.1:  # evaluate current cost
+                if np.sum(np.diff(self._cost)) < self.epsilon:
+                    if __debug__:
+                        print("======== allowing to perturb =========")
+                    self._cost.clear()
+                    self.perturb = True
 
     def step(
         self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
@@ -111,20 +132,5 @@ class AdaptiveEnsemble(Ensemble):
         branch, branch_name, branch_cost, gradients = super().step(
             masked_circuit, optimizer, *args, step_count=step_count
         )
-        self._cost.append(branch_cost)
-        if self._cost.maxlen and len(self._cost) >= self._cost.maxlen:
-            if branch_cost > 0.1:  # evaluate current cost
-                if (
-                    sum(
-                        [
-                            abs(cost - self._cost[index + 1])
-                            for index, cost in enumerate(list(self._cost)[:-1])
-                        ]
-                    )
-                    < self.epsilon
-                ):
-                    if __debug__:
-                        print("======== allowing to perturb =========")
-                    self._cost.clear()
-                    self.perturb = True
+        self._check_cost(branch_cost)
         return (branch, branch_name, branch_cost, gradients)
