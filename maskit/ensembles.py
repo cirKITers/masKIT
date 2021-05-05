@@ -70,6 +70,10 @@ class IntervalEnsemble(Ensemble):
 
     def __init__(self, dropout: Optional[Dict], interval: int):
         super().__init__(dropout)
+        if interval < 1:
+            raise ValueError(
+                f"Interval must be in a valid range (>= 1), current value {interval}"
+            )
         self._interval = interval
         self._counter = 0
         self.perturb = False
