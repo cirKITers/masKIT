@@ -1,17 +1,7 @@
 from collections import deque
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
-from maskit.masks import PerturbationAxis, PerturbationMode, MaskedCircuit
-
-ENFORCEMENT = [
-    {
-        "perturb": {
-            "axis": PerturbationAxis.RANDOM,
-            "amount": 1,
-            "mode": PerturbationMode.REMOVE,
-        }
-    }
-]
+from maskit.masks import MaskedCircuit
 
 
 class Ensemble(object):
@@ -95,21 +85,19 @@ class IntervalEnsemble(Ensemble):
 
 
 class AdaptiveEnsemble(Ensemble):
-    __slots__ = ("_cost", "epsilon", "enforcement_dropout", "perturb")
+    __slots__ = ("_cost", "epsilon")
 
     def __init__(
         self,
         dropout: Optional[Dict[str, Dict]],
         size: int,
         epsilon: float,
-        enforcement_dropout: List[Dict],  # FIXME: not used anymore
     ):
         if size <= 0:
             raise ValueError(f"Size must be bigger than 0 (received {size})")
         super().__init__(dropout)
         self._cost = deque(maxlen=size)
         self.epsilon = epsilon
-        self.enforcement_dropout = enforcement_dropout
         self.perturb = False
 
     def _branch(self, masked_circuit: MaskedCircuit) -> Dict[str, MaskedCircuit]:

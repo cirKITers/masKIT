@@ -11,7 +11,6 @@ from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
 from maskit.ensembles import (
     AdaptiveEnsemble,
-    ENFORCEMENT,
     Ensemble,
 )
 
@@ -238,7 +237,6 @@ if __name__ == "__main__":
             },
             "size": 5,
             "epsilon": 0.01,
-            "enforcement_dropout": ENFORCEMENT,
         },
         "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
