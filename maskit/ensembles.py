@@ -126,9 +126,7 @@ class IntervalEnsemble(Ensemble):
     def __init__(self, dropout: Optional[Dict], interval: int):
         super().__init__(dropout)
         if interval < 1:
-            raise ValueError(
-                f"interval must be >= 1, got {interval!r}"
-            )
+            raise ValueError(f"interval must be >= 1, got {interval!r}")
         self._interval = interval
         self._counter = 0
         self.perturb = False
