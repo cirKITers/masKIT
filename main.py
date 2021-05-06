@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+import random
 import pennylane as qml
 from pennylane import numpy as np
 
@@ -66,6 +67,7 @@ def train(
     logging_dropout_count_values = []
 
     np.random.seed(train_params["seed"])
+    random.seed(train_params["seed"])
 
     # set up circuit, training, dataset
     wires = train_params["wires"]
