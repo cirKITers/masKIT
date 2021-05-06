@@ -59,10 +59,11 @@ def train(
 ):
     logging_costs = {}
     logging_branch_selection = {}
-    logging_branch_enforcement = {}
-    logging_gate_count = {}
+    logging_branch_cost = {"netto": {}, "brutto": {}}
+    logging_branch_cost_step = {"netto": {}, "brutto": {}}
+    logging_dropout_count = {}
     logging_cost_values = []
-    logging_gate_count_values = []
+    logging_dropout_count_values = []
 
     np.random.seed(train_params["seed"])
 
@@ -119,17 +120,20 @@ def train(
         # TODO: add logging for adaptive ensembles
         result = dropout_ensemble.step(masked_circuit, opt, cost_fn, ensemble_steps=1)
         masked_circuit = result.branch
-        # currently branches have no name, so log selected index
-        logging_branch_selection[step] = result.branch_name
-
-        logging_cost_values.append(result.cost.unwrap())
-        logging_gate_count_values.append(np.sum(masked_circuit.mask))
+        if result.ensemble:
+            logging_branch_selection[step] = result.branch_name
+            logging_branch_cost["brutto"][step] = result.brutto
+            logging_branch_cost["netto"][step] = result.netto
+            logging_branch_cost_step["brutto"][step] = result.brutto_steps
+            logging_branch_cost_step["netto"][step] = result.netto_steps
+        logging_cost_values.append(result.cost)
+        logging_dropout_count_values.append(np.sum(masked_circuit.mask))
         if step % train_params["log_interval"] == 0:
             # perform logging
             logging_costs[step] = np.average(logging_cost_values)
-            logging_gate_count[step] = np.average(logging_gate_count_values)
+            logging_dropout_count[step] = np.average(logging_dropout_count_values)
             logging_cost_values.clear()
-            logging_gate_count_values.clear()
+            logging_dropout_count_values.clear()
 
         if __debug__:
             print(
@@ -143,10 +147,11 @@ def train(
 
     return {
         "costs": logging_costs,
-        "final_cost": result.cost.unwrap(),
-        "branch_enforcements": logging_branch_enforcement,
-        "dropouts": logging_gate_count,
+        "final_cost": result.cost,
+        "dropouts": logging_dropout_count,
         "branch_selections": logging_branch_selection,
+        "branch_costs": logging_branch_cost,
+        "branch_step_costs": logging_branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "mask": masked_circuit.mask.unwrap(),
