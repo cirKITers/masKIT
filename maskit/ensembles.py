@@ -173,11 +173,10 @@ class AdaptiveEnsemble(Ensemble):
         self.epsilon = epsilon
         self.perturb = False
 
-    def _check_cost(self, current_cost):
+    def _check_cost(self):
         self.perturb = False
-        self._cost.append(current_cost)
         if self._cost.maxlen and len(self._cost) >= self._cost.maxlen:
-            if current_cost > 0.1:  # evaluate current cost
+            if self._cost[-1] > 0.1:  # evaluate last known cost
                 if np.sum(np.diff(self._cost)) < self.epsilon:
                     if __debug__:
                         print("======== allowing to perturb =========")
@@ -192,6 +191,7 @@ class AdaptiveEnsemble(Ensemble):
         *args,
         ensemble_steps: int = 1,
     ) -> EnsembleResult:
+        self._check_cost()
         result = super().step(
             masked_circuit,
             optimizer,
@@ -199,5 +199,5 @@ class AdaptiveEnsemble(Ensemble):
             *args,
             ensemble_steps=ensemble_steps,
         )
-        self._check_cost(result.cost)
+        self._cost.append(result.cost)
         return result
