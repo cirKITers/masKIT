@@ -252,8 +252,8 @@ class MaskedCircuit(object):
         clone.parameters = self.parameters.copy()
         return clone
 
-    @classmethod
-    def execute(cls, masked_circuit: "MaskedCircuit", operations: List[Dict]):
+    @staticmethod
+    def execute(masked_circuit: "MaskedCircuit", operations: List[Dict]):
         # TODO: add check for supported operations and error handling
         result = masked_circuit
         if operations is not None:
@@ -268,25 +268,24 @@ class MaskedCircuit(object):
         def format_value(value):
             return f"{value: .8f}"
 
-        result = ""
         length = 0
         first_layer = True
-        result += "["
+        result = ["["]
         for layer, layer_hidden in enumerate(self.layer_mask):
             if first_layer:
-                result += "["
+                result.append("[")
                 first_layer = False
             else:
-                result += "\n ["
+                result.append("\n [")
             first_wire = True
             first_value = True
             for wire, wire_hidden in enumerate(self.wire_mask):
                 if isinstance(self.parameter_mask[layer][wire].unwrap(), np.ndarray):
                     if first_wire:
-                        result += "["
+                        result.append("[")
                         first_wire = False
                     else:
-                        result += "\n  ["
+                        result.append("\n  [")
                     first_value = True
                     for parameter, parameter_hidden in enumerate(
                         self.parameter_mask[layer][wire]
@@ -299,10 +298,10 @@ class MaskedCircuit(object):
                         else:
                             value = "{placeholder}"
                         if first_value:
-                            result += value
+                            result.append(value)
                             first_value = False
                         else:
-                            result += f" {value}"
+                            result.append(f" {value}")
                     result += "]"
                 else:
                     if not (
@@ -313,13 +312,13 @@ class MaskedCircuit(object):
                     else:
                         value = "{placeholder}"
                     if first_value:
-                        result += value
+                        result.append(value)
                         first_value = False
                     else:
-                        result += f" {value}"
-            result += "]"
-        result += "]"
-        return result.format(placeholder="-" * length)
+                        result.append(f" {value}")
+            result.append("]")
+        result.append("]")
+        return "".join(result).format(placeholder="-" * length)
 
 
 if __name__ == "__main__":

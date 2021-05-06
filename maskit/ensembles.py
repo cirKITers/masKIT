@@ -29,7 +29,7 @@ class EnsembleResult(NamedTuple):
 class Ensemble(object):
     __slots__ = ("dropout", "perturb")
 
-    def __init__(self, dropout: Optional[Dict], *args, **kwargs):
+    def __init__(self, dropout: Optional[Dict]):
         super().__init__()
         self.dropout = dropout
         self.perturb = True
@@ -119,7 +119,7 @@ class IntervalEnsemble(Ensemble):
         super().__init__(dropout)
         if interval < 1:
             raise ValueError(
-                f"Interval must be in a valid range (>= 1), current value {interval}"
+                f"interval must be >= 1, got {interval!r}"
             )
         self._interval = interval
         self._counter = 0
@@ -152,7 +152,7 @@ class AdaptiveEnsemble(Ensemble):
         epsilon: float,
     ):
         if size <= 0:
-            raise ValueError(f"Size must be bigger than 0 (received {size})")
+            raise ValueError(f"size must be > 0, got {size!r}")
         super().__init__(dropout)
         self._cost = deque(maxlen=size)
         self.epsilon = epsilon
