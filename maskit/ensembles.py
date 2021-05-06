@@ -24,10 +24,10 @@ class Ensemble(object):
         return branches
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 0
+        self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 0
     ):
         """
-        The parameter `step_count` defines the number of training steps that are
+        The parameter `ensemble_steps` defines the number of training steps that are
         executed for each ensemble branch in addition to one training step
         that is done before the branching.
         """
@@ -49,7 +49,7 @@ class Ensemble(object):
         branch_costs = []
         branch_gradients = []
         for branch in branches.values():
-            for _ in range(step_count):
+            for _ in range(ensemble_steps):
                 params, _cost, _gradient = optimizer.step_cost_and_grad(
                     *args, branch.parameters, masked_circuit=branch
                 )
@@ -92,11 +92,13 @@ class IntervalEnsemble(Ensemble):
             self.perturb = False
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
+        self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
     ):
         self._counter += 1
         self._check_interval()
-        return super().step(masked_circuit, optimizer, *args, step_count=step_count)
+        return super().step(
+            masked_circuit, optimizer, *args, ensemble_steps=ensemble_steps
+        )
 
 
 class AdaptiveEnsemble(Ensemble):
@@ -127,10 +129,10 @@ class AdaptiveEnsemble(Ensemble):
                     self.perturb = True
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, step_count: int = 1
+        self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
     ):
         branch, branch_name, branch_cost, gradients = super().step(
-            masked_circuit, optimizer, *args, step_count=step_count
+            masked_circuit, optimizer, *args, ensemble_steps=ensemble_steps
         )
         self._check_cost(branch_cost)
         return (branch, branch_name, branch_cost, gradients)

@@ -112,7 +112,7 @@ class TestEnsemble:
             random.seed(1234)
             pnp.random.seed(1234)
             _params, _name, current_cost, _gradients = ensemble.step(
-                mp.copy(), optimizer, cost_fn, step_count=steps
+                mp.copy(), optimizer, cost_fn, ensemble_steps=steps
             )
             assert current_cost < cost
             cost = current_cost
@@ -145,18 +145,18 @@ class TestIntervalEnsemble:
         simple_mp = mp.copy()
         for _ in range(interval):
             simple_mp, _name, cost, _gradient = simple_ensemble.step(
-                simple_mp, optimizer, cost_fn, step_count=1
+                simple_mp, optimizer, cost_fn, ensemble_steps=1
             )
             simple_costs.append(cost)
         interval_mp = mp.copy()
         for i in range(interval - 1):
             interval_mp, _name, cost, _gradient = interval_ensemble.step(
-                interval_mp, optimizer, cost_fn, step_count=1
+                interval_mp, optimizer, cost_fn, ensemble_steps=1
             )
             assert simple_costs[i] == cost
         # last step should be better
         interval_mp, _name, cost, _gradient = interval_ensemble.step(
-            interval_mp, optimizer, cost_fn, step_count=1
+            interval_mp, optimizer, cost_fn, ensemble_steps=1
         )
         assert simple_costs[-1] > cost
 
@@ -191,18 +191,18 @@ class TestAdaptiveEnsemble:
         simple_mp = mp.copy()
         for _ in range(4):
             simple_mp, _name, cost, _gradient = simple_ensemble.step(
-                simple_mp, optimizer, cost_fn, step_count=1
+                simple_mp, optimizer, cost_fn, ensemble_steps=1
             )
             simple_costs.append(cost)
         adaptive_mp = mp.copy()
         for i in range(3):
             adaptive_mp, _name, cost, _gradient = adaptive_ensemble.step(
-                adaptive_mp, optimizer, cost_fn, step_count=1
+                adaptive_mp, optimizer, cost_fn, ensemble_steps=1
             )
             assert simple_costs[i] == cost
         # last step should be better
         adaptive_mp, _name, cost, _gradient = adaptive_ensemble.step(
-            adaptive_mp, optimizer, cost_fn, step_count=1
+            adaptive_mp, optimizer, cost_fn, ensemble_steps=1
         )
         assert simple_costs[-1] > cost
 
