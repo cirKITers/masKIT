@@ -174,6 +174,16 @@ class TestMaskedCircuits:
         with pytest.raises(AttributeError):
             MaskedCircuit.execute(mp, [{"non_existent": {"test": 1}}])
 
+    def test_active(self):
+        mp = self._create_circuit(3)
+        assert mp.active() == 9
+        mp.wire_mask[0] = True
+        assert mp.active() == 6
+        mp.layer_mask[0] = True
+        assert mp.active() == 4
+        mp.parameter_mask[1][1] = True
+        assert mp.active() == 3
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
