@@ -167,6 +167,7 @@ class MaskedCircuit(object):
         return mask
 
     def active(self) -> int:
+        """Number of active gates in the circuit."""
         mask = self.mask
         return mask.size - np.sum(mask)
 
