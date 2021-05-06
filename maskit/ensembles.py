@@ -45,7 +45,12 @@ class Ensemble(object):
         return branches
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 0
+        self,
+        masked_circuit: MaskedCircuit,
+        optimizer,
+        objective_fn,
+        *args,
+        ensemble_steps: int = 0,
     ) -> EnsembleResult:
         """
         The parameter `ensemble_steps` defines the number of training steps that are
@@ -54,7 +59,10 @@ class Ensemble(object):
         """
         # first one trainingstep
         params, _cost, _gradient = optimizer.step_cost_and_grad(
-            *args, masked_circuit.parameters, masked_circuit=masked_circuit
+            objective_fn,
+            *args,
+            masked_circuit.parameters,
+            masked_circuit=masked_circuit,
         )
         masked_circuit.parameters = params
 
@@ -65,7 +73,7 @@ class Ensemble(object):
             return EnsembleResult(
                 branch=masked_circuit,
                 branch_name="center",
-                cost=args[0](
+                cost=objective_fn(
                     masked_circuit.parameters, masked_circuit=masked_circuit
                 ).unwrap(),
                 gradient=_gradient,
@@ -80,10 +88,10 @@ class Ensemble(object):
         for branch in branches.values():
             for _ in range(ensemble_steps):
                 params, _cost, _gradient = optimizer.step_cost_and_grad(
-                    *args, branch.parameters, masked_circuit=branch
+                    objective_fn, *args, branch.parameters, masked_circuit=branch
                 )
                 branch.parameters = params
-            branch_costs.append(args[0](branch.parameters, masked_circuit=branch))
+            branch_costs.append(objective_fn(branch.parameters, masked_circuit=branch))
             branch_gradients.append(_gradient)
         minimum_index = branch_costs.index(min(branch_costs))
         branch_name = list(branches.keys())[minimum_index]
@@ -133,12 +141,21 @@ class IntervalEnsemble(Ensemble):
             self.perturb = False
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
+        self,
+        masked_circuit: MaskedCircuit,
+        optimizer,
+        objective_fn,
+        *args,
+        ensemble_steps: int = 1,
     ) -> EnsembleResult:
         self._counter += 1
         self._check_interval()
         return super().step(
-            masked_circuit, optimizer, *args, ensemble_steps=ensemble_steps
+            masked_circuit,
+            optimizer,
+            objective_fn,
+            *args,
+            ensemble_steps=ensemble_steps,
         )
 
 
@@ -170,10 +187,19 @@ class AdaptiveEnsemble(Ensemble):
                     self.perturb = True
 
     def step(
-        self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
+        self,
+        masked_circuit: MaskedCircuit,
+        optimizer,
+        objective_fn,
+        *args,
+        ensemble_steps: int = 1,
     ) -> EnsembleResult:
         result = super().step(
-            masked_circuit, optimizer, *args, ensemble_steps=ensemble_steps
+            masked_circuit,
+            optimizer,
+            objective_fn,
+            *args,
+            ensemble_steps=ensemble_steps,
         )
         self._check_cost(result.cost)
         return result
