@@ -112,6 +112,12 @@ class TestEnsemble:
             random.seed(1234)
             pnp.random.seed(1234)
             result = ensemble.step(mp.copy(), optimizer, cost_fn, ensemble_steps=steps)
+            if steps > 0:
+                assert result.brutto_steps > result.netto_steps
+            else:
+                assert result.brutto_steps == 1
+                assert result.netto_steps == 1
+            assert result.netto_steps == steps + 1
             assert result.cost < cost
             cost = result.cost
 
