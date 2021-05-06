@@ -111,11 +111,9 @@ class TestEnsemble:
         for steps in range(3):
             random.seed(1234)
             pnp.random.seed(1234)
-            _params, _name, current_cost, _gradients = ensemble.step(
-                mp.copy(), optimizer, cost_fn, ensemble_steps=steps
-            )
-            assert current_cost < cost
-            cost = current_cost
+            result = ensemble.step(mp.copy(), optimizer, cost_fn, ensemble_steps=steps)
+            assert result.cost < cost
+            cost = result.cost
 
 
 class TestIntervalEnsemble:
@@ -144,21 +142,23 @@ class TestIntervalEnsemble:
         simple_costs = []
         simple_mp = mp.copy()
         for _ in range(interval):
-            simple_mp, _name, cost, _gradient = simple_ensemble.step(
+            result = simple_ensemble.step(
                 simple_mp, optimizer, cost_fn, ensemble_steps=1
             )
-            simple_costs.append(cost)
+            simple_mp = result.branch
+            simple_costs.append(result.cost)
         interval_mp = mp.copy()
         for i in range(interval - 1):
-            interval_mp, _name, cost, _gradient = interval_ensemble.step(
+            result = interval_ensemble.step(
                 interval_mp, optimizer, cost_fn, ensemble_steps=1
             )
-            assert simple_costs[i] == cost
+            interval_mp = result.branch
+            assert simple_costs[i] == result.cost
         # last step should be better
-        interval_mp, _name, cost, _gradient = interval_ensemble.step(
+        result = interval_ensemble.step(
             interval_mp, optimizer, cost_fn, ensemble_steps=1
         )
-        assert simple_costs[-1] > cost
+        assert simple_costs[-1] > result.cost
 
 
 class TestAdaptiveEnsemble:
@@ -190,21 +190,23 @@ class TestAdaptiveEnsemble:
         simple_costs = []
         simple_mp = mp.copy()
         for _ in range(4):
-            simple_mp, _name, cost, _gradient = simple_ensemble.step(
+            result = simple_ensemble.step(
                 simple_mp, optimizer, cost_fn, ensemble_steps=1
             )
-            simple_costs.append(cost)
+            simple_mp = result.branch
+            simple_costs.append(result.cost)
         adaptive_mp = mp.copy()
         for i in range(3):
-            adaptive_mp, _name, cost, _gradient = adaptive_ensemble.step(
+            result = adaptive_ensemble.step(
                 adaptive_mp, optimizer, cost_fn, ensemble_steps=1
             )
-            assert simple_costs[i] == cost
+            adaptive_mp = result.branch
+            assert simple_costs[i] == result.cost
         # last step should be better
-        adaptive_mp, _name, cost, _gradient = adaptive_ensemble.step(
+        result = adaptive_ensemble.step(
             adaptive_mp, optimizer, cost_fn, ensemble_steps=1
         )
-        assert simple_costs[-1] > cost
+        assert simple_costs[-1] > result.cost
 
 
 class TestEnsembleUseCases:
@@ -225,7 +227,9 @@ class TestEnsembleUseCases:
 
         current_cost = 1.0
         for _ in range(10):
-            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+            result = ensemble.step(mp, optimizer, cost_fn)
+            mp = result.branch
+            current_cost = result.cost
         assert current_cost == pytest.approx(0.84973999)
 
     def test_growing(self):
@@ -247,7 +251,9 @@ class TestEnsembleUseCases:
         current_cost = 1.0
         assert pnp.sum(mp.layer_mask) == 2
         for _ in range(len(mp.layer_mask) - 1):
-            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+            result = ensemble.step(mp, optimizer, cost_fn)
+            mp = result.branch
+            current_cost = result.cost
         assert current_cost == pytest.approx(0.86318044)
         assert pnp.sum(mp.layer_mask) == 0
 
@@ -268,7 +274,9 @@ class TestEnsembleUseCases:
 
         current_cost = 1.0
         for _ in range(10):
-            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+            result = ensemble.step(mp, optimizer, cost_fn)
+            mp = result.branch
+            current_cost = result.cost
         assert current_cost == pytest.approx(0.61161677)
 
     def test_qhack(self):
@@ -288,7 +296,9 @@ class TestEnsembleUseCases:
 
         current_cost = 1.0
         for _ in range(10):
-            mp, _branch_name, current_cost, _ = ensemble.step(mp, optimizer, cost_fn)
+            result = ensemble.step(mp, optimizer, cost_fn)
+            mp = result.branch
+            current_cost = result.cost
         assert current_cost == pytest.approx(0.63792393)
 
 

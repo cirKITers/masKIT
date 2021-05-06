@@ -117,13 +117,12 @@ def train(
             target = train_target[step % len(train_target)]
 
         # TODO: add logging for adaptive ensembles
-        masked_circuit, branch_name, current_cost, gradient = dropout_ensemble.step(
-            masked_circuit, opt, cost_fn, ensemble_steps=1
-        )
+        result = dropout_ensemble.step(masked_circuit, opt, cost_fn, ensemble_steps=1)
+        masked_circuit = result.branch
         # currently branches have no name, so log selected index
-        logging_branch_selection[step] = branch_name
+        logging_branch_selection[step] = result.branch_name
 
-        logging_cost_values.append(current_cost.unwrap())
+        logging_cost_values.append(result.cost.unwrap())
         logging_gate_count_values.append(np.sum(masked_circuit.mask))
         if step % train_params["log_interval"] == 0:
             # perform logging
@@ -134,7 +133,7 @@ def train(
 
         if __debug__:
             print(
-                f"Step: {step:4d} | Cost: {current_cost:.5f} |",
+                f"Step: {step:4d} | Cost: {result.cost:.5f} |",
                 # f"Gradient Variance: {np.var(gradient[0:current_layers]):.9f}",
             )
 
@@ -144,7 +143,7 @@ def train(
 
     return {
         "costs": logging_costs,
-        "final_cost": current_cost.unwrap(),
+        "final_cost": result.cost.unwrap(),
         "branch_enforcements": logging_branch_enforcement,
         "dropouts": logging_gate_count,
         "branch_selections": logging_branch_selection,

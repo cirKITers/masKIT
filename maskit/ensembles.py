@@ -1,8 +1,19 @@
 from collections import deque
-from typing import Dict, Optional
+from typing import Dict, NamedTuple, Optional
 from pennylane import numpy as np
 
 from maskit.masks import MaskedCircuit
+
+
+class EnsembleResult(NamedTuple):
+    branch: MaskedCircuit
+    branch_name: str
+    cost: float
+    gradient: np.ndarray
+    brutto_steps: int
+    netto_steps: int
+    brutto: int
+    netto: int
 
 
 class Ensemble(object):
@@ -39,12 +50,17 @@ class Ensemble(object):
 
         # then branching
         branches = self._branch(masked_circuit=masked_circuit)
+        basic_active_gates = masked_circuit.active()
         if branches is None:
-            return (
-                masked_circuit,
-                "center",
-                args[0](masked_circuit.parameters, masked_circuit=masked_circuit),
-                _gradient,
+            return EnsembleResult(
+                branch=masked_circuit,
+                branch_name="center",
+                cost=args[0](masked_circuit.parameters, masked_circuit=masked_circuit),
+                gradient=_gradient,
+                brutto_steps=1,
+                netto_steps=1,
+                brutto=basic_active_gates,
+                netto=basic_active_gates,
             )
         branch_costs = []
         branch_gradients = []
@@ -63,11 +79,16 @@ class Ensemble(object):
         #   no mask has to be applied
         #   until then real gradients must be calculated as gradients also
         #   contain values from dropped gates
-        return (
-            selected_branch,
-            branch_name,
-            branch_costs[minimum_index],
-            branch_gradients[minimum_index],
+        return EnsembleResult(
+            branch=selected_branch,
+            branch_name=branch_name,
+            cost=branch_costs[minimum_index],
+            gradient=branch_gradients[minimum_index],
+            brutto_steps=1 + len(branches) * ensemble_steps,
+            netto_steps=1 + ensemble_steps,
+            brutto=basic_active_gates
+            + sum([branch.active() * ensemble_steps for branch in branches.values()]),
+            netto=basic_active_gates + selected_branch.active() * ensemble_steps,
         )
 
 
@@ -131,8 +152,8 @@ class AdaptiveEnsemble(Ensemble):
     def step(
         self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
     ):
-        branch, branch_name, branch_cost, gradients = super().step(
+        result = super().step(
             masked_circuit, optimizer, *args, ensemble_steps=ensemble_steps
         )
-        self._check_cost(branch_cost)
-        return (branch, branch_name, branch_cost, gradients)
+        self._check_cost(result.cost)
+        return result

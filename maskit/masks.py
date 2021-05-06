@@ -166,6 +166,10 @@ class MaskedCircuit(object):
         mask[:, self.wire_mask] = True
         return mask
 
+    def active(self) -> int:
+        mask = self.mask
+        return mask.size - np.sum(mask)
+
     @property
     def layer_mask(self):
         """Returns the encapsulated layer mask."""
