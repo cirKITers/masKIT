@@ -6,24 +6,24 @@ from maskit.masks import MaskedCircuit
 
 
 class EnsembleResult(NamedTuple):
+    #: branch that performs best
     branch: MaskedCircuit
-    """branch that performs best"""
+    #: name of branch as configured
     branch_name: str
-    """name of branch as configured"""
+    #: cost of selected branch
     cost: float
-    """cost of selected branch"""
+    #: gradient of selected branch
     gradient: np.ndarray
-    """gradient of selected branch"""
+    #: training steps including all other branches
     brutto_steps: int
-    """training steps including all other branches"""
+    #: training steps for selected branch
     netto_steps: int
-    """training steps for selected branch"""
+    #: training wrt count of parameters including all other branches
     brutto: int
-    """training wrt count of parameters including all other branches"""
+    #: training wrt count of paramemters for selected branch
     netto: int
-    """training wrt count of paramemters for selected branch"""
+    #: True in case the ensemble was evaluated, otherwise False
     ensemble: bool
-    """True in case the ensemble was evaluated, otherwise False"""
 
 
 class Ensemble(object):
