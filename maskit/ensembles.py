@@ -22,6 +22,8 @@ class EnsembleResult(NamedTuple):
     """training wrt count of parameters including all other branches"""
     netto: int
     """training wrt count of paramemters for selected branch"""
+    ensemble: bool
+    """True in case the ensemble was evaluated, otherwise False"""
 
 
 class Ensemble(object):
@@ -44,7 +46,7 @@ class Ensemble(object):
 
     def step(
         self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 0
-    ):
+    ) -> EnsembleResult:
         """
         The parameter `ensemble_steps` defines the number of training steps that are
         executed for each ensemble branch in addition to one training step
@@ -58,17 +60,20 @@ class Ensemble(object):
 
         # then branching
         branches = self._branch(masked_circuit=masked_circuit)
-        basic_active_gates = masked_circuit.active()
+        basic_active_gates = masked_circuit.active().unwrap()
         if branches is None:
             return EnsembleResult(
                 branch=masked_circuit,
                 branch_name="center",
-                cost=args[0](masked_circuit.parameters, masked_circuit=masked_circuit),
+                cost=args[0](
+                    masked_circuit.parameters, masked_circuit=masked_circuit
+                ).unwrap(),
                 gradient=_gradient,
                 brutto_steps=1,
                 netto_steps=1,
                 brutto=basic_active_gates,
                 netto=basic_active_gates,
+                ensemble=False,
             )
         branch_costs = []
         branch_gradients = []
@@ -90,13 +95,20 @@ class Ensemble(object):
         return EnsembleResult(
             branch=selected_branch,
             branch_name=branch_name,
-            cost=branch_costs[minimum_index],
+            cost=branch_costs[minimum_index].unwrap(),
             gradient=branch_gradients[minimum_index],
             brutto_steps=1 + len(branches) * ensemble_steps,
             netto_steps=1 + ensemble_steps,
-            brutto=basic_active_gates
-            + sum([branch.active() * ensemble_steps for branch in branches.values()]),
-            netto=basic_active_gates + selected_branch.active() * ensemble_steps,
+            brutto=(
+                basic_active_gates
+                + sum(
+                    [branch.active() * ensemble_steps for branch in branches.values()]
+                )
+            ).unwrap(),
+            netto=(
+                basic_active_gates + selected_branch.active() * ensemble_steps
+            ).unwrap(),
+            ensemble=True,
         )
 
 
@@ -122,7 +134,7 @@ class IntervalEnsemble(Ensemble):
 
     def step(
         self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
-    ):
+    ) -> EnsembleResult:
         self._counter += 1
         self._check_interval()
         return super().step(
@@ -159,7 +171,7 @@ class AdaptiveEnsemble(Ensemble):
 
     def step(
         self, masked_circuit: MaskedCircuit, optimizer, *args, ensemble_steps: int = 1
-    ):
+    ) -> EnsembleResult:
         result = super().step(
             masked_circuit, optimizer, *args, ensemble_steps=ensemble_steps
         )
