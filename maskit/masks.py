@@ -1,9 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Optional, Tuple, Union
-
-rand.seed(1337)
+from typing import Dict, List, Optional, Tuple, Union
 
 
 class PerturbationAxis(Enum):
@@ -94,7 +92,7 @@ class Mask(object):
         if amount is not None:
             if amount < 1:
                 amount *= self.mask.size
-            amount = int(amount)
+            amount = round(amount)
         count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
         if count == 0:
             return
@@ -118,6 +116,12 @@ class Mask(object):
             )
         )
         self.mask[indices] = ~self.mask[indices]
+
+    def shrink(self, amount: int = 1):
+        index = np.argwhere(self.mask)
+        index = index[:amount]
+        if index.size > 0:
+            self.mask[tuple(zip(*index))] = False
 
     def copy(self) -> "Mask":
         """Returns a copy of the current Mask."""
@@ -162,6 +166,11 @@ class MaskedCircuit(object):
         mask[:, self.wire_mask] = True
         return mask
 
+    def active(self) -> int:
+        """Number of active gates in the circuit."""
+        mask = self.mask
+        return mask.size - np.sum(mask)
+
     @property
     def layer_mask(self):
         """Returns the encapsulated layer mask."""
@@ -179,7 +188,7 @@ class MaskedCircuit(object):
 
     def perturb(
         self,
-        axis: PerturbationAxis,
+        axis: PerturbationAxis = PerturbationAxis.RANDOM,
         amount: Optional[Union[int, float]] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
@@ -196,7 +205,9 @@ class MaskedCircuit(object):
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
         :raises NotImplementedError: Raised in case of an unknown mode
         """
-        assert mode in list(PerturbationMode), "The selected mode is not supported."
+        assert mode in list(
+            PerturbationMode
+        ), f"The selected perturbation mode {mode} is not supported."
         if amount == 0:
             return
         if axis == PerturbationAxis.LAYERS:
@@ -205,6 +216,16 @@ class MaskedCircuit(object):
             self._wire_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
             self._parameter_mask.perturb(amount=amount, mode=mode)
+        else:
+            raise NotImplementedError(f"The perturbation {axis} is not supported")
+
+    def shrink(self, axis: PerturbationAxis = PerturbationAxis.LAYERS, amount: int = 1):
+        if axis == PerturbationAxis.LAYERS:
+            self._layer_mask.shrink(amount)
+        elif axis == PerturbationAxis.WIRES:
+            self._wire_mask.shrink(amount)
+        elif axis == PerturbationAxis.RANDOM:
+            self._parameter_mask.shrink(amount)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
@@ -232,8 +253,78 @@ class MaskedCircuit(object):
         clone.parameters = self.parameters.copy()
         return clone
 
+    @staticmethod
+    def execute(masked_circuit: "MaskedCircuit", operations: List[Dict]):
+        # TODO: add check for supported operations and error handling
+        result = masked_circuit
+        if operations is not None:
+            for operation_dict in operations:
+                for operation, parameters in operation_dict.items():
+                    value = result.__getattribute__(operation)(**parameters)
+                    if value is not None:
+                        result = value
+        return result
+
+    def __repr__(self) -> str:
+        def format_value(value):
+            return f"{value: .8f}"
+
+        length = 0
+        first_layer = True
+        result = ["["]
+        for layer, layer_hidden in enumerate(self.layer_mask):
+            if first_layer:
+                result.append("[")
+                first_layer = False
+            else:
+                result.append("\n [")
+            first_wire = True
+            first_value = True
+            for wire, wire_hidden in enumerate(self.wire_mask):
+                if isinstance(self.parameter_mask[layer][wire].unwrap(), np.ndarray):
+                    if first_wire:
+                        result.append("[")
+                        first_wire = False
+                    else:
+                        result.append("\n  [")
+                    first_value = True
+                    for parameter, parameter_hidden in enumerate(
+                        self.parameter_mask[layer][wire]
+                    ):
+                        if not (layer_hidden or wire_hidden or parameter_hidden):
+                            value = format_value(
+                                self.parameters[layer][wire][parameter]
+                            )
+                            length = len(value)
+                        else:
+                            value = "{placeholder}"
+                        if first_value:
+                            result.append(value)
+                            first_value = False
+                        else:
+                            result.append(f" {value}")
+                    result += "]"
+                else:
+                    if not (
+                        layer_hidden or wire_hidden or self.parameter_mask[layer][wire]
+                    ):
+                        value = format_value(self.parameters[layer][wire])
+                        length = len(value)
+                    else:
+                        value = "{placeholder}"
+                    if first_value:
+                        result.append(value)
+                        first_value = False
+                    else:
+                        result.append(f" {value}")
+            result.append("]")
+        result.append("]")
+        return "".join(result).format(placeholder="-" * length)
+
 
 if __name__ == "__main__":
     parameter = MaskedCircuit(
         np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
     )
+    parameter.wire_mask[1] = True
+    print(parameter)

@@ -6,7 +6,6 @@ from maskit.optimizers import ExtendedOptimizers
 def check_params(train_params):
     assert train_params["dataset"] in ["simple", "iris"]
     assert isinstance(train_params["optimizer"], ExtendedOptimizers)
-    assert train_params["dropout"] in [None, "random", "classical", "growing", "eileen"]
 
 
 def cross_entropy(predictions, targets, epsilon=1e-12):

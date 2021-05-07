@@ -10,12 +10,6 @@ from maskit.masks import (
     PerturbationMode,
 )
 
-# TODO: unit test für None
-# TODO: unit test für Entfernung der Maske, wenn keine angesetzt ist
-# TODO: test len indices == 0
-# TODO: check if it is the row/column as selected
-# TODO: test auf None
-
 
 class TestMaskedCircuits:
     def test_init(self):
@@ -130,6 +124,66 @@ class TestMaskedCircuits:
         mp.parameters = new_random_values
         assert (mp.parameters == new_random_values).all()
 
+    def test_shrink_layer(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.layer_mask[:] = True
+        mp.shrink(amount=1, axis=PerturbationAxis.LAYERS)
+        assert pnp.sum(mp.mask) == mp.mask.size - size
+
+    def test_shrink_wire(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.wire_mask[:] = True
+        mp.shrink(amount=1, axis=PerturbationAxis.WIRES)
+        assert pnp.sum(mp.mask) == mp.mask.size - size
+
+    def test_shrink_parameter(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.parameter_mask[:] = True
+        mp.shrink(amount=1, axis=PerturbationAxis.RANDOM)
+        assert pnp.sum(mp.mask) == mp.mask.size - 1
+
+    def test_shrink_wrong_axis(self):
+        mp = self._create_circuit(3)
+        with pytest.raises(NotImplementedError):
+            mp.shrink(amount=1, axis=10)
+
+    def test_execute(self):
+        mp = self._create_circuit(3)
+        perturb_operation = {
+            "perturb": {
+                "amount": 1,
+                "axis": PerturbationAxis.RANDOM,
+                "mode": PerturbationMode.ADD,
+            }
+        }
+        # test empty operations
+        assert MaskedCircuit.execute(mp, []) == mp
+        # test existing method
+        MaskedCircuit.execute(mp, [perturb_operation])
+        assert pnp.sum(mp.mask) == 1
+        # test existing method with copy
+        new_mp = MaskedCircuit.execute(
+            mp, [{"clear": {}}, {"copy": {}}, perturb_operation]
+        )
+        assert mp != new_mp
+        assert pnp.sum(new_mp.mask) == 1
+        # test non-existing method
+        with pytest.raises(AttributeError):
+            MaskedCircuit.execute(mp, [{"non_existent": {"test": 1}}])
+
+    def test_active(self):
+        mp = self._create_circuit(3)
+        assert mp.active() == 9
+        mp.wire_mask[0] = True
+        assert mp.active() == 6
+        mp.layer_mask[0] = True
+        assert mp.active() == 4
+        mp.parameter_mask[1][1] = True
+        assert mp.active() == 3
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
@@ -179,7 +233,7 @@ class TestMask:
 
         for i in [0.01, 0.1, 0.5, 0.9]:
             mp.perturb(amount=i)
-            assert pnp.sum(mp.mask) == int(i * mp.mask.size)
+            assert pnp.sum(mp.mask) == round(i * mp.mask.size)
             mp.clear()
 
     def test_wrong_percentage_perturbation(self):
@@ -188,7 +242,7 @@ class TestMask:
 
         for i in [1.1, 1.5, 3.1]:
             mp.perturb(amount=i)
-            assert pnp.sum(mp.mask) == int(i)
+            assert pnp.sum(mp.mask) == round(i)
             mp.clear()
 
     def test_negative_perturbation(self):
@@ -213,7 +267,7 @@ class TestMask:
 
         for amount in [random.randrange(size), 0, size, size + 1]:
             mp.perturb(amount=amount, mode=PerturbationMode.INVERT)
-            reversed_amount = pnp.sum(mp.mask)
+            reversed_amount = pnp.sum(mp.mask).unwrap()  # unwrap tensor
             mp.perturb(amount=reversed_amount, mode=PerturbationMode.REMOVE)
             assert pnp.sum(mp.mask) == 0
 
@@ -242,6 +296,23 @@ class TestMask:
             mp.perturb(amount=amount, mode=mode[0])
             mp.perturb(amount=amount, mode=mode[1])
             assert pnp.sum(mp.mask) == 0
+
+    def test_shrink(self):
+        size = 3
+        mp = Mask((size,))
+
+        for amount in range(size + 1):
+            mp[:] = True
+            mp.shrink(amount)
+            assert pnp.sum(mp.mask) == size - amount
+
+    def test_shrink_nd(self):
+        size = 3
+        mp = Mask((size, size - 1))
+        for amount in range(mp.mask.size + 1):
+            mp[:] = True
+            mp.shrink(amount)
+            assert pnp.sum(mp.mask) == mp.mask.size - amount
 
     def test_copy(self):
         size = 3

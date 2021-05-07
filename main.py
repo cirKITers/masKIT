@@ -1,19 +1,19 @@
 from typing import List, Optional
 
+import random
 import pennylane as qml
 from pennylane import numpy as np
-from collections import deque
 
-from maskit.masks import (
-    MaskedCircuit,
-    PerturbationMode,
-    PerturbationAxis,
-)
+from maskit.masks import MaskedCircuit, PerturbationAxis, PerturbationMode
 from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
+from maskit.ensembles import (
+    AdaptiveEnsemble,
+    Ensemble,
+)
 
 
 def get_device(sim_local: bool, wires: int, analytic: bool = True):
@@ -44,98 +44,6 @@ def cost_iris(
     return cross_entropy(predictions=prediction, targets=target)
 
 
-def ensemble_step(branches: List[MaskedCircuit], optimizer, *args, step_count=1):
-    branch_costs = []
-    gradients = []
-    for branch in branches:
-        params = branch.parameters
-        for _ in range(step_count):
-            params, _cost, gradient = optimizer.step_cost_and_grad(
-                *args, params, masked_circuit=branch
-            )
-        branch.parameters = params
-        branch_costs.append(args[0](params, masked_circuit=branch))
-        gradients.append(gradient)
-    minimum_index = branch_costs.index(min(branch_costs))
-    return (
-        branches[minimum_index],
-        branch_costs[minimum_index],
-        gradients[minimum_index],
-    )
-
-
-def ensemble_branches(
-    dropout: str, masked_params: MaskedCircuit, amount: int = 1, perturb: bool = True
-):
-    if dropout == "random":
-        left_branch = masked_params.copy()
-        right_branch = masked_params.copy()
-        # randomly perturb branches
-        left_branch.perturb(
-            axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.REMOVE
-        )
-        right_branch.perturb(axis=PerturbationAxis.RANDOM)
-        branches = [masked_params, left_branch, right_branch]
-        description = {
-            "center": "No perturbation",
-            "left": {
-                "amount": 1,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
-            },
-            "right": {
-                "amount": None,
-                "mode": PerturbationMode.INVERT,
-                "axis": PerturbationAxis.RANDOM,
-            },
-        }
-    elif dropout == "classical":
-        masked_params.reset()
-        masked_params.perturb(
-            axis=PerturbationAxis.RANDOM,
-            amount=masked_params.parameters.size // 10,
-            mode=PerturbationMode.ADD,
-        )
-        branches = [masked_params]
-        description = {
-            "center": {
-                "amount": masked_params.parameters.size // 10,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
-                # TODO: added on empty mask...
-            },
-        }
-    elif dropout == "eileen" and perturb:
-        left_branch = masked_params.copy()
-        right_branch = masked_params.copy()
-        left_branch.perturb(
-            axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.ADD
-        )
-        right_branch.perturb(
-            axis=PerturbationAxis.RANDOM, amount=amount, mode=PerturbationMode.REMOVE
-        )
-        branches = [masked_params, left_branch, right_branch]
-        description = {
-            "center": "No perturbation",
-            "left": {
-                "amount": 1,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
-            },
-            "right": {
-                "amount": amount,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
-            },
-        }
-    else:
-        branches = [masked_params]
-        description = {
-            "center": "No perturbation",
-        }
-    return branches, description
-
-
 def init_parameters(layers: int, current_layers: int, wires: int) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
@@ -151,30 +59,30 @@ def train(
     train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
 ):
     logging_costs = {}
-    logging_branches = {}
     logging_branch_selection = {}
-    logging_branch_enforcement = {}
-    logging_gate_count = {}
+    logging_branch_cost = {"netto": {}, "brutto": {}}
+    logging_branch_cost_step = {"netto": {}, "brutto": {}}
+    logging_dropout_count = {}
     logging_cost_values = []
-    logging_gate_count_values = []
+    logging_dropout_count_values = []
 
     np.random.seed(train_params["seed"])
+    random.seed(train_params["seed"])
 
     # set up circuit, training, dataset
     wires = train_params["wires"]
     layers = train_params["layers"]
-    steps = train_params["steps"]
-    dev = get_device(train_params["sim_local"], wires=wires)
+    steps = train_params.get("steps", 1000)
+    dev = get_device(train_params.get("sim_local", True), wires=wires)
     opt = train_params["optimizer"].value(train_params["step_size"])
+    dropout_ensemble = train_params.get("ensemble_type", Ensemble)(
+        **train_params.get("ensemble_kwargs", {"dropout": None})
+    )
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
-    current_layers = (
-        layers
-        if train_params["dropout"] != "growing"
-        else train_params["starting_layers"]
-    )
+    current_layers = train_params.get("starting_layers", layers)
 
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
@@ -203,96 +111,37 @@ def train(
     # set up parameters
     masked_circuit = init_parameters(layers, current_layers, wires)
 
-    if train_params["dropout"] == "eileen":
-        amount = int(wires * layers * train_params["percentage"])
-        perturb = False
-        costs = deque(maxlen=5)
-
     # -----------------------------
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dropout"] == "growing":
-            # TODO useful condition
-            # maybe combine with other dropouts
-            if step > 0 and step % 1000 == 0:
-                current_layers += 1
-                masked_circuit.layer_mask[current_layers] = False
-        branches, description = ensemble_branches(
-            train_params["dropout"], masked_circuit, amount, perturb=perturb
-        )
-        perturb = False
-        logging_branches[step] = description
-
         if train_params["dataset"] == "iris":
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
-        masked_circuit, current_cost, gradient = ensemble_step(branches, opt, cost_fn)
-        branch_index = branches.index(masked_circuit)
-        logging_branch_selection[step] = (
-            "center" if branch_index == 0 else "left" if branch_index == 1 else "right"
-        )
-
-        logging_cost_values.append(current_cost.unwrap())
-        logging_gate_count_values.append(np.sum(masked_circuit.mask))
+        # TODO: add logging for adaptive ensembles
+        result = dropout_ensemble.step(masked_circuit, opt, cost_fn, ensemble_steps=1)
+        masked_circuit = result.branch
+        if result.ensemble:
+            logging_branch_selection[step] = result.branch_name
+            logging_branch_cost["brutto"][step] = result.brutto
+            logging_branch_cost["netto"][step] = result.netto
+            logging_branch_cost_step["brutto"][step] = result.brutto_steps
+            logging_branch_cost_step["netto"][step] = result.netto_steps
+        logging_cost_values.append(result.cost)
+        logging_dropout_count_values.append(np.sum(masked_circuit.mask))
         if step % train_params["log_interval"] == 0:
             # perform logging
             logging_costs[step] = np.average(logging_cost_values)
-            logging_gate_count[step] = np.average(logging_gate_count_values)
+            logging_dropout_count[step] = np.average(logging_dropout_count_values)
             logging_cost_values.clear()
-            logging_gate_count_values.clear()
-
-        # get the real gradients as gradients also contain values from dropped gates
-        real_gradients = masked_circuit.apply_mask(gradient[0])
+            logging_dropout_count_values.clear()
 
         if __debug__:
             print(
-                f"Step: {step:4d} | Cost: {current_cost:.5f} |",
-                f"Gradient Variance: {np.var(real_gradients[0:current_layers]):.9f}",
+                f"Step: {step:4d} | Cost: {result.cost:.5f} |",
+                # f"Gradient Variance: {np.var(gradient[0:current_layers]):.9f}",
             )
-
-        if train_params["dropout"] == "eileen":
-            costs.append(current_cost)
-            if len(costs) >= train_params["cost_span"] and current_cost > 0.1:
-                if (
-                    sum(
-                        [
-                            abs(cost - costs[index + 1])
-                            for index, cost in enumerate(list(costs)[:-1])
-                        ]
-                    )
-                    < train_params["epsilon"]
-                ):
-                    if __debug__:
-                        print("======== allowing to perturb =========")
-                    if np.sum(masked_circuit.mask) >= layers * wires * 0.3:
-                        masked_circuit.perturb(
-                            axis=PerturbationAxis.RANDOM,
-                            amount=1,
-                            mode=PerturbationMode.REMOVE,
-                        )
-                        logging_branch_enforcement[step + 1] = {
-                            "amount": 1,
-                            "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.RANDOM,
-                        }
-                    elif (
-                        current_cost < 0.25
-                        and np.sum(masked_circuit.mask) >= layers * wires * 0.05
-                    ):
-                        masked_circuit.perturb(
-                            axis=PerturbationAxis.RANDOM,
-                            amount=1,
-                            mode=PerturbationMode.REMOVE,
-                        )
-                        logging_branch_enforcement[step + 1] = {
-                            "amount": 1,
-                            "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.RANDOM,
-                        }
-                    costs.clear()
-                    perturb = True
 
     if __debug__:
         print(masked_circuit.parameters)
@@ -300,11 +149,11 @@ def train(
 
     return {
         "costs": logging_costs,
-        "final_cost": current_cost.unwrap(),
-        "branch_enforcements": logging_branch_enforcement,
-        "dropouts": logging_gate_count,
-        "branches": logging_branches,
+        "final_cost": result.cost,
+        "dropouts": logging_dropout_count,
         "branch_selections": logging_branch_selection,
+        "branch_costs": logging_branch_cost,
+        "branch_step_costs": logging_branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "mask": masked_circuit.mask.unwrap(),
@@ -363,19 +212,43 @@ if __name__ == "__main__":
     train_params = {
         "wires": 10,
         "layers": 5,
-        "starting_layers": 10,  # only relevant if "dropout" == "growing"
+        # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
         "dataset": "simple",
         "testing": True,
+        "ensemble_type": AdaptiveEnsemble,
+        "ensemble_kwargs": {
+            "dropout": {
+                "center": None,
+                "left": [
+                    {"copy": {}},
+                    {
+                        "perturb": {
+                            "amount": 1,
+                            "mode": PerturbationMode.ADD,
+                            "axis": PerturbationAxis.RANDOM,
+                        },
+                    },
+                ],
+                "right": [
+                    {"copy": {}},
+                    {
+                        "perturb": {
+                            "amount": 0.05,
+                            "mode": PerturbationMode.REMOVE,
+                            "axis": PerturbationAxis.RANDOM,
+                        }
+                    },
+                ],
+            },
+            "size": 5,
+            "epsilon": 0.01,
+        },
         "optimizer": ExtendedOptimizers.GD,
         "step_size": 0.01,
-        "dropout": "eileen",
         "sim_local": True,
         "logging": True,
-        "percentage": 0.05,
-        "epsilon": 0.01,
         "seed": 1337,
-        "cost_span": 5,
         "log_interval": 5,
     }
     check_params(train_params)
