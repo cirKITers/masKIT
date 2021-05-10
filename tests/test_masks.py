@@ -184,6 +184,47 @@ class TestMaskedCircuits:
         mp.parameter_mask[1][1] = True
         assert mp.active() == 3
 
+    def test_default_value(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.default_value = 0
+        mp.wire_mask[0] = True
+        mp.parameter_mask[2, 2] = True
+        mp.layer_mask[1] = True
+        assert pnp.sum(mp.parameters[:, 0] != 0) == size
+        mp.wire_mask[0] = False
+        assert pnp.sum(mp.parameters[:, 0] == 0) == size
+        mp.wire_mask[1] = False
+        assert pnp.sum(mp.parameters[:, 1] != 0) == size
+        mp.layer_mask[1] = False
+        assert pnp.sum(mp.parameters == 0) == size * 2 - 1
+        mp.parameter_mask[2, 2] = False
+        assert pnp.sum(mp.parameters == 0) == size * 2
+
+    def test_default_value_perturb(self):
+        mp = MaskedCircuit(
+            parameters=pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(4, 3, 2)),
+            layers=4,
+            wires=3,
+            default_value=0,
+        )
+        mp.parameter_mask[:] = True
+        mp.perturb(
+            axis=PerturbationAxis.RANDOM, amount=0.5, mode=PerturbationMode.INVERT
+        )
+        assert pnp.sum(mp.parameters == 0) == round(0.5 * 4 * 3 * 2)
+
+    def test_default_value_shrink(self):
+        mp = MaskedCircuit(
+            parameters=pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(4, 3, 2)),
+            layers=4,
+            wires=3,
+            default_value=0,
+        )
+        mp.layer_mask[:] = True
+        mp.shrink(axis=PerturbationAxis.LAYERS)
+        assert pnp.sum(mp.parameters == 0) == 6
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
@@ -197,7 +238,6 @@ class TestMask:
         assert len(mp.mask) == mp.mask.size
         assert pnp.sum(mp.mask) == 0
         mp[1] = True
-        print(mp[1])
         assert mp[1] == True  # noqa: E712
         with pytest.raises(IndexError):
             mp[size] = True

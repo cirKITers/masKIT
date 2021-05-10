@@ -1,7 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class PerturbationAxis(Enum):
@@ -29,19 +29,54 @@ class Mask(object):
     masked, otherwise it is not.
     """
 
-    __slots__ = ("mask",)
+    __slots__ = ("mask", "_parent")
 
-    def __init__(self, shape: Tuple[int, ...]):
+    def __init__(
+        self, shape: Tuple[int, ...], parent: Optional["MaskedCircuit"] = None
+    ):
         super().__init__()
         self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
+        self._parent = parent
+
+    def __len__(self) -> int:
+        """Returns the len of the encapsulated :py:attr:`~.mask`"""
+        return len(self.mask)
+
+    @property
+    def shape(self) -> Any:
+        """Returns the shape of the encapsulated :py:attr:`~.mask`"""
+        return self.mask.shape
+
+    @property
+    def size(self) -> Any:
+        """Returns the size of the encapsulated :py:attr:`~.mask`"""
+        return self.mask.size
 
     def __setitem__(self, key, value: bool):
         """
         Convenience function to set the value of a specific position of the
         encapsulated :py:attr:`~.mask`.
+
+        Attention: when working with multi-dimensional masks please use tuple
+        convention for accessing the elements as otherwise changes are not
+        recognised and a `MaskedCircuit` cannot be informed about changes.
+
+        Instead of
+
+            .. code:
+                mask[2][2] = True
+
+        please use
+
+            .. code:
+                mask[2, 2] = True
         """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
+            before = self.mask.copy()
             self.mask[key] = value
+            delta_indices = np.argwhere(before != self.mask)
+            if self._parent is not None:
+                self._parent.mask_changed(self, delta_indices)
         else:
             raise NotImplementedError(f"key {key}")
 
@@ -115,18 +150,19 @@ class Mask(object):
                 ]
             )
         )
-        self.mask[indices] = ~self.mask[indices]
+        self[indices] = ~self.mask[indices]
 
     def shrink(self, amount: int = 1):
         index = np.argwhere(self.mask)
         index = index[:amount]
         if index.size > 0:
-            self.mask[tuple(zip(*index))] = False
+            self[tuple(zip(*index))] = False
 
-    def copy(self) -> "Mask":
+    def copy(self, parent: Optional["MaskedCircuit"] = None) -> "Mask":
         """Returns a copy of the current Mask."""
         clone = object.__new__(type(self))
         clone.mask = self.mask.copy()
+        clone._parent = parent
         return clone
 
 
@@ -141,9 +177,16 @@ class MaskedCircuit(object):
         "_wire_mask",
         "_parameter_mask",
         "parameters",
+        "default_value",
     )
 
-    def __init__(self, parameters: np.ndarray, layers: int, wires: int):
+    def __init__(
+        self,
+        parameters: np.ndarray,
+        layers: int,
+        wires: int,
+        default_value: Optional[float] = None,
+    ):
         assert (
             layers == parameters.shape[0]
         ), "First dimension of parameters shape must be equal to number of layers"
@@ -151,9 +194,10 @@ class MaskedCircuit(object):
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
         self.parameters = parameters
-        self._parameter_mask = Mask(shape=parameters.shape)
-        self._layer_mask = Mask(shape=(layers,))
-        self._wire_mask = Mask(shape=(wires,))
+        self._parameter_mask = Mask(shape=parameters.shape, parent=self)
+        self._layer_mask = Mask(shape=(layers,), parent=self)
+        self._wire_mask = Mask(shape=(wires,), parent=self)
+        self.default_value = default_value
 
     @property
     def mask(self) -> np.ndarray:
@@ -161,9 +205,9 @@ class MaskedCircuit(object):
         Accumulated mask of layer, wire, and parameter masks.
         Note that this mask is readonly.
         """
-        mask = self.parameter_mask.copy()
-        mask[self.layer_mask, :] = True
-        mask[:, self.wire_mask] = True
+        mask = self.parameter_mask.mask.copy()
+        mask[self.layer_mask.mask, :] = True
+        mask[:, self.wire_mask.mask] = True
         return mask
 
     def active(self) -> int:
@@ -174,17 +218,17 @@ class MaskedCircuit(object):
     @property
     def layer_mask(self):
         """Returns the encapsulated layer mask."""
-        return self._layer_mask.mask
+        return self._layer_mask
 
     @property
     def wire_mask(self):
         """Returns the encapsulated wire mask."""
-        return self._wire_mask.mask
+        return self._wire_mask
 
     @property
     def parameter_mask(self):
         """Returns the encapsulated parameter mask."""
-        return self._parameter_mask.mask
+        return self._parameter_mask
 
     def perturb(
         self,
@@ -244,13 +288,35 @@ class MaskedCircuit(object):
         """
         return values[~self.mask]
 
+    def mask_changed(self, mask: Mask, indices: np.ndarray):
+        """
+        Callback function that is used whenever one of the encapsulated masks does
+        change. In case the mask does change and adds a parameter back into the circuit,
+        the configured :py:attr:`~.default_value` is applied.
+
+        :raises NotImplementedError: In case an unimplemented mask reports change
+        """
+        if len(indices) == 0 or self.default_value is None:
+            return
+        np_indices = tuple(zip(*indices))
+        if not np.all(mask.mask[np_indices]):
+            if self.wire_mask == mask:
+                self.parameters[:, np_indices] = self.default_value
+            elif self.layer_mask == mask:
+                self.parameters[np_indices, :] = self.default_value
+            elif self.parameter_mask == mask:
+                self.parameters[np_indices] = self.default_value
+            else:
+                raise NotImplementedError(f"The mask {mask} is not supported")
+
     def copy(self) -> "MaskedCircuit":
         """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
-        clone._parameter_mask = self._parameter_mask.copy()
-        clone._layer_mask = self._layer_mask.copy()
-        clone._wire_mask = self._wire_mask.copy()
+        clone._parameter_mask = self._parameter_mask.copy(clone)
+        clone._layer_mask = self._layer_mask.copy(clone)
+        clone._wire_mask = self._wire_mask.copy(clone)
         clone.parameters = self.parameters.copy()
+        clone.default_value = self.default_value
         return clone
 
     @staticmethod
