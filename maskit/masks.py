@@ -300,11 +300,11 @@ class MaskedCircuit(object):
             return
         np_indices = tuple(zip(*indices))
         if not np.all(mask.mask[np_indices]):
-            if self.wire_mask == mask:
+            if self.wire_mask is mask:
                 self.parameters[:, np_indices] = self.default_value
-            elif self.layer_mask == mask:
+            elif self.layer_mask is mask:
                 self.parameters[np_indices, :] = self.default_value
-            elif self.parameter_mask == mask:
+            elif self.parameter_mask is mask:
                 self.parameters[np_indices] = self.default_value
             else:
                 raise NotImplementedError(f"The mask {mask} is not supported")
