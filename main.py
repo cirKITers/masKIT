@@ -44,13 +44,20 @@ def cost_iris(
     return cross_entropy(predictions=prediction, targets=target)
 
 
-def init_parameters(layers: int, current_layers: int, wires: int) -> MaskedCircuit:
+def init_parameters(
+    layers: int, current_layers: int, wires: int, default_value: Optional[float]
+) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
     )
     params_zero = np.zeros((layers - current_layers, wires))
     params_combined = np.concatenate((params_uniform, params_zero))
-    mc = MaskedCircuit(parameters=params_combined, layers=layers, wires=wires)
+    mc = MaskedCircuit(
+        parameters=params_combined,
+        layers=layers,
+        wires=wires,
+        default_value=default_value,
+    )
     mc.layer_mask[current_layers:] = True
     return mc
 
@@ -83,6 +90,7 @@ def train(
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
     current_layers = train_params.get("starting_layers", layers)
+    default_value = train_params.get("default_value", None)
 
     if train_params["dataset"] == "simple":
         circuit = qml.QNode(variational_circuit, dev)
@@ -109,7 +117,7 @@ def train(
             )
 
     # set up parameters
-    masked_circuit = init_parameters(layers, current_layers, wires)
+    masked_circuit = init_parameters(layers, current_layers, wires, default_value)
 
     # -----------------------------
     # ======= TRAINING LOOP =======
