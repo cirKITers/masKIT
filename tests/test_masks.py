@@ -1,6 +1,8 @@
+from tests.utils import _cost, _create_freezable_circuit, _variational_circuit, _device
 import random
 import pytest
 
+import pennylane as qml
 import pennylane.numpy as pnp
 
 from maskit.masks import (
@@ -228,6 +230,50 @@ class TestMaskedCircuits:
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
+
+
+class TestFreezableMaskedCircuit:
+    def test_init(self):
+        mp = _create_freezable_circuit(3)
+        assert mp
+
+    def test_freeze(self):
+        size = 3
+        mp = _create_freezable_circuit(size)
+        assert mp.differentiable_parameters.size == mp.parameter_mask.size
+        mp.freeze(axis=PerturbationAxis.LAYERS, amount=1, mode=PerturbationMode.ADD)
+        assert mp.differentiable_parameters.size == mp.parameter_mask.size - size
+        assert pnp.sum(mp.layer_freeze_mask) == 1
+        assert pnp.sum(mp.mask) == size
+
+    def test_complex(self):
+        random.seed(1234)
+        pnp.random.seed(1234)
+        mp = _create_freezable_circuit(3, layer_size=2)
+        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
+        optimizer = qml.GradientDescentOptimizer()
+
+        def cost_fn(params, masked_circuit=None):
+            return _cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        mp.freeze(axis=PerturbationAxis.LAYERS, amount=2, mode=PerturbationMode.ADD)
+        mp.freeze(axis=PerturbationAxis.WIRES, amount=2, mode=PerturbationMode.ADD)
+
+        last_changeable = pnp.sum(mp.parameters[~mp.mask])
+        frozen = pnp.sum(mp.parameters[mp.mask])
+        for _ in range(10):
+            params = optimizer.step(
+                cost_fn, mp.differentiable_parameters, masked_circuit=mp
+            )
+            mp.differentiable_parameters = params
+            current_changeable = pnp.sum(mp.parameters[~mp.mask])
+            assert last_changeable - current_changeable != 0
+            assert frozen - pnp.sum(mp.parameters[mp.mask]) == 0
+            last_changeable = current_changeable
 
 
 class TestMask:

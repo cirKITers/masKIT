@@ -401,6 +401,75 @@ class MaskedCircuit(object):
         return "".join(result).format(placeholder="-" * length)
 
 
+class FreezableMaskedCircuit(MaskedCircuit):
+    __slots__ = "_layer_freeze_mask", "_wire_freeze_mask", "_parameter_freeze_mask"
+
+    def __init__(
+        self,
+        parameters: np.ndarray,
+        layers: int,
+        wires: int,
+        default_value: Optional[float] = None,
+    ):
+        super().__init__(parameters, layers, wires, default_value=default_value)
+        self._parameter_freeze_mask = Mask(shape=parameters.shape)
+        self._layer_freeze_mask = Mask(shape=(layers,))
+        self._wire_freeze_mask = Mask(shape=(wires,))
+
+    @property
+    def mask(self) -> np.ndarray:
+        base = super().mask
+        base[self._parameter_freeze_mask.mask] = True
+        base[self._layer_freeze_mask, :] = True
+        base[:, self._wire_freeze_mask.mask] = True
+        return base
+
+    @property
+    def parameter_freeze_mask(self):
+        return self._parameter_freeze_mask
+
+    @property
+    def wire_freeze_mask(self):
+        return self._wire_freeze_mask
+
+    @property
+    def layer_freeze_mask(self):
+        return self._layer_freeze_mask
+
+    def freeze(
+        self,
+        axis: PerturbationAxis = PerturbationAxis.LAYERS,
+        amount: Optional[Union[int, float]] = None,
+        mode: PerturbationMode = PerturbationMode.ADD,
+    ):
+        assert mode in list(
+            PerturbationMode
+        ), f"The selected perturbation mode {mode} is not supported."
+        if amount == 0:
+            return
+        if axis == PerturbationAxis.LAYERS:
+            self._layer_freeze_mask.perturb(amount=amount, mode=mode)
+        elif axis == PerturbationAxis.WIRES:
+            self._wire_freeze_mask.perturb(amount=amount, mode=mode)
+        elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
+            self._parameter_freeze_mask.perturb(amount=amount, mode=mode)
+        else:
+            raise NotImplementedError(f"The perturbation {axis} is not supported")
+
+    def copy(self) -> "FreezableMaskedCircuit":
+        """Returns a copy of the current FreezableMaskedCircuit."""
+        clone = object.__new__(type(self))
+        clone._parameter_mask = self._parameter_mask.copy(clone)
+        clone._layer_mask = self._layer_mask.copy(clone)
+        clone._wire_mask = self._wire_mask.copy(clone)
+        clone.parameters = self.parameters.copy()
+        clone.default_value = self.default_value
+        clone._parameter_freeze_mask = self._parameter_freeze_mask.copy()
+        clone._layer_freeze_mask = self._layer_freeze_mask.copy()
+        clone._wire_freeze_mask = self._wire_freeze_mask.copy()
+        return clone
+
+
 if __name__ == "__main__":
     parameter = MaskedCircuit(
         np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
