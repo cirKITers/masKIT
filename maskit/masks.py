@@ -200,6 +200,14 @@ class MaskedCircuit(object):
         self.default_value = default_value
 
     @property
+    def differentiable_parameters(self) -> np.ndarray:
+        return self.parameters[~self.mask]
+
+    @differentiable_parameters.setter
+    def differentiable_parameters(self, value) -> None:
+        self.parameters[~self.mask] = value
+
+    @property
     def mask(self) -> np.ndarray:
         """
         Accumulated mask of layer, wire, and parameter masks.
@@ -318,6 +326,11 @@ class MaskedCircuit(object):
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
         return clone
+
+    def temporary_full_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
+        result = self.parameters.astype(object)
+        result[~self.mask] = changed_parameters
+        return result
 
     @staticmethod
     def execute(masked_circuit: "MaskedCircuit", operations: List[Dict]):
