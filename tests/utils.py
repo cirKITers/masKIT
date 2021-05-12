@@ -4,15 +4,15 @@ import pennylane.numpy as pnp
 from maskit.masks import FreezableMaskedCircuit, MaskedCircuit
 
 
-def _device(wires: int):
+def device(wires: int):
     return qml.device("default.qubit", wires=wires)
 
 
-def _cost(params, circuit, masked_circuit: MaskedCircuit) -> float:
+def cost(params, circuit, masked_circuit: MaskedCircuit) -> float:
     return 1.0 - circuit(params, masked_circuit=masked_circuit)[0]
 
 
-def _create_circuit(size: int, layer_size: int = 1):
+def create_circuit(size: int, layer_size: int = 1):
     if layer_size == 1:
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
     else:
@@ -22,7 +22,7 @@ def _create_circuit(size: int, layer_size: int = 1):
     return MaskedCircuit(parameters=parameters, layers=size, wires=size)
 
 
-def _create_freezable_circuit(size: int, layer_size: int = 1):
+def create_freezable_circuit(size: int, layer_size: int = 1):
     if layer_size == 1:
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
     else:
@@ -32,7 +32,7 @@ def _create_freezable_circuit(size: int, layer_size: int = 1):
     return FreezableMaskedCircuit(parameters=parameters, layers=size, wires=size)
 
 
-def _variational_circuit(params, masked_circuit: MaskedCircuit = None):
+def variational_circuit(params, masked_circuit: MaskedCircuit = None):
     full_parameters = masked_circuit.temporary_full_parameters(params)
     for layer, layer_hidden in enumerate(masked_circuit.layer_mask):
         if not layer_hidden:

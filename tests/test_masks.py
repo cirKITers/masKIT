@@ -1,4 +1,4 @@
-from tests.utils import _cost, _create_freezable_circuit, _variational_circuit, _device
+from tests.utils import cost, create_freezable_circuit, variational_circuit, device
 import random
 import pytest
 
@@ -234,12 +234,12 @@ class TestMaskedCircuits:
 
 class TestFreezableMaskedCircuit:
     def test_init(self):
-        mp = _create_freezable_circuit(3)
+        mp = create_freezable_circuit(3)
         assert mp
 
     def test_freeze(self):
         size = 3
-        mp = _create_freezable_circuit(size)
+        mp = create_freezable_circuit(size)
         assert mp.differentiable_parameters.size == mp.parameter_mask.size
         # Test 0 amount
         mask = mp.mask
@@ -263,7 +263,7 @@ class TestFreezableMaskedCircuit:
             mp.freeze(axis=10, amount=1, mode=PerturbationMode.ADD)
 
     def test_copy(self):
-        mp = _create_freezable_circuit(3)
+        mp = create_freezable_circuit(3)
         mp.perturb(amount=5, mode=PerturbationMode.ADD)
         mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.ADD)
         mp_copy = mp.copy()
@@ -276,12 +276,12 @@ class TestFreezableMaskedCircuit:
     def test_complex(self):
         random.seed(1234)
         pnp.random.seed(1234)
-        mp = _create_freezable_circuit(3, layer_size=2)
-        circuit = qml.QNode(_variational_circuit, _device(mp.wire_mask.size))
+        mp = create_freezable_circuit(3, layer_size=2)
+        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
         optimizer = qml.GradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
-            return _cost(
+            return cost(
                 params,
                 circuit,
                 masked_circuit,
