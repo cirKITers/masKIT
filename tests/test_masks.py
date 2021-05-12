@@ -241,10 +241,37 @@ class TestFreezableMaskedCircuit:
         size = 3
         mp = _create_freezable_circuit(size)
         assert mp.differentiable_parameters.size == mp.parameter_mask.size
+        # Test 0 amount
+        mask = mp.mask
+        mp.freeze(axis=PerturbationAxis.LAYERS, amount=0, mode=PerturbationMode.ADD)
+        assert pnp.array_equal(mp.mask, mask)
+        # Test freezing of layers
         mp.freeze(axis=PerturbationAxis.LAYERS, amount=1, mode=PerturbationMode.ADD)
         assert mp.differentiable_parameters.size == mp.parameter_mask.size - size
         assert pnp.sum(mp.layer_freeze_mask) == 1
         assert pnp.sum(mp.mask) == size
+        # Test freezing of wires
+        mp.freeze(axis=PerturbationAxis.WIRES, amount=1, mode=PerturbationMode.ADD)
+        assert pnp.sum(mp.wire_freeze_mask) == 1
+        assert pnp.sum(mp.mask) == 2 * size - 1
+        # Test freezing of parameters
+        mp.freeze(axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.ADD)
+        assert pnp.sum(mp.parameter_freeze_mask) == 1
+        assert pnp.sum(mp.mask) == 2 * size - 1 or pnp.sum(mp.mask) == 2 * size
+        # Test wrong axis
+        with pytest.raises(NotImplementedError):
+            mp.freeze(axis=10, amount=1, mode=PerturbationMode.ADD)
+
+    def test_copy(self):
+        mp = _create_freezable_circuit(3)
+        mp.perturb(amount=5, mode=PerturbationMode.ADD)
+        mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.ADD)
+        mp_copy = mp.copy()
+        assert pnp.array_equal(mp.mask, mp_copy.mask)
+        mp.perturb(amount=5, mode=PerturbationMode.REMOVE)
+        mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.REMOVE)
+        assert pnp.sum(mp.mask) == 0
+        assert not pnp.array_equal(mp.mask, mp_copy.mask)
 
     def test_complex(self):
         random.seed(1234)
