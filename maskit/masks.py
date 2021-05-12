@@ -201,10 +201,15 @@ class MaskedCircuit(object):
 
     @property
     def differentiable_parameters(self) -> np.ndarray:
+        """Subset of parameters that are not masked and therefore differentiable."""
         return self.parameters[~self.mask]
 
     @differentiable_parameters.setter
     def differentiable_parameters(self, value) -> None:
+        """
+        Provides a setter for the differentiable parameters. It is ensured that the
+        updated values are written into the underlying :py:attr:`~.parameters`.
+        """
         self.parameters[~self.mask] = value
 
     @property
@@ -402,6 +407,13 @@ class MaskedCircuit(object):
 
 
 class FreezableMaskedCircuit(MaskedCircuit):
+    """
+    A FreezableMaskedCircuit not only supports masking of different components
+    including wires, layers, and parameters but also supports freezing a subset
+    of parameters defined again on the different components wires, layers, and
+    parameters.
+    """
+
     __slots__ = "_layer_freeze_mask", "_wire_freeze_mask", "_parameter_freeze_mask"
 
     def __init__(
@@ -418,6 +430,10 @@ class FreezableMaskedCircuit(MaskedCircuit):
 
     @property
     def mask(self) -> np.ndarray:
+        """
+        Accumulated mask of layers, wires, and parameters for both masking and freezing.
+        Note that this mask is readonly.
+        """
         base = super().mask
         base[self._parameter_freeze_mask.mask] = True
         base[self._layer_freeze_mask, :] = True
@@ -425,15 +441,18 @@ class FreezableMaskedCircuit(MaskedCircuit):
         return base
 
     @property
-    def parameter_freeze_mask(self):
+    def parameter_freeze_mask(self) -> Mask:
+        """Returns the encapsulated freezing parameter mask."""
         return self._parameter_freeze_mask
 
     @property
-    def wire_freeze_mask(self):
+    def wire_freeze_mask(self) -> Mask:
+        """Returns the encapsulated freezing wire mask."""
         return self._wire_freeze_mask
 
     @property
-    def layer_freeze_mask(self):
+    def layer_freeze_mask(self) -> Mask:
+        """Returns the encapsulated freezing layer mask."""
         return self._layer_freeze_mask
 
     def freeze(
@@ -442,6 +461,19 @@ class FreezableMaskedCircuit(MaskedCircuit):
         amount: Optional[Union[int, float]] = None,
         mode: PerturbationMode = PerturbationMode.ADD,
     ):
+        """
+        Freezes the parameter values for a given ``axis`` that is of type
+        :py:class:`~.PerturbationAxis`. The freezing is applied ``amount``times
+        and depends on the given ``mode`` of type :py:class:`~.PerturbationMode`.
+        If no amount is given, that is ``amount=None``, a random ``amount`` is
+        determined given by the actual size of the py:attr:`~.mask`. The ``amount``
+        is automatically limited to the actual size of the py:attr:`~.mask`.
+
+        :param amount: Number of items to freeze, defaults to None
+        :param axis: Which mask to freeze, defaults to PerturbationAxis.LAYERS
+        :param mode: How to freeze, defaults to PerturbationMode.ADD
+        :raises NotImplementedError: Raised in case of an unknown mode
+        """
         assert mode in list(
             PerturbationMode
         ), f"The selected perturbation mode {mode} is not supported."
