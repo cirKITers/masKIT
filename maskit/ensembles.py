@@ -61,10 +61,10 @@ class Ensemble(object):
         params, _cost, _gradient = optimizer.step_cost_and_grad(
             objective_fn,
             *args,
-            masked_circuit.parameters,
+            masked_circuit.differentiable_parameters,
             masked_circuit=masked_circuit,
         )
-        masked_circuit.parameters = params
+        masked_circuit.differentiable_parameters = params
 
         # then branching
         branches = self._branch(masked_circuit=masked_circuit)
@@ -74,7 +74,8 @@ class Ensemble(object):
                 branch=masked_circuit,
                 branch_name="center",
                 cost=objective_fn(
-                    masked_circuit.parameters, masked_circuit=masked_circuit
+                    masked_circuit.differentiable_parameters,
+                    masked_circuit=masked_circuit,
                 ).unwrap(),
                 gradient=_gradient,
                 brutto_steps=1,
@@ -88,10 +89,15 @@ class Ensemble(object):
         for branch in branches.values():
             for _ in range(ensemble_steps):
                 params, _cost, _gradient = optimizer.step_cost_and_grad(
-                    objective_fn, *args, branch.parameters, masked_circuit=branch
+                    objective_fn,
+                    *args,
+                    branch.differentiable_parameters,
+                    masked_circuit=branch,
                 )
-                branch.parameters = params
-            branch_costs.append(objective_fn(branch.parameters, masked_circuit=branch))
+                branch.differentiable_parameters = params
+            branch_costs.append(
+                objective_fn(branch.differentiable_parameters, masked_circuit=branch)
+            )
             branch_gradients.append(_gradient)
         minimum_index = branch_costs.index(min(branch_costs))
         branch_name = list(branches.keys())[minimum_index]

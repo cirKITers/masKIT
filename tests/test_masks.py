@@ -1,9 +1,12 @@
+from tests.utils import cost, create_freezable_circuit, variational_circuit, device
 import random
 import pytest
 
+import pennylane as qml
 import pennylane.numpy as pnp
 
 from maskit.masks import (
+    FreezableMaskedCircuit,
     MaskedCircuit,
     Mask,
     PerturbationAxis,
@@ -228,6 +231,78 @@ class TestMaskedCircuits:
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
+
+
+class TestFreezableMaskedCircuit:
+    def test_init(self):
+        mp = create_freezable_circuit(3)
+        assert mp
+
+    def test_freeze(self):
+        size = 3
+        mp = create_freezable_circuit(size)
+        assert mp.differentiable_parameters.size == mp.parameter_mask.size
+        # Test 0 amount
+        mask = mp.mask
+        mp.freeze(axis=PerturbationAxis.LAYERS, amount=0, mode=PerturbationMode.ADD)
+        assert pnp.array_equal(mp.mask, mask)
+        # Test freezing of layers
+        mp.freeze(axis=PerturbationAxis.LAYERS, amount=1, mode=PerturbationMode.ADD)
+        assert mp.differentiable_parameters.size == mp.parameter_mask.size - size
+        assert pnp.sum(mp.layer_freeze_mask) == 1
+        assert pnp.sum(mp.mask) == size
+        # Test freezing of wires
+        mp.freeze(axis=PerturbationAxis.WIRES, amount=1, mode=PerturbationMode.ADD)
+        assert pnp.sum(mp.wire_freeze_mask) == 1
+        assert pnp.sum(mp.mask) == 2 * size - 1
+        # Test freezing of parameters
+        mp.freeze(axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.ADD)
+        assert pnp.sum(mp.parameter_freeze_mask) == 1
+        assert pnp.sum(mp.mask) == 2 * size - 1 or pnp.sum(mp.mask) == 2 * size
+        # Test wrong axis
+        with pytest.raises(NotImplementedError):
+            mp.freeze(axis=10, amount=1, mode=PerturbationMode.ADD)
+
+    def test_copy(self):
+        mp = create_freezable_circuit(3)
+        mp.perturb(amount=5, mode=PerturbationMode.ADD)
+        mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.ADD)
+        mp_copy = mp.copy()
+        assert isinstance(mp_copy, FreezableMaskedCircuit)
+        assert pnp.array_equal(mp.mask, mp_copy.mask)
+        mp.perturb(amount=5, mode=PerturbationMode.REMOVE)
+        mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.REMOVE)
+        assert pnp.sum(mp.mask) == 0
+        assert not pnp.array_equal(mp.mask, mp_copy.mask)
+
+    def test_complex(self):
+        random.seed(1234)
+        pnp.random.seed(1234)
+        mp = create_freezable_circuit(3, layer_size=2)
+        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        optimizer = qml.GradientDescentOptimizer()
+
+        def cost_fn(params, masked_circuit=None):
+            return cost(
+                params,
+                circuit,
+                masked_circuit,
+            )
+
+        mp.freeze(axis=PerturbationAxis.LAYERS, amount=2, mode=PerturbationMode.ADD)
+        mp.freeze(axis=PerturbationAxis.WIRES, amount=2, mode=PerturbationMode.ADD)
+
+        last_changeable = pnp.sum(mp.parameters[~mp.mask])
+        frozen = pnp.sum(mp.parameters[mp.mask])
+        for _ in range(10):
+            params = optimizer.step(
+                cost_fn, mp.differentiable_parameters, masked_circuit=mp
+            )
+            mp.differentiable_parameters = params
+            current_changeable = pnp.sum(mp.parameters[~mp.mask])
+            assert last_changeable - current_changeable != 0
+            assert frozen - pnp.sum(mp.parameters[mp.mask]) == 0
+            last_changeable = current_changeable
 
 
 class TestMask:
