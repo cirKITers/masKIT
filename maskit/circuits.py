@@ -4,7 +4,7 @@ from pennylane import numpy as np
 
 
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
-    full_parameters = masked_circuit.temporary_full_parameters(params)
+    full_parameters = masked_circuit.expanded_parameters(params)
     wires = len(masked_circuit.wire_mask)
     mask = masked_circuit.mask
     for wire, _is_masked in enumerate(masked_circuit.wire_mask):

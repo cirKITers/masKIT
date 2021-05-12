@@ -33,7 +33,7 @@ def create_freezable_circuit(size: int, layer_size: int = 1):
 
 
 def variational_circuit(params, masked_circuit: MaskedCircuit = None):
-    full_parameters = masked_circuit.temporary_full_parameters(params)
+    full_parameters = masked_circuit.expanded_parameters(params)
     for layer, layer_hidden in enumerate(masked_circuit.layer_mask):
         if not layer_hidden:
             for wire, wire_hidden in enumerate(masked_circuit.wire_mask):

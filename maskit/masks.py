@@ -334,7 +334,19 @@ class MaskedCircuit(object):
         clone.default_value = self.default_value
         return clone
 
-    def temporary_full_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
+    def expanded_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
+        """
+        This method helps building a circuit with a current instance of differentiable
+        parameters. Differentiable parameters are contained within a box for autograd
+        e.g. for proper tracing. As from those parameters the structure of the
+        circuit cannot be implied, this method takes care to expand on these parameters
+        by giving a view that is a combination of parameters and the differentiable
+        parameters.
+        Note that the returned parameters are based on a copy of the underlying
+        parameters and therefore should not be changed manually.
+
+        :param changed_parameters: Current set of differentiable parameters
+        """
         result = self.parameters.astype(object)
         result[~self.mask] = changed_parameters
         return result
