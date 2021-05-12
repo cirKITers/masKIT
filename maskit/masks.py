@@ -1,7 +1,9 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, TypeVar
+
+Self = TypeVar("Self")
 
 
 class PerturbationAxis(Enum):
@@ -322,7 +324,7 @@ class MaskedCircuit(object):
             else:
                 raise NotImplementedError(f"The mask {mask} is not supported")
 
-    def copy(self) -> "MaskedCircuit":
+    def copy(self: Self) -> Self:
         """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
         clone._parameter_mask = self._parameter_mask.copy(clone)
@@ -488,14 +490,9 @@ class FreezableMaskedCircuit(MaskedCircuit):
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
-    def copy(self) -> "FreezableMaskedCircuit":
+    def copy(self: Self) -> Self:
         """Returns a copy of the current FreezableMaskedCircuit."""
-        clone = object.__new__(type(self))
-        clone._parameter_mask = self._parameter_mask.copy(clone)
-        clone._layer_mask = self._layer_mask.copy(clone)
-        clone._wire_mask = self._wire_mask.copy(clone)
-        clone.parameters = self.parameters.copy()
-        clone.default_value = self.default_value
+        clone = super().copy()
         clone._parameter_freeze_mask = self._parameter_freeze_mask.copy()
         clone._layer_freeze_mask = self._layer_freeze_mask.copy()
         clone._wire_freeze_mask = self._wire_freeze_mask.copy()

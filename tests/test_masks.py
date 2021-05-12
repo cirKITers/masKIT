@@ -6,6 +6,7 @@ import pennylane as qml
 import pennylane.numpy as pnp
 
 from maskit.masks import (
+    FreezableMaskedCircuit,
     MaskedCircuit,
     Mask,
     PerturbationAxis,
@@ -267,6 +268,7 @@ class TestFreezableMaskedCircuit:
         mp.perturb(amount=5, mode=PerturbationMode.ADD)
         mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.ADD)
         mp_copy = mp.copy()
+        assert isinstance(mp_copy, FreezableMaskedCircuit)
         assert pnp.array_equal(mp.mask, mp_copy.mask)
         mp.perturb(amount=5, mode=PerturbationMode.REMOVE)
         mp.freeze(amount=2, axis=PerturbationAxis.LAYERS, mode=PerturbationMode.REMOVE)
