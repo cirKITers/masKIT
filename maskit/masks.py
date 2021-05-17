@@ -1,7 +1,9 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, TypeVar
+
+Self = TypeVar("Self")
 
 
 class PerturbationAxis(Enum):
@@ -200,6 +202,19 @@ class MaskedCircuit(object):
         self.default_value = default_value
 
     @property
+    def differentiable_parameters(self) -> np.ndarray:
+        """Subset of parameters that are not masked and therefore differentiable."""
+        return self.parameters[~self.mask]
+
+    @differentiable_parameters.setter
+    def differentiable_parameters(self, value) -> None:
+        """
+        Provides a setter for the differentiable parameters. It is ensured that the
+        updated values are written into the underlying :py:attr:`~.parameters`.
+        """
+        self.parameters[~self.mask] = value
+
+    @property
     def mask(self) -> np.ndarray:
         """
         Accumulated mask of layer, wire, and parameter masks.
@@ -309,7 +324,7 @@ class MaskedCircuit(object):
             else:
                 raise NotImplementedError(f"The mask {mask} is not supported")
 
-    def copy(self) -> "MaskedCircuit":
+    def copy(self: Self) -> Self:
         """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
         clone._parameter_mask = self._parameter_mask.copy(clone)
@@ -318,6 +333,23 @@ class MaskedCircuit(object):
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
         return clone
+
+    def expanded_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
+        """
+        This method helps building a circuit with a current instance of differentiable
+        parameters. Differentiable parameters are contained within a box for autograd
+        e.g. for proper tracing. As from those parameters the structure of the
+        circuit cannot be implied, this method takes care to expand on these parameters
+        by giving a view that is a combination of parameters and the differentiable
+        parameters.
+        Note that the returned parameters are based on a copy of the underlying
+        parameters and therefore should not be changed manually.
+
+        :param changed_parameters: Current set of differentiable parameters
+        """
+        result = self.parameters.astype(object)
+        result[~self.mask] = changed_parameters
+        return result
 
     @staticmethod
     def execute(masked_circuit: "MaskedCircuit", operations: List[Dict]):
@@ -386,6 +418,97 @@ class MaskedCircuit(object):
             result.append("]")
         result.append("]")
         return "".join(result).format(placeholder="-" * length)
+
+
+class FreezableMaskedCircuit(MaskedCircuit):
+    """
+    A FreezableMaskedCircuit not only supports masking of different components
+    including wires, layers, and parameters but also supports freezing a subset
+    of parameters defined again on the different components wires, layers, and
+    parameters.
+    """
+
+    __slots__ = "_layer_freeze_mask", "_wire_freeze_mask", "_parameter_freeze_mask"
+
+    def __init__(
+        self,
+        parameters: np.ndarray,
+        layers: int,
+        wires: int,
+        default_value: Optional[float] = None,
+    ):
+        super().__init__(parameters, layers, wires, default_value=default_value)
+        self._parameter_freeze_mask = Mask(shape=parameters.shape)
+        self._layer_freeze_mask = Mask(shape=(layers,))
+        self._wire_freeze_mask = Mask(shape=(wires,))
+
+    @property
+    def mask(self) -> np.ndarray:
+        """
+        Accumulated mask of layers, wires, and parameters for both masking and freezing.
+        Note that this mask is readonly.
+        """
+        base = super().mask
+        base[self._parameter_freeze_mask.mask] = True
+        base[self._layer_freeze_mask, :] = True
+        base[:, self._wire_freeze_mask.mask] = True
+        return base
+
+    @property
+    def parameter_freeze_mask(self) -> Mask:
+        """Returns the encapsulated freezing parameter mask."""
+        return self._parameter_freeze_mask
+
+    @property
+    def wire_freeze_mask(self) -> Mask:
+        """Returns the encapsulated freezing wire mask."""
+        return self._wire_freeze_mask
+
+    @property
+    def layer_freeze_mask(self) -> Mask:
+        """Returns the encapsulated freezing layer mask."""
+        return self._layer_freeze_mask
+
+    def freeze(
+        self,
+        axis: PerturbationAxis = PerturbationAxis.LAYERS,
+        amount: Optional[Union[int, float]] = None,
+        mode: PerturbationMode = PerturbationMode.ADD,
+    ):
+        """
+        Freezes the parameter values for a given ``axis`` that is of type
+        :py:class:`~.PerturbationAxis`. The freezing is applied ``amount``times
+        and depends on the given ``mode`` of type :py:class:`~.PerturbationMode`.
+        If no amount is given, that is ``amount=None``, a random ``amount`` is
+        determined given by the actual size of the py:attr:`~.mask`. The ``amount``
+        is automatically limited to the actual size of the py:attr:`~.mask`.
+
+        :param amount: Number of items to freeze, defaults to None
+        :param axis: Which mask to freeze, defaults to PerturbationAxis.LAYERS
+        :param mode: How to freeze, defaults to PerturbationMode.ADD
+        :raises NotImplementedError: Raised in case of an unknown mode
+        """
+        assert mode in list(
+            PerturbationMode
+        ), f"The selected perturbation mode {mode} is not supported."
+        if amount == 0:
+            return
+        if axis == PerturbationAxis.LAYERS:
+            self._layer_freeze_mask.perturb(amount=amount, mode=mode)
+        elif axis == PerturbationAxis.WIRES:
+            self._wire_freeze_mask.perturb(amount=amount, mode=mode)
+        elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
+            self._parameter_freeze_mask.perturb(amount=amount, mode=mode)
+        else:
+            raise NotImplementedError(f"The perturbation {axis} is not supported")
+
+    def copy(self: Self) -> Self:
+        """Returns a copy of the current FreezableMaskedCircuit."""
+        clone = super().copy()
+        clone._parameter_freeze_mask = self._parameter_freeze_mask.copy()
+        clone._layer_freeze_mask = self._layer_freeze_mask.copy()
+        clone._wire_freeze_mask = self._wire_freeze_mask.copy()
+        return clone
 
 
 if __name__ == "__main__":

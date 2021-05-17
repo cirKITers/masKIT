@@ -1,8 +1,10 @@
+from maskit.masks import MaskedCircuit
 import pennylane as qml
 from pennylane import numpy as np
 
 
-def basic_variational_circuit(params, rotations, masked_circuit):
+def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
+    full_parameters = masked_circuit.expanded_parameters(params)
     wires = len(masked_circuit.wire_mask)
     mask = masked_circuit.mask
     for wire, _is_masked in enumerate(masked_circuit.wire_mask):
@@ -19,7 +21,7 @@ def basic_variational_circuit(params, rotations, masked_circuit):
                 rotation = qml.RY
             else:
                 rotation = qml.RZ
-            rotation(params[layer][wire], wires=wire)
+            rotation(full_parameters[layer][wire], wires=wire)
 
         for wire in range(0, wires - 1, 2):
             qml.CZ(wires=[wire, wire + 1])
