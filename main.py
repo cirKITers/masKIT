@@ -16,10 +16,10 @@ from maskit.ensembles import (
 )
 
 
-def get_device(sim_local: bool, wires: int, analytic: bool = True):
+def get_device(sim_local: bool, wires: int, shots: Optional[int] = None):
     assert sim_local, "Currently only local simulation is supported"
     if sim_local:
-        dev = qml.device("default.qubit", wires=wires, analytic=analytic)
+        dev = qml.device("default.qubit", wires=wires, shots=shots)
     return dev
 
 
