@@ -9,27 +9,25 @@ import scipy.optimize as sciopt
 class L_BFGS_B:
     """
     The L-BFGS-B optimiser provides a wrapper for the implementation provided
-    in scipy. Please see the :py:func:`~sciopt.fmin_l_bfgs_b` documentation for further details.
+    in scipy. Please see the :py:func:`~sciopt.fmin_l_bfgs_b` documentation for
+    further details.
 
     In case the method :py:method:`~.step` is used, the value of parameter `maxiter`
     is ignored and interpreted as `1` instead.
 
-    :param bounds: tuple of `min` and `max` for each value of provided parameters,
-        defaults to None
+    :param bounds: tuple of `min` and `max` for each value of provided parameters
     :param m: maximum number of variable metric corrections used to define the
-        limited memory matrix, defaults to 10
+        limited memory matrix
     :param factr: information on when to stop iterating, e.g. 1e12 for low accuracy;
-        1e7 for moderate accuracy; 10.0 for extremely high accuracy, defaults to 1e7
-    :param pgtol: when to stop iterating with regards to gradients, defaults to 1e-5
-    :param epsilon: Step size used when `approx_grad` is `True`, defaults to 1e-8
-    :param iprint: Frequency of output, defaults to -1
-    :param maxfun: Maximum number of function evaluations, defaults to 15000
-    :param maxiter: Maximum number of iterations, defaults to 15000
-    :param disp: [description], defaults to None
-    :param callback: Called after each iteration with current parameters,
-        defaults to None
-    :param maxls: Maximum number of line search steps (per iteration),
-        defaults to 20
+        1e7 for moderate accuracy; 10.0 for extremely high accuracy
+    :param pgtol: when to stop iterating with regards to gradients
+    :param epsilon: Step size used when `approx_grad` is `True`
+    :param iprint: Frequency of output
+    :param maxfun: Maximum number of function evaluations
+    :param maxiter: Maximum number of iterations
+    :param disp: If zero, then no output. If positive this over-rides `iprint`
+    :param callback: Called after each iteration with current parameters
+    :param maxls: Maximum number of line search steps (per iteration)
     """
 
     __slots__ = (
@@ -84,17 +82,17 @@ class L_BFGS_B:
         :param objective_fn: Function to minimize
         :param parameters: Initial guess of parameters
         :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
-            approximated numerically, defaults to None
+            approximated numerically
         """
-        return self._optimise(
+        return self._optimize(
             objective_fn, parameters, self.maxiter, *args, grad_fn=grad_fn, **kwargs
         )
 
-    def _optimise(
+    def _optimize(
         self, objective_fn, parameters: ndarray, maxiter, *args, grad_fn, **kwargs
     ) -> Tuple[ndarray, float, ndarray]:
         shape = parameters.shape
-        shaped_fn = self._wrap_objective_fn(objective_fn, shape, **kwargs)
+        shaped_fn = self._reshaping_objective_fn(objective_fn, shape, **kwargs)
         approx_grad = False if grad_fn is not None else True
         updated_parameters, cost, info = sciopt.fmin_l_bfgs_b(
             shaped_fn,
@@ -126,12 +124,11 @@ class L_BFGS_B:
         :param objective_fn: Function to minimize
         :param parameters: Initial guess of parameters
         :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
-            approximated numerically, defaults to None
+            approximated numerically
         """
-        updated_parameters, _, _ = self._optimise(
-            objective_fn, parameters, 1, *args, grad_fn=grad_fn, **kwargs
-        )
-        return updated_parameters
+        return self.step_cost_and_grad(
+            objective_fn, parameters, *args, grad_fn=grad_fn, **kwargs
+        )[0]
 
     def step_and_cost(
         self, objective_fn, parameters, *args, grad_fn=None, **kwargs
@@ -140,12 +137,11 @@ class L_BFGS_B:
         :param objective_fn: Function to minimize
         :param parameters: Initial guess of parameters
         :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
-            approximated numerically, defaults to None
+            approximated numerically
         """
-        updated_parameters, cost, _ = self._optimise(
-            objective_fn, parameters, 1, *args, grad_fn=grad_fn, **kwargs
-        )
-        return updated_parameters, cost
+        return self.step_cost_and_grad(
+            objective_fn, parameters, *args, grad_fn=grad_fn, **kwargs
+        )[:2]
 
     def step_cost_and_grad(
         self, objective_fn, parameters, *args, grad_fn=None, **kwargs
@@ -154,9 +150,9 @@ class L_BFGS_B:
         :param objective_fn: Function to minimize
         :param parameters: Initial guess of parameters
         :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
-            approximated numerically, defaults to None
+            approximated numerically
         """
-        updated_parameters, cost, gradients = self._optimise(
+        updated_parameters, cost, gradients = self._optimize(
             objective_fn, parameters, 1, *args, grad_fn=grad_fn, **kwargs
         )
         return updated_parameters, cost, gradients
