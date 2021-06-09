@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 from pennylane import GradientDescentOptimizer, AdamOptimizer
 from pennylane._grad import grad as get_gradient
 from enum import Enum
@@ -7,6 +7,11 @@ import scipy.optimize as sciopt
 
 
 class L_BFGS_B:
+    """
+    The L-BFGS-B optimiser provides a wrapper for the implementation provided
+    in scipy. Please see the appropriate documentation for further details.
+    """
+
     __slots__ = (
         "bounds",
         "m",
@@ -23,7 +28,7 @@ class L_BFGS_B:
 
     def __init__(
         self,
-        bounds=None,
+        bounds: Optional[ndarray] = None,
         m: int = 10,
         factr: float = 1e7,  # qiskit: factr: float = 10,
         pgtol: float = 1e-5,
@@ -39,17 +44,22 @@ class L_BFGS_B:
         In case the method :py:method:`~.step` is used, the value of parameter
         `maxiter` is ignored and interpreted as `1` instead.
 
-        :param bounds: [description], defaults to None
-        :param m: [description], defaults to 10
-        :param factr: [description], defaults to 1e7
-        :param pgtol: [description], defaults to 1e-5
-        :param epsilon: [description], defaults to 1e-8
-        :param iprint: [description], defaults to -1
-        :param maxfun: [description], defaults to 15000
-        :param maxiter: [description], defaults to 15000
+        :param bounds: tuple of `min` and `max` for each value of provided parameters,
+            defaults to None
+        :param m: maximum number of variable metric corrections used to define the
+            limited memory matrix, defaults to 10
+        :param factr: information on when to stop iterating, e.g. 1e12 for low accuracy;
+            1e7 for moderate accuracy; 10.0 for extremely high accuracy, defaults to 1e7
+        :param pgtol: when to stop iterating with regards to gradients, defaults to 1e-5
+        :param epsilon: Step size used when `approx_grad` is `True`, defaults to 1e-8
+        :param iprint: Frequency of output, defaults to -1
+        :param maxfun: Maximum number of function evaluations, defaults to 15000
+        :param maxiter: Maximum number of iterations, defaults to 15000
         :param disp: [description], defaults to None
-        :param callback: [description], defaults to None
-        :param maxls: [description], defaults to 20
+        :param callback: Called after each iteration with current parameters,
+            defaults to None
+        :param maxls: Maximum number of line search steps (per iteration),
+            defaults to 20
         """
         self.bounds = bounds
         self.m = m
@@ -71,17 +81,23 @@ class L_BFGS_B:
         grad_fn=None,
         **kwargs,
     ) -> Tuple[ndarray, float, ndarray]:
+        """
+        :param objective_fn: Function to minimize
+        :param parameters: Initial guess of parameters
+        :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
+            approximated numerically, defaults to None
+        """
         return self._optimise(
             objective_fn, parameters, self.maxiter, *args, grad_fn=grad_fn, **kwargs
         )
 
     def _optimise(
         self, objective_fn, parameters: ndarray, maxiter, *args, grad_fn, **kwargs
-    ):
+    ) -> Tuple[ndarray, float, ndarray]:
         shape = parameters.shape
         shaped_fn = self._wrap_objective_fn(objective_fn, shape, **kwargs)
-        approx_grad = False  # TODO: check the defaults of pennylane optimisers
-        sol, opt, info = sciopt.fmin_l_bfgs_b(
+        approx_grad = False if grad_fn is not None else True
+        updated_parameters, cost, info = sciopt.fmin_l_bfgs_b(
             shaped_fn,
             parameters.flatten(),
             fprime=get_gradient(shaped_fn) if grad_fn is None else grad_fn,
@@ -99,7 +115,7 @@ class L_BFGS_B:
             callback=self.callback,
             maxls=self.maxls,
         )
-        return sol.reshape(shape), opt, info["grad"]
+        return updated_parameters.reshape(shape), cost, info["grad"]
 
     def _wrap_objective_fn(self, objective_fn, shape, **kwargs):
         return lambda params, *args: objective_fn(
@@ -107,26 +123,44 @@ class L_BFGS_B:
         )
 
     def step(self, objective_fn, parameters, *args, grad_fn=None, **kwargs) -> ndarray:
-        sol, _, _ = self._optimise(
+        """
+        :param objective_fn: Function to minimize
+        :param parameters: Initial guess of parameters
+        :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
+            approximated numerically, defaults to None
+        """
+        updated_parameters, _, _ = self._optimise(
             objective_fn, parameters, 1, *args, grad_fn=grad_fn, **kwargs
         )
-        return sol
+        return updated_parameters
 
     def step_and_cost(
         self, objective_fn, parameters, *args, grad_fn=None, **kwargs
     ) -> Tuple[ndarray, float]:
-        sol, cost, _ = self._optimise(
+        """
+        :param objective_fn: Function to minimize
+        :param parameters: Initial guess of parameters
+        :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
+            approximated numerically, defaults to None
+        """
+        updated_parameters, cost, _ = self._optimise(
             objective_fn, parameters, 1, *args, grad_fn=grad_fn, **kwargs
         )
-        return sol, cost
+        return updated_parameters, cost
 
     def step_cost_and_grad(
         self, objective_fn, parameters, *args, grad_fn=None, **kwargs
-    ):
-        sol, cost, grad = self._optimise(
+    ) -> Tuple[ndarray, float, ndarray]:
+        """
+        :param objective_fn: Function to minimize
+        :param parameters: Initial guess of parameters
+        :param grad_fn: The gradient of `func`. In case of `None`, the gradient is
+            approximated numerically, defaults to None
+        """
+        updated_parameters, cost, gradients = self._optimise(
             objective_fn, parameters, 1, *args, grad_fn=grad_fn, **kwargs
         )
-        return sol, cost, grad
+        return updated_parameters, cost, gradients
 
 
 class ExtendedGradientDescentOptimizer(GradientDescentOptimizer):
