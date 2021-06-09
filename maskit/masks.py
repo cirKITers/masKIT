@@ -347,6 +347,11 @@ class MaskedCircuit(object):
 
         :param changed_parameters: Current set of differentiable parameters
         """
+        if (
+            changed_parameters.size == self.parameters.size
+            and len(changed_parameters.shape) > 1
+        ):
+            return changed_parameters
         result = self.parameters.astype(object)
         result[~self.mask] = changed_parameters
         return result
