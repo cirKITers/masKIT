@@ -81,7 +81,11 @@ def train(
     layers = train_params["layers"]
     steps = train_params.get("steps", 1000)
     dev = get_device(train_params.get("sim_local", True), wires=wires)
-    opt = train_params["optimizer"].value(train_params["step_size"])
+    step_size = train_params.get("step_size", None)
+    if step_size:
+        opt = train_params["optimizer"].value(step_size)
+    else:
+        opt = train_params["optimizer"].value()
     dropout_ensemble = train_params.get("ensemble_type", Ensemble)(
         **train_params.get("ensemble_kwargs", {"dropout": None})
     )

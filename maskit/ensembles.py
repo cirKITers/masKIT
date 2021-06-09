@@ -60,8 +60,8 @@ class Ensemble(object):
         # first one trainingstep
         params, _cost, _gradient = optimizer.step_cost_and_grad(
             objective_fn,
-            *args,
             masked_circuit.differentiable_parameters,
+            *args,
             masked_circuit=masked_circuit,
         )
         masked_circuit.differentiable_parameters = params

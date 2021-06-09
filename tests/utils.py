@@ -12,6 +12,10 @@ def cost(params, circuit, masked_circuit: MaskedCircuit) -> float:
     return 1.0 - circuit(params, masked_circuit=masked_circuit)[0]
 
 
+def plain_cost(params, circuit) -> float:
+    return 1.0 - circuit(params)[0]
+
+
 def create_circuit(size: int, layer_size: int = 1):
     if layer_size == 1:
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
@@ -47,3 +51,17 @@ def variational_circuit(params, masked_circuit: MaskedCircuit = None):
             for wire in range(1, masked_circuit.layer_mask.size - 1, 2):
                 qml.CZ(wires=[wire, wire + 1])
     return qml.probs(wires=range(len(masked_circuit.wire_mask)))
+
+
+def plain_variational_circuit(params):
+    layers = params.shape[0]
+    wires = params.shape[1]
+    for layer in range(layers):
+        for wire in range(wires):
+            qml.RX(params[layer][wire][0], wires=wire)
+            qml.RY(params[layer][wire][1], wires=wire)
+        for wire in range(0, layers - 1, 2):
+            qml.CZ(wires=[wire, wire + 1])
+        for wire in range(1, layers - 1, 2):
+            qml.CZ(wires=[wire, wire + 1])
+    return qml.probs(wires=range(wires))

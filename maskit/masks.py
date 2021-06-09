@@ -348,7 +348,7 @@ class MaskedCircuit(object):
         :param changed_parameters: Current set of differentiable parameters
         """
         result = self.parameters.astype(object)
-        result[~self.mask] = changed_parameters
+        result[~self.mask] = changed_parameters.flatten()
         return result
 
     @staticmethod
