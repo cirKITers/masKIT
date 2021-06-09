@@ -27,10 +27,10 @@ class L_BFGS_B:
         m: int = 10,
         factr: float = 1e7,  # qiskit: factr: float = 10,
         pgtol: float = 1e-5,
-        epsilon: float = 1e-8,  # qiskit: epsilon: float = 1e-08,
-        iprint: int = -1,  # qiskit: iprint: int = -1,
+        epsilon: float = 1e-8,
+        iprint: int = -1,
         maxfun: int = 15000,  # qiskit: maxfun: int = 1000,
-        maxiter: int = 15000,  # qiskit: maxiter: int = 15000,
+        maxiter: int = 15000,
         disp=None,
         callback=None,
         maxls: int = 20,
@@ -70,7 +70,7 @@ class L_BFGS_B:
         *args,
         grad_fn=None,
         **kwargs,
-    ):
+    ) -> Tuple[ndarray, float, ndarray]:
         return self._optimise(
             objective_fn, parameters, self.maxiter, *args, grad_fn=grad_fn, **kwargs
         )
@@ -84,10 +84,20 @@ class L_BFGS_B:
         sol, opt, info = sciopt.fmin_l_bfgs_b(
             shaped_fn,
             parameters.flatten(),
-            bounds=self.bounds,
             fprime=get_gradient(shaped_fn) if grad_fn is None else grad_fn,
+            *args,
             approx_grad=approx_grad,
-            maxiter=1,
+            bounds=self.bounds,
+            m=self.m,
+            factr=self.factr,
+            pgtol=self.pgtol,
+            epsilon=self.epsilon,
+            iprint=self.iprint,
+            maxfun=self.maxfun,
+            maxiter=maxiter,
+            disp=self.disp,
+            callback=self.callback,
+            maxls=self.maxls,
         )
         return sol.reshape(shape), opt, info["grad"]
 
