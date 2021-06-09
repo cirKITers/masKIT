@@ -41,6 +41,11 @@ class TestLBFGSBOptimizer:
         assert step_cost < base_cost
         assert final_cost < step_cost
 
+        new_params = optimizer.step(cost_fn, mp_step.parameters)
+        assert pnp.array_equal(params, new_params)
+        new_params, new_cost = optimizer.step_and_cost(cost_fn, new_params)
+        assert new_cost < step_cost
+
     def test_shape(self):
         optimizer = L_BFGS_B()
         original_optimizer = ExtendedGradientDescentOptimizer()
