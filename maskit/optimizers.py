@@ -9,7 +9,7 @@ import scipy.optimize as sciopt
 class L_BFGS_B:
     """
     The L-BFGS-B optimiser provides a wrapper for the implementation provided
-    in scipy. Please see the appropriate documentation for further details.
+    in scipy. Please see the :py:func:`~sciopt.fmin_l_bfgs_b` documentation for further details.
 
     In case the method :py:method:`~.step` is used, the value of parameter `maxiter`
     is ignored and interpreted as `1` instead.
@@ -116,7 +116,7 @@ class L_BFGS_B:
         )
         return updated_parameters.reshape(shape), cost, info["grad"]
 
-    def _wrap_objective_fn(self, objective_fn, shape, **kwargs):
+    def _reshaping_objective_fn(self, objective_fn, shape, **kwargs):
         return lambda params, *args: objective_fn(
             params.reshape(shape), *args, **kwargs
         )
