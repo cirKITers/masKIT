@@ -10,6 +10,26 @@ class L_BFGS_B:
     """
     The L-BFGS-B optimiser provides a wrapper for the implementation provided
     in scipy. Please see the appropriate documentation for further details.
+
+    In case the method :py:method:`~.step` is used, the value of parameter `maxiter`
+    is ignored and interpreted as `1` instead.
+
+    :param bounds: tuple of `min` and `max` for each value of provided parameters,
+        defaults to None
+    :param m: maximum number of variable metric corrections used to define the
+        limited memory matrix, defaults to 10
+    :param factr: information on when to stop iterating, e.g. 1e12 for low accuracy;
+        1e7 for moderate accuracy; 10.0 for extremely high accuracy, defaults to 1e7
+    :param pgtol: when to stop iterating with regards to gradients, defaults to 1e-5
+    :param epsilon: Step size used when `approx_grad` is `True`, defaults to 1e-8
+    :param iprint: Frequency of output, defaults to -1
+    :param maxfun: Maximum number of function evaluations, defaults to 15000
+    :param maxiter: Maximum number of iterations, defaults to 15000
+    :param disp: [description], defaults to None
+    :param callback: Called after each iteration with current parameters,
+        defaults to None
+    :param maxls: Maximum number of line search steps (per iteration),
+        defaults to 20
     """
 
     __slots__ = (
@@ -40,27 +60,6 @@ class L_BFGS_B:
         callback=None,
         maxls: int = 20,
     ):
-        """
-        In case the method :py:method:`~.step` is used, the value of parameter
-        `maxiter` is ignored and interpreted as `1` instead.
-
-        :param bounds: tuple of `min` and `max` for each value of provided parameters,
-            defaults to None
-        :param m: maximum number of variable metric corrections used to define the
-            limited memory matrix, defaults to 10
-        :param factr: information on when to stop iterating, e.g. 1e12 for low accuracy;
-            1e7 for moderate accuracy; 10.0 for extremely high accuracy, defaults to 1e7
-        :param pgtol: when to stop iterating with regards to gradients, defaults to 1e-5
-        :param epsilon: Step size used when `approx_grad` is `True`, defaults to 1e-8
-        :param iprint: Frequency of output, defaults to -1
-        :param maxfun: Maximum number of function evaluations, defaults to 15000
-        :param maxiter: Maximum number of iterations, defaults to 15000
-        :param disp: [description], defaults to None
-        :param callback: Called after each iteration with current parameters,
-            defaults to None
-        :param maxls: Maximum number of line search steps (per iteration),
-            defaults to 20
-        """
         self.bounds = bounds
         self.m = m
         self.factr = factr
