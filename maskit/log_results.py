@@ -1,4 +1,5 @@
 from typing import List, Dict, TypeVar, Union, Any, Callable
+import os
 import time
 import json
 import pathlib
@@ -11,7 +12,9 @@ JSON = _JSON_Element[_JSON_Element[_JSON_Element[Any]]]
 CJ = TypeVar("CJ", bound=Callable[..., JSON])
 
 
-log_path = pathlib.Path(__file__).parent / "logs" / f"{time.time()}.json"
+log_base_path = os.environ.get("MASKIT_LOG_PATH", pathlib.Path.cwd() / "logs")
+log_file_name = os.environ.get("MASKIT_LOG_FILE_NAME", f"{time.time()}.json")
+log_path = pathlib.Path(log_base_path) / log_file_name
 log_path.parent.mkdir(exist_ok=True)
 
 
