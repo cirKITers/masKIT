@@ -8,8 +8,8 @@ def one_hot(a, num_classes):
     return np.squeeze(np.eye(num_classes)[a.astype(int).reshape(-1)])
 
 
-def load_iris(train_size=120):
-    train_size = min(train_size, 150)
+def load_iris(wires, params):
+    train_size = min(params["train_size"], 150)
     data, target = datasets.load_iris(return_X_y=True)
     target = target.reshape((150, 1))
     dataset = np.concatenate((data, target), axis=1)

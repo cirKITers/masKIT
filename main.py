@@ -270,7 +270,12 @@ if __name__ == "__main__":
     if train_params.get("logging", True):
         train = log_results(train)
 
-    data_params = {"wires": train_params["wires"], "embedding": None, "classes": [6, 9]}
+    data_params = {
+        "wires": train_params["wires"],
+        "embedding": None,
+        "classes": [6, 9],
+        "train_size": 120,
+    }
     train_data, train_target, test_data, test_target = load_data(
         train_params["dataset"], train_params["wires"], None, data_params
     )

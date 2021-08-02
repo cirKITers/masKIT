@@ -6,6 +6,8 @@ from sklearn.preprocessing import minmax_scale
 
 np.random.seed(42)
 
+MAX_TRAIN_SAMPLES = 11471
+
 
 def reduce_image(x):
     x = np.reshape(x, [1, 28, 28, 1])
@@ -49,6 +51,7 @@ def apply_PCA(wires, x_train):
 
 def load_mnist(wires, params):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+    train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
 
     classes = []
     if "classes" in params:
@@ -62,6 +65,8 @@ def load_mnist(wires, params):
 
     x_train, y_train = remove_contradicting(x_train, y_train)
     x_test, y_test = remove_contradicting(x_test, y_test)
+
+    x_train, y_train = x_train[:train_size], y_train[:train_size]
 
     x_train = convert_to_binary(x_train)
     x_test = convert_to_binary(x_test)
@@ -89,3 +94,8 @@ def load_mnist(wires, params):
     x_test = data_combined[n_x_train:][:]
 
     return x_train, y_train, x_test, y_test
+
+
+if __name__ == "__main__":
+    data_params = {"wires": 10, "embedding": None, "classes": [6, 9], "train_size": 120}
+    train_data, train_target, test_data, test_target = load_mnist(10, data_params)
