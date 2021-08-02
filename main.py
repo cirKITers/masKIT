@@ -229,7 +229,7 @@ if __name__ == "__main__":
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
-        "dataset": "mnist",
+        "dataset": "iris",
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
         "ensemble_kwargs": {
@@ -275,6 +275,8 @@ if __name__ == "__main__":
         "embedding": None,
         "classes": [6, 9],
         "train_size": 120,
+        "test_size": 100,
+        "shuffle": True,
     }
     train_data, train_target, test_data, test_target = load_data(
         train_params["dataset"], train_params["wires"], None, data_params

@@ -14,7 +14,8 @@ def load_iris(wires, params):
     target = target.reshape((150, 1))
     dataset = np.concatenate((data, target), axis=1)
 
-    np.random.shuffle(dataset)
+    if params["shuffle"]:
+        np.random.shuffle(dataset)
 
     train, test = dataset[:train_size, :], dataset[train_size:, :]
 

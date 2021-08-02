@@ -7,6 +7,7 @@ from sklearn.preprocessing import minmax_scale
 np.random.seed(42)
 
 MAX_TRAIN_SAMPLES = 11471
+MAX_TEST_SAMPLES = 1952
 
 
 def reduce_image(x):
@@ -52,6 +53,7 @@ def apply_PCA(wires, x_train):
 def load_mnist(wires, params):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
+    test_size = min(params["test_size"], MAX_TEST_SAMPLES)
 
     classes = []
     if "classes" in params:
@@ -67,6 +69,7 @@ def load_mnist(wires, params):
     x_test, y_test = remove_contradicting(x_test, y_test)
 
     x_train, y_train = x_train[:train_size], y_train[:train_size]
+    x_test, y_test = x_test[:test_size], y_test[:test_size]
 
     x_train = convert_to_binary(x_train)
     x_test = convert_to_binary(x_test)
@@ -82,9 +85,10 @@ def load_mnist(wires, params):
     x_train = pca.transform(x_train)
     x_test = pca.transform(x_test)
 
-    c = list(zip(x_train, y_train))
-    np.random.shuffle(c)
-    x_train, y_train = zip(*c)
+    if params["shuffle"]:
+        c = list(zip(x_train, y_train))
+        np.random.shuffle(c)
+        x_train, y_train = zip(*c)
 
     n_x_train = len(x_train)
     data_combined = np.concatenate((np.array(x_train), np.array(x_test)))
