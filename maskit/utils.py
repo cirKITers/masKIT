@@ -4,7 +4,7 @@ from maskit.optimizers import ExtendedOptimizers
 
 
 def check_params(train_params):
-    assert train_params["dataset"] in ["simple", "iris"]
+    assert train_params["dataset"] in ["simple", "iris", "mnist"]
     assert isinstance(train_params["optimizer"], ExtendedOptimizers)
 
 

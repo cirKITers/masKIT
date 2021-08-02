@@ -6,7 +6,7 @@ def load_data(dataset, wires=None, embedding=None, params=None):
     if dataset == "iris":
         return load_iris()
     elif dataset == "mnist":
-        load_mnist(wires, params)
+        return load_mnist(wires, params)
     elif dataset == "circles":
         pass
     else:

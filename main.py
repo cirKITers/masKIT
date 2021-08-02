@@ -5,7 +5,8 @@ import pennylane as qml
 from pennylane import numpy as np
 
 from maskit.masks import MaskedCircuit, PerturbationAxis, PerturbationMode
-from maskit.iris import load_iris
+
+from maskit.examples.load_data import load_data
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
@@ -107,7 +108,8 @@ def train(
                 masked_circuit,
             )
 
-    elif train_params["dataset"] == "iris":
+    elif train_params["dataset"] == "iris" or train_params["dataset"] == "mnist":
+        # TODO: probably needs some refactoring for the other datasets
         circuit = qml.QNode(iris_circuit, dev)
 
         def cost_fn(params, masked_circuit=None):
@@ -127,7 +129,7 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dataset"] == "iris":
+        if train_params["dataset"] == "iris" or train_params["dataset"] == "mnist":
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
@@ -184,7 +186,8 @@ def test(
 ):
     if train_params["dataset"] == "simple":
         pass
-    elif train_params["dataset"] == "iris":
+    elif train_params["dataset"] == "iris" or train_params["dataset"] == "mnist":
+        # TODO: probably needs some refactoring for the other datasets
         wires = train_params["wires"]
         dev = get_device(train_params["sim_local"], wires=wires)
         circuit = qml.QNode(iris_circuit, dev)
@@ -226,7 +229,7 @@ if __name__ == "__main__":
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
-        "dataset": "simple",
+        "dataset": "mnist",
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
         "ensemble_kwargs": {
@@ -266,8 +269,10 @@ if __name__ == "__main__":
     check_params(train_params)
     if train_params.get("logging", True):
         train = log_results(train)
-    train_data, train_target, test_data, test_target = (
-        load_iris() if train_params["dataset"] == "iris" else [None, None, None, None]
+
+    data_params = {"wires": train_params["wires"], "embedding": None, "classes": [6, 9]}
+    train_data, train_target, test_data, test_target = load_data(
+        train_params["dataset"], train_params["wires"], None, data_params
     )
     result = train(train_params, train_data=train_data, train_target=train_target)
     if train_params["testing"]:
