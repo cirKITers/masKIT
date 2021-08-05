@@ -34,10 +34,17 @@ class Mask(object):
     __slots__ = ("mask", "_parent")
 
     def __init__(
-        self, shape: Tuple[int, ...], parent: Optional["MaskedCircuit"] = None
+        self,
+        shape: Tuple[int, ...],
+        parent: Optional["MaskedCircuit"] = None,
+        mask: Optional[np.ndarray] = None,
     ):
         super().__init__()
         self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
+        if mask is not None:
+            assert mask.dtype == bool, "Mask must be of type bool"
+            assert mask.shape == shape, "Shape of mask must be equal to shape"
+            self.mask[:] = mask
         self._parent = parent
 
     def __len__(self) -> int:
@@ -188,6 +195,9 @@ class MaskedCircuit(object):
         layers: int,
         wires: int,
         default_value: Optional[float] = None,
+        parameter_mask: Optional[np.ndarray] = None,
+        layer_mask: Optional[np.ndarray] = None,
+        wire_mask: Optional[np.ndarray] = None,
     ):
         assert (
             layers == parameters.shape[0]
@@ -196,9 +206,11 @@ class MaskedCircuit(object):
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
         self.parameters = parameters
-        self._parameter_mask = Mask(shape=parameters.shape, parent=self)
-        self._layer_mask = Mask(shape=(layers,), parent=self)
-        self._wire_mask = Mask(shape=(wires,), parent=self)
+        self._parameter_mask = Mask(
+            shape=parameters.shape, parent=self, mask=parameter_mask
+        )
+        self._layer_mask = Mask(shape=(layers,), parent=self, mask=layer_mask)
+        self._wire_mask = Mask(shape=(wires,), parent=self, mask=wire_mask)
         self.default_value = default_value
 
     @property
