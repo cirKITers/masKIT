@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "maxfischer2781",
+      "name": "Max Fischer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5708444?v=4",
+      "profile": "https://github.com/maxfischer2781",
+      "contributions": [
+        "review"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "masKIT",
+  "projectOwner": "cirKITers",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
