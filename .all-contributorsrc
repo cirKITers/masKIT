@@ -13,6 +13,18 @@
       "contributions": [
         "review"
       ]
+    },
+    {
+      "login": "eileen-kuehn",
+      "name": "Eileen Kuehn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8090701?v=4",
+      "profile": "https://github.com/eileen-kuehn",
+      "contributions": [
+        "code",
+        "ideas",
+        "maintenance",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
