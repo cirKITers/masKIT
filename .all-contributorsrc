@@ -6,12 +6,14 @@
   "commit": false,
   "contributors": [
     {
-      "login": "maxfischer2781",
-      "name": "Max Fischer",
-      "avatar_url": "https://avatars.githubusercontent.com/u/5708444?v=4",
-      "profile": "https://github.com/maxfischer2781",
+      "login": "cDenius",
+      "name": "cDenius",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28619054?v=4",
+      "profile": "https://github.com/cDenius",
       "contributions": [
-        "review"
+        "code",
+        "ideas",
+        "maintenance"
       ]
     },
     {
@@ -24,6 +26,15 @@
         "ideas",
         "maintenance",
         "test"
+      ]
+    },
+    {
+      "login": "maxfischer2781",
+      "name": "Max Fischer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5708444?v=4",
+      "profile": "https://github.com/maxfischer2781",
+      "contributions": [
+        "review"
       ]
     }
   ],
