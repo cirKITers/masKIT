@@ -228,6 +228,30 @@ class TestMaskedCircuits:
         mp.shrink(axis=PerturbationAxis.LAYERS)
         assert pnp.sum(mp.parameters == 0) == 6
 
+    def test_dynamic_parameters(self):
+        size = 3
+        circuit = self._create_circuit(size)
+        circuit.layer_mask[0] = True
+        assert circuit.differentiable_parameters.size == (size - 1) * size
+        assert (
+            circuit.expanded_parameters(
+                changed_parameters=circuit.differentiable_parameters
+            ).size
+            == size * size
+        )
+        # in this case, no wrong values can be written
+
+        circuit._dynamic_parameters = False  # disable dynamic parameters
+        assert circuit.differentiable_parameters.size == size * size
+        assert (
+            circuit.expanded_parameters(changed_parameters=circuit.parameters).size
+            == size * size
+        )
+        circuit.differentiable_parameters = pnp.ones((size, size))
+        # ensure that first layer has not been changed
+        for i in range(size):
+            assert circuit.parameters[0, i] != 1
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
