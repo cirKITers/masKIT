@@ -29,6 +29,10 @@ class Mask(object):
     A Mask encapsulates a :py:attr:`~.mask` storing boolean value if a specific value
     is masked or not. In case a specific position is `True`, the according value is
     masked, otherwise it is not.
+
+    :param shape: The shape of the mask
+    :param parent: `MaskedCircuit` that owns the mask
+    :param mask: Preset of values that is taken by mask
     """
 
     __slots__ = ("mask", "_parent")
@@ -179,6 +183,15 @@ class MaskedCircuit(object):
     """
     A MaskedCircuit supports masking of different components including wires, layers,
     and parameters.
+
+    :param parameters: Initial parameter set for circuit
+    :param layers: Number of layers
+    :param wires: Number of wires
+    :param default_value: Default value for gates that are added back in. In case of
+        `None` that is also the default, the last known value is assumed
+    :param parameter_mask: Initialization values of paramater mask, defaults to `None`
+    :param layer_mask: Initialization values of layer mask, defaults to `None`
+    :param wire_mask: Initialization values of wire mask, defaults to `None`
     """
 
     __slots__ = (
