@@ -45,7 +45,11 @@ def cost_iris(
 
 
 def init_parameters(
-    layers: int, current_layers: int, wires: int, default_value: Optional[float]
+    layers: int,
+    current_layers: int,
+    wires: int,
+    default_value: Optional[float],
+    dynamic_parameters: bool = True,
 ) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
@@ -57,6 +61,7 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
+        dynamic_parameters=dynamic_parameters,
     )
     mc.layer_mask[current_layers:] = True
     return mc
@@ -121,7 +126,15 @@ def train(
             )
 
     # set up parameters
-    masked_circuit = init_parameters(layers, current_layers, wires, default_value)
+    masked_circuit = init_parameters(
+        layers,
+        current_layers,
+        wires,
+        default_value,
+        dynamic_parameters=False
+        if train_params["optimizer"] == ExtendedOptimizers.ADAM
+        else True,
+    )
 
     # -----------------------------
     # ======= TRAINING LOOP =======
