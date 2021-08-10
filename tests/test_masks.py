@@ -51,9 +51,9 @@ class TestMaskedCircuits:
             parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
             layers=size,
             wires=size,
-            wire_mask=pnp.array([True] * size),
+            wire_mask=pnp.ones((size,), dtype=bool),
         )
-        assert pnp.array_equal(mc.wire_mask, [True] * size)
+        assert pnp.array_equal(mc.wire_mask, pnp.ones((size,), dtype=bool))
 
     def test_wrong_mode(self):
         mp = self._create_circuit(3)
