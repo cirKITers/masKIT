@@ -174,6 +174,9 @@ class MaskedCircuit(object):
     """
     A MaskedCircuit supports masking of different components including wires, layers,
     and parameters.
+
+    :param entangling_mask: The mask to apply for entangling gates within the circuit,
+        defaults to None
     """
 
     __slots__ = (
@@ -233,7 +236,10 @@ class MaskedCircuit(object):
         return mask
 
     def active(self) -> int:
-        """Number of active gates in the circuit."""
+        """
+        Number of active gates in the circuit based on layer, wire, and parameter mask.
+        Entangling gates are not included.
+        """
         mask = self.mask
         return mask.size - np.sum(mask)
 
