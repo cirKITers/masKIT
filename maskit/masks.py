@@ -306,6 +306,9 @@ class MaskedCircuit(object):
             self._wire_mask.shrink(amount)
         elif axis == PerturbationAxis.RANDOM:
             self._parameter_mask.shrink(amount)
+        elif axis == PerturbationAxis.ENTANGLING:
+            if self._entangling_mask:
+                self._entangling_mask.shrink(amount)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
