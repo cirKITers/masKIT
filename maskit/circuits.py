@@ -24,8 +24,18 @@ def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
             rotation(full_parameters[layer][wire], wires=wire)
 
         for wire in range(0, wires - 1, 2):
+            if (
+                masked_circuit.entangling_mask
+                and masked_circuit.entangling_mask[layer, wire]
+            ):
+                continue
             qml.CZ(wires=[wire, wire + 1])
         for wire in range(1, wires - 1, 2):
+            if (
+                masked_circuit.entangling_mask
+                and masked_circuit.entangling_mask[layer, wire]
+            ):
+                continue
             qml.CZ(wires=[wire, wire + 1])
 
 
