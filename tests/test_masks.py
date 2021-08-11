@@ -61,15 +61,21 @@ class TestMaskedCircuits:
     @pytest.mark.parametrize("axis", list(PerturbationAxis))
     def test_clear(self, axis):
         size = 3
-        mp = self._create_circuit(size)
+        mp = self._create_circuit_with_entangling_gates(size)
         mp.perturb(axis=axis, amount=size)
         assert (
-            pnp.sum(mp.layer_mask) + pnp.sum(mp.wire_mask) + pnp.sum(mp.parameter_mask)
+            pnp.sum(mp.layer_mask)
+            + pnp.sum(mp.wire_mask)
+            + pnp.sum(mp.parameter_mask)
+            + pnp.sum(mp.entangling_mask)
             == size
         )
         mp.clear()
         assert (
-            pnp.sum(mp.layer_mask) + pnp.sum(mp.wire_mask) + pnp.sum(mp.parameter_mask)
+            pnp.sum(mp.layer_mask)
+            + pnp.sum(mp.wire_mask)
+            + pnp.sum(mp.parameter_mask)
+            + pnp.sum(mp.entangling_mask)
             == 0
         )
 
@@ -231,6 +237,15 @@ class TestMaskedCircuits:
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
+
+    def _create_circuit_with_entangling_gates(self, size):
+        parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
+        return MaskedCircuit(
+            parameters=parameters,
+            layers=size,
+            wires=size,
+            entangling_mask=Mask(shape=(size, size)),
+        )
 
 
 class TestFreezableMaskedCircuit:
