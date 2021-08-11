@@ -86,6 +86,21 @@ class TestMaskedCircuits:
             == 0
         )
 
+    def test_perturb_entangling(self):
+        size = 3
+        mp = self._create_circuit(size)
+        mp.perturb(axis=PerturbationAxis.ENTANGLING, amount=1)
+        # ensure nothing has happened as entangling mask is None
+        assert mp.entangling_mask is None
+        assert (
+            pnp.sum(mp.layer_mask) + pnp.sum(mp.wire_mask) + pnp.sum(mp.parameter_mask)
+            == 0
+        )
+
+        mp = self._create_circuit_with_entangling_gates(size)
+        mp.perturb(axis=PerturbationAxis.ENTANGLING, amount=1)
+        assert pnp.sum(mp.entangling_mask) == 1
+
     @pytest.mark.parametrize("axis", list(PerturbationAxis))
     def test_zero_amount(self, axis):
         mp = self._create_circuit_with_entangling_gates(3)
@@ -131,6 +146,15 @@ class TestMaskedCircuits:
         assert pnp.sum(new_mp.wire_mask) == 0
         assert pnp.sum(new_mp.layer_mask) == pnp.sum(mp.layer_mask)
         assert pnp.sum(new_mp.parameter_mask) == 0
+        assert new_mp.entangling_mask is None
+
+        # also test copying of existing entanglement mask
+        mp = self._create_circuit_with_entangling_gates(size)
+        assert mp.entangling_mask is not None
+        new_mp = mp.copy()
+        mp.entangling_mask[0, 0] = True
+        assert pnp.sum(mp.entangling_mask) == 1
+        assert pnp.sum(new_mp.entangling_mask) == 0
 
     def test_parameters(self):
         size = 3
