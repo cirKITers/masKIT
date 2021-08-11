@@ -13,6 +13,8 @@ class PerturbationAxis(Enum):
     LAYERS = 1
     #: Perturbation affects random locations in parameter mask
     RANDOM = 2
+    #: Perturbation affects entangling gates
+    ENTANGLING = 3
 
 
 class PerturbationMode(Enum):
@@ -178,6 +180,7 @@ class MaskedCircuit(object):
         "_layer_mask",
         "_wire_mask",
         "_parameter_mask",
+        "_entangling_mask",
         "parameters",
         "default_value",
     )
@@ -188,6 +191,7 @@ class MaskedCircuit(object):
         layers: int,
         wires: int,
         default_value: Optional[float] = None,
+        entangling_mask: Optional[Mask] = None,
     ):
         assert (
             layers == parameters.shape[0]
@@ -200,6 +204,9 @@ class MaskedCircuit(object):
         self._layer_mask = Mask(shape=(layers,), parent=self)
         self._wire_mask = Mask(shape=(wires,), parent=self)
         self.default_value = default_value
+        if entangling_mask:
+            assert layers == entangling_mask.shape[0]
+        self._entangling_mask = entangling_mask
 
     @property
     def differentiable_parameters(self) -> np.ndarray:
@@ -245,6 +252,11 @@ class MaskedCircuit(object):
         """Returns the encapsulated parameter mask."""
         return self._parameter_mask
 
+    @property
+    def entangling_mask(self):
+        """Returns the encapsulated mask of entangling gates."""
+        return self._entangling_mask
+
     def perturb(
         self,
         axis: PerturbationAxis = PerturbationAxis.RANDOM,
@@ -275,6 +287,9 @@ class MaskedCircuit(object):
             self._wire_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
             self._parameter_mask.perturb(amount=amount, mode=mode)
+        elif axis == PerturbationAxis.ENTANGLING:
+            if self._entangling_mask:
+                self._entangling_mask.perturb(amount=amount, mode=mode)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
@@ -332,6 +347,10 @@ class MaskedCircuit(object):
         clone._wire_mask = self._wire_mask.copy(clone)
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
+        if self._entangling_mask:
+            clone._entangling_mask = self._entangling_mask.copy(clone)
+        else:
+            clone._entangling_mask = None
         return clone
 
     def expanded_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
@@ -436,8 +455,15 @@ class FreezableMaskedCircuit(MaskedCircuit):
         layers: int,
         wires: int,
         default_value: Optional[float] = None,
+        entangling_mask: Optional[Mask] = None,
     ):
-        super().__init__(parameters, layers, wires, default_value=default_value)
+        super().__init__(
+            parameters,
+            layers,
+            wires,
+            default_value=default_value,
+            entangling_mask=entangling_mask,
+        )
         self._parameter_freeze_mask = Mask(shape=parameters.shape)
         self._layer_freeze_mask = Mask(shape=(layers,))
         self._wire_freeze_mask = Mask(shape=(wires,))
