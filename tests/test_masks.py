@@ -47,14 +47,21 @@ class TestMaskedCircuits:
                 layers=size,
                 wires=size + 1,
             )
+        with pytest.raises(AssertionError):
+            MaskedCircuit(
+                parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+                layers=size,
+                wires=size,
+                entangling_mask=Mask(shape=(size + 1, size)),
+            )
 
     def test_wrong_mode(self):
-        mp = self._create_circuit(3)
+        mp = self._create_circuit_with_entangling_gates(3)
         with pytest.raises(AssertionError):
             mp.perturb(axis=PerturbationAxis.LAYERS, mode=10)
 
     def test_wrong_axis(self):
-        mp = self._create_circuit(3)
+        mp = self._create_circuit_with_entangling_gates(3)
         with pytest.raises(NotImplementedError):
             mp.perturb(axis=10)
 
@@ -81,14 +88,17 @@ class TestMaskedCircuits:
 
     @pytest.mark.parametrize("axis", list(PerturbationAxis))
     def test_zero_amount(self, axis):
-        mp = self._create_circuit(3)
+        mp = self._create_circuit_with_entangling_gates(3)
         pre_sum = (
-            pnp.sum(mp.wire_mask) + pnp.sum(mp.layer_mask) + pnp.sum(mp.parameter_mask)
+            pnp.sum(mp.wire_mask)
+            + pnp.sum(mp.layer_mask)
+            + pnp.sum(mp.parameter_mask)
+            + pnp.sum(mp.entangling_mask)
         )
         mp.perturb(axis=axis, amount=0)
         assert pre_sum == pnp.sum(mp.wire_mask) + pnp.sum(mp.layer_mask) + pnp.sum(
             mp.parameter_mask
-        )
+        ) + pnp.sum(mp.entangling_mask)
 
     def test_apply_mask(self):
         size = 3
