@@ -308,6 +308,7 @@ class MaskedCircuit(object):
         self._layer_mask.clear()
         self._wire_mask.clear()
         self._parameter_mask.clear()
+        self._entangling_mask.clear()
 
     def apply_mask(self, values: np.ndarray):
         """
