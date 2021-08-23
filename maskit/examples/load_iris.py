@@ -1,11 +1,8 @@
 from pennylane import numpy as np
 from sklearn import datasets
+from maskit.examples.utils import one_hot
 
 np.random.seed(42)
-
-
-def one_hot(a, num_classes):
-    return np.squeeze(np.eye(num_classes)[a.astype(int).reshape(-1)])
 
 
 def load_iris(wires, params):
@@ -24,7 +21,9 @@ def load_iris(wires, params):
     x_train, y_train = np.split(train, [4], axis=1)
     x_test, y_test = np.split(test, [4], axis=1)
 
+    print(y_train)
     y_train = one_hot(y_train, 4)
+    print(y_train)
     y_test = one_hot(y_test, 4)
 
     return x_train, y_train, x_test, y_test

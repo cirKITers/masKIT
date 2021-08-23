@@ -38,10 +38,15 @@ def convert_to_binary(x):
 
 
 def convert_label(y, classes):
-    if y == classes[1]:
-        return 1.0
-    else:
-        return 0.0
+    # TODO: currently hardcoded to fit with iris dataset
+    # num_classes = len(classes)
+    num_classes = 4
+    a = [0.0 for i in range(num_classes)]
+    for i in range(num_classes):
+        if y == classes[i]:
+            a[i] = 1.0
+            break
+    return a
 
 
 def apply_PCA(wires, x_train):
@@ -100,11 +105,20 @@ def load_mnist(wires, params):
     x_train = data_combined[:n_x_train][:]
     x_test = data_combined[n_x_train:][:]
 
+    y_train, y_test = np.array(y_train), np.array(y_test)
+
     return x_train, y_train, x_test, y_test
 
 
 if __name__ == "__main__":
-    data_params = {"wires": 10, "embedding": None, "classes": [6, 9], "train_size": 120}
-    train_data, train_target, test_data, test_target = load_mnist(10, data_params)
+    data_params = {
+        "wires": 2,
+        "embedding": None,
+        "classes": [6, 7, 8, 9],
+        "train_size": 120,
+    }
+    train_data, train_target, test_data, test_target = load_mnist(
+        data_params["wires"], data_params
+    )
     print(train_data)
     print(train_target)

@@ -237,10 +237,10 @@ def test(
 
 if __name__ == "__main__":
     train_params = {
-        "wires": 10,
+        "wires": 4,
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
-        "steps": 1000,
+        "steps": 100,
         "dataset": "iris",
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
