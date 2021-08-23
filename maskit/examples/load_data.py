@@ -1,3 +1,4 @@
+from maskit.examples.load_circles import load_circles
 from maskit.examples.load_iris import load_iris
 from maskit.examples.load_mnist import load_mnist
 
@@ -8,6 +9,6 @@ def load_data(dataset, wires=None, embedding=None, params=None):
     elif dataset == "mnist":
         return load_mnist(wires, params)
     elif dataset == "circles":
-        pass
+        return load_circles(wires, params)
     else:
         return [None, None, None, None]

@@ -108,7 +108,11 @@ def train(
                 masked_circuit,
             )
 
-    elif train_params["dataset"] == "iris" or train_params["dataset"] == "mnist":
+    elif (
+        train_params["dataset"] == "iris"
+        or train_params["dataset"] == "mnist"
+        or train_params["dataset"] == "circles"
+    ):
         # TODO: probably needs some refactoring for the other datasets
         circuit = qml.QNode(iris_circuit, dev)
 
@@ -129,7 +133,11 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dataset"] == "iris" or train_params["dataset"] == "mnist":
+        if (
+            train_params["dataset"] == "iris"
+            or train_params["dataset"] == "mnist"
+            or train_params["dataset"] == "circles"
+        ):
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
@@ -186,7 +194,11 @@ def test(
 ):
     if train_params["dataset"] == "simple":
         pass
-    elif train_params["dataset"] == "iris" or train_params["dataset"] == "mnist":
+    elif (
+        train_params["dataset"] == "iris"
+        or train_params["dataset"] == "mnist"
+        or train_params["dataset"] == "circles"
+    ):
         # TODO: probably needs some refactoring for the other datasets
         wires = train_params["wires"]
         dev = get_device(train_params["sim_local"], wires=wires)

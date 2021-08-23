@@ -52,8 +52,11 @@ def apply_PCA(wires, x_train):
 
 def load_mnist(wires, params):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
-    test_size = min(params["test_size"], MAX_TEST_SAMPLES)
+    train_size, test_size = MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES
+    if "train_size" in params:
+        train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
+    if "test_size" in params:
+        test_size = min(params["test_size"], MAX_TEST_SAMPLES)
 
     classes = []
     if "classes" in params:
@@ -85,7 +88,7 @@ def load_mnist(wires, params):
     x_train = pca.transform(x_train)
     x_test = pca.transform(x_test)
 
-    if params["shuffle"]:
+    if "shuffle" in params and params["shuffle"]:
         c = list(zip(x_train, y_train))
         np.random.shuffle(c)
         x_train, y_train = zip(*c)
@@ -103,3 +106,5 @@ def load_mnist(wires, params):
 if __name__ == "__main__":
     data_params = {"wires": 10, "embedding": None, "classes": [6, 9], "train_size": 120}
     train_data, train_target, test_data, test_target = load_mnist(10, data_params)
+    print(train_data)
+    print(train_target)
