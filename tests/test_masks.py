@@ -47,6 +47,13 @@ class TestMaskedCircuits:
                 layers=size,
                 wires=size + 1,
             )
+        mc = MaskedCircuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+            wire_mask=pnp.ones((size,), dtype=bool),
+        )
+        assert pnp.array_equal(mc.wire_mask, pnp.ones((size,), dtype=bool))
 
     def test_wrong_mode(self):
         mp = self._create_circuit(3)
@@ -306,6 +313,16 @@ class TestFreezableMaskedCircuit:
 
 
 class TestMask:
+    def test_init(self):
+        size = 3
+        with pytest.raises(AssertionError):
+            Mask((size,), mask=pnp.array([True, True, False, False]))
+        with pytest.raises(AssertionError):
+            Mask((size,), mask=pnp.array([0, 1, 3]))
+        preset = [False, True, False]
+        mp = Mask((size,), mask=pnp.array(preset))
+        assert pnp.array_equal(mp.mask, preset)
+
     def test_setting(self):
         size = 3
         mp = Mask((size,))

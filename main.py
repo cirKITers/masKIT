@@ -169,6 +169,9 @@ def train(
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "mask": masked_circuit.mask.unwrap(),
+        "__wire_mask": masked_circuit.wire_mask.mask,
+        "__layer_mask": masked_circuit.layer_mask.mask,
+        "__parameter_mask": masked_circuit.parameter_mask.mask,
         "__rotations": rotations,
     }
 
@@ -176,7 +179,9 @@ def train(
 def test(
     train_params,
     params,
-    mask,
+    wire_mask,
+    layer_mask,
+    parameter_mask,
     layers: int,
     rotations: List,
     test_data: Optional[List] = None,
@@ -191,17 +196,24 @@ def test(
         correct = 0
         N = len(test_data)
         costs = []
-        masked_circuit = MaskedCircuit(parameters=params, layers=layers, wires=wires)
+        masked_circuit = MaskedCircuit(
+            parameters=params,
+            layers=layers,
+            wires=wires,
+            wire_mask=wire_mask,
+            layer_mask=layer_mask,
+            parameter_mask=parameter_mask,
+        )
         for _step, (data, target) in enumerate(zip(test_data, test_target)):
             output = circuit(
-                params,
+                masked_circuit.differentiable_parameters,
                 data,
                 rotations,
                 masked_circuit,
             )
             c = cost_iris(
                 circuit,
-                params,
+                masked_circuit.differentiable_parameters,
                 data,
                 target,
                 rotations,
@@ -274,7 +286,9 @@ if __name__ == "__main__":
         test(
             train_params,
             result["params"],
-            result["mask"],
+            result["__wire_mask"],
+            result["__layer_mask"],
+            result["__parameter_mask"],
             result["final_layers"],
             result["__rotations"],
             test_data=test_data,
