@@ -323,10 +323,10 @@ class TestMaskedCircuits:
         assert circuit.specs["gate_types"]["CZ"] == 12
 
         mp.perturb(
-            axis=PerturbationAxis.ENTANGLING, mode=PerturbationMode.ADD, amount=1
+            axis=PerturbationAxis.ENTANGLING, mode=PerturbationMode.ADD, amount=6
         )
         circuit(mp.differentiable_parameters, rotations, mp)
-        assert circuit.specs["gate_types"]["CZ"] == 11
+        assert circuit.specs["gate_types"]["CZ"] == 6
 
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
