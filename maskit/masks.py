@@ -172,11 +172,14 @@ class MaskedCircuit(object):
     """
     A MaskedCircuit supports masking of different components including wires, layers,
     and parameters.
+    Masking naturally removes active parameters from a circuit. However, some optimisers
+    expect the array of parameters to remain stable across iteration steps;
+    use ``dynamic_parameters=False`` to force the mask to always yield the full set of
+    parameters in such cases.
+    The mask will still prevent modification of inactive parameters.
 
-    :param dynamic_parameters: The array of differentiable parameters changes over
-        time depending on the given masks. In case `True` is supplied, the least
-        amount of parameters is returned, otherwise the length is fixed and independent
-        of masks
+    :param dynamic_parameters: Whether the array of differentiable parameters may
+        change size/order
     """
 
     __slots__ = (
