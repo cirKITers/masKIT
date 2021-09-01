@@ -54,6 +54,13 @@ class TestMaskedCircuits:
                 wires=size,
                 entangling_mask=Mask(shape=(size + 1, size)),
             )
+        mc = MaskedCircuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+            wire_mask=pnp.ones((size,), dtype=bool),
+        )
+        assert pnp.array_equal(mc.wire_mask, pnp.ones((size,), dtype=bool))
 
     def test_wrong_mode(self):
         mp = self._create_circuit_with_entangling_gates(3)
@@ -281,6 +288,30 @@ class TestMaskedCircuits:
         mp.shrink(axis=PerturbationAxis.LAYERS)
         assert pnp.sum(mp.parameters == 0) == 6
 
+    def test_dynamic_parameters(self):
+        size = 3
+        circuit = self._create_circuit(size)
+        circuit.layer_mask[0] = True
+        assert circuit.differentiable_parameters.size == (size - 1) * size
+        assert (
+            circuit.expanded_parameters(
+                changed_parameters=circuit.differentiable_parameters
+            ).size
+            == size * size
+        )
+        # in this case, no wrong values can be written
+
+        circuit._dynamic_parameters = False  # disable dynamic parameters
+        assert circuit.differentiable_parameters.size == size * size
+        assert (
+            circuit.expanded_parameters(changed_parameters=circuit.parameters).size
+            == size * size
+        )
+        circuit.differentiable_parameters = pnp.ones((size, size))
+        # ensure that first layer has not been changed
+        for i in range(size):
+            assert circuit.parameters[0, i] != 1
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
@@ -368,6 +399,16 @@ class TestFreezableMaskedCircuit:
 
 
 class TestMask:
+    def test_init(self):
+        size = 3
+        with pytest.raises(AssertionError):
+            Mask((size,), mask=pnp.array([True, True, False, False]))
+        with pytest.raises(AssertionError):
+            Mask((size,), mask=pnp.array([0, 1, 3]))
+        preset = [False, True, False]
+        mp = Mask((size,), mask=pnp.array(preset))
+        assert pnp.array_equal(mp.mask, preset)
+
     def test_setting(self):
         size = 3
         mp = Mask((size,))
