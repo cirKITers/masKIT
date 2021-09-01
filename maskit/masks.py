@@ -29,15 +29,26 @@ class Mask(object):
     A Mask encapsulates a :py:attr:`~.mask` storing boolean value if a specific value
     is masked or not. In case a specific position is `True`, the according value is
     masked, otherwise it is not.
+
+    :param shape: The shape of the mask
+    :param parent: `MaskedCircuit` that owns the mask
+    :param mask: Preset of values that is taken by mask
     """
 
     __slots__ = ("mask", "_parent")
 
     def __init__(
-        self, shape: Tuple[int, ...], parent: Optional["MaskedCircuit"] = None
+        self,
+        shape: Tuple[int, ...],
+        parent: Optional["MaskedCircuit"] = None,
+        mask: Optional[np.ndarray] = None,
     ):
         super().__init__()
         self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
+        if mask is not None:
+            assert mask.dtype == bool, "Mask must be of type bool"
+            assert mask.shape == shape, "Shape of mask must be equal to shape"
+            self.mask[:] = mask
         self._parent = parent
 
     def __len__(self) -> int:
@@ -178,8 +189,16 @@ class MaskedCircuit(object):
     parameters in such cases.
     The mask will still prevent modification of inactive parameters.
 
+    :param parameters: Initial parameter set for circuit
+    :param layers: Number of layers
+    :param wires: Number of wires
     :param dynamic_parameters: Whether the array of differentiable parameters may
         change size/order
+    :param default_value: Default value for gates that are added back in. In case of
+        `None` that is also the default, the last known value is assumed
+    :param parameter_mask: Initialization values of paramater mask, defaults to `None`
+    :param layer_mask: Initialization values of layer mask, defaults to `None`
+    :param wire_mask: Initialization values of wire mask, defaults to `None`
     """
 
     __slots__ = (
@@ -196,8 +215,11 @@ class MaskedCircuit(object):
         parameters: np.ndarray,
         layers: int,
         wires: int,
-        default_value: Optional[float] = None,
         dynamic_parameters: bool = True,
+        default_value: Optional[float] = None,
+        parameter_mask: Optional[np.ndarray] = None,
+        layer_mask: Optional[np.ndarray] = None,
+        wire_mask: Optional[np.ndarray] = None,
     ):
         assert (
             layers == parameters.shape[0]
@@ -206,9 +228,11 @@ class MaskedCircuit(object):
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
         self.parameters = parameters
-        self._parameter_mask = Mask(shape=parameters.shape, parent=self)
-        self._layer_mask = Mask(shape=(layers,), parent=self)
-        self._wire_mask = Mask(shape=(wires,), parent=self)
+        self._parameter_mask = Mask(
+            shape=parameters.shape, parent=self, mask=parameter_mask
+        )
+        self._layer_mask = Mask(shape=(layers,), parent=self, mask=layer_mask)
+        self._wire_mask = Mask(shape=(wires,), parent=self, mask=wire_mask)
         self.default_value = default_value
         self._dynamic_parameters = dynamic_parameters
 
