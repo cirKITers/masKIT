@@ -1,4 +1,5 @@
-from tests.utils import cost, create_freezable_circuit, variational_circuit, device
+from maskit.circuits import variational_circuit as original_variational_circuit
+from tests.utils import cost, create_freezable_circuit, device, variational_circuit
 import random
 import pytest
 
@@ -312,6 +313,21 @@ class TestMaskedCircuits:
         for i in range(size):
             assert circuit.parameters[0, i] != 1
 
+    def test_entangling_mask_application(self):
+        size = 4
+        mp = self._create_circuit_with_entangling_gates(size)
+        rotations = [pnp.random.choice([0, 1, 2]) for _ in range(size * size)]
+        circuit = qml.QNode(original_variational_circuit, device(mp.wire_mask.size))
+
+        circuit(mp.differentiable_parameters, rotations, mp)
+        assert circuit.specs["gate_types"]["CZ"] == 12
+
+        mp.perturb(
+            axis=PerturbationAxis.ENTANGLING, mode=PerturbationMode.ADD, amount=1
+        )
+        circuit(mp.differentiable_parameters, rotations, mp)
+        assert circuit.specs["gate_types"]["CZ"] == 11
+
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))
         return MaskedCircuit(parameters=parameters, layers=size, wires=size)
@@ -322,7 +338,7 @@ class TestMaskedCircuits:
             parameters=parameters,
             layers=size,
             wires=size,
-            entangling_mask=Mask(shape=(size, size)),
+            entangling_mask=Mask(shape=(size, size - 1)),
         )
 
 
