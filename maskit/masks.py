@@ -183,10 +183,17 @@ class MaskedCircuit(object):
     """
     A MaskedCircuit supports masking of different components including wires, layers,
     and parameters.
+    Masking naturally removes active parameters from a circuit. However, some optimisers
+    expect the array of parameters to remain stable across iteration steps;
+    use ``dynamic_parameters=False`` to force the mask to always yield the full set of
+    parameters in such cases.
+    The mask will still prevent modification of inactive parameters.
 
     :param parameters: Initial parameter set for circuit
     :param layers: Number of layers
     :param wires: Number of wires
+    :param dynamic_parameters: Whether the array of differentiable parameters may
+        change size/order
     :param default_value: Default value for gates that are added back in. In case of
         `None` that is also the default, the last known value is assumed
     :param parameter_mask: Initialization values of paramater mask, defaults to `None`
@@ -200,6 +207,7 @@ class MaskedCircuit(object):
         "_parameter_mask",
         "parameters",
         "default_value",
+        "_dynamic_parameters",
     )
 
     def __init__(
@@ -207,6 +215,7 @@ class MaskedCircuit(object):
         parameters: np.ndarray,
         layers: int,
         wires: int,
+        dynamic_parameters: bool = True,
         default_value: Optional[float] = None,
         parameter_mask: Optional[np.ndarray] = None,
         layer_mask: Optional[np.ndarray] = None,
@@ -225,11 +234,14 @@ class MaskedCircuit(object):
         self._layer_mask = Mask(shape=(layers,), parent=self, mask=layer_mask)
         self._wire_mask = Mask(shape=(wires,), parent=self, mask=wire_mask)
         self.default_value = default_value
+        self._dynamic_parameters = dynamic_parameters
 
     @property
     def differentiable_parameters(self) -> np.ndarray:
         """Subset of parameters that are not masked and therefore differentiable."""
-        return self.parameters[~self.mask]
+        if self._dynamic_parameters:
+            return self.parameters[~self.mask]
+        return self.parameters
 
     @differentiable_parameters.setter
     def differentiable_parameters(self, value) -> None:
@@ -237,7 +249,10 @@ class MaskedCircuit(object):
         Provides a setter for the differentiable parameters. It is ensured that the
         updated values are written into the underlying :py:attr:`~.parameters`.
         """
-        self.parameters[~self.mask] = value
+        if self._dynamic_parameters:
+            self.parameters[~self.mask] = value
+        else:
+            self.parameters[~self.mask] = value[~self.mask]
 
     @property
     def mask(self) -> np.ndarray:
@@ -357,6 +372,7 @@ class MaskedCircuit(object):
         clone._wire_mask = self._wire_mask.copy(clone)
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
+        clone._dynamic_parameters = self._dynamic_parameters
         return clone
 
     def expanded_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
@@ -373,7 +389,10 @@ class MaskedCircuit(object):
         :param changed_parameters: Current set of differentiable parameters
         """
         result = self.parameters.astype(object)
-        result[~self.mask] = changed_parameters.flatten()
+        if self._dynamic_parameters:
+            result[~self.mask] = changed_parameters.flatten()
+        else:
+            result[~self.mask] = changed_parameters[~self.mask]
         return result
 
     @staticmethod
