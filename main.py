@@ -4,7 +4,7 @@ import random
 import pennylane as qml
 from pennylane import numpy as np
 
-from maskit.masks import MaskedCircuit, PerturbationAxis, PerturbationMode
+from maskit.masks import Mask, MaskedCircuit, PerturbationAxis, PerturbationMode
 from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
@@ -61,6 +61,7 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
+        entangling_mask=Mask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
     mc.layer_mask[current_layers:] = True

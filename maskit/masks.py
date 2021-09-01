@@ -13,6 +13,8 @@ class PerturbationAxis(Enum):
     LAYERS = 1
     #: Perturbation affects random locations in parameter mask
     RANDOM = 2
+    #: Perturbation affects entangling gates
+    ENTANGLING = 3
 
 
 class PerturbationMode(Enum):
@@ -199,12 +201,15 @@ class MaskedCircuit(object):
     :param parameter_mask: Initialization values of paramater mask, defaults to `None`
     :param layer_mask: Initialization values of layer mask, defaults to `None`
     :param wire_mask: Initialization values of wire mask, defaults to `None`
+    :param entangling_mask: The mask to apply for entangling gates within the circuit,
+        defaults to None
     """
 
     __slots__ = (
         "_layer_mask",
         "_wire_mask",
         "_parameter_mask",
+        "_entangling_mask",
         "parameters",
         "default_value",
         "_dynamic_parameters",
@@ -220,6 +225,7 @@ class MaskedCircuit(object):
         parameter_mask: Optional[np.ndarray] = None,
         layer_mask: Optional[np.ndarray] = None,
         wire_mask: Optional[np.ndarray] = None,
+        entangling_mask: Optional[Mask] = None,
     ):
         assert (
             layers == parameters.shape[0]
@@ -234,6 +240,9 @@ class MaskedCircuit(object):
         self._layer_mask = Mask(shape=(layers,), parent=self, mask=layer_mask)
         self._wire_mask = Mask(shape=(wires,), parent=self, mask=wire_mask)
         self.default_value = default_value
+        if entangling_mask is not None:
+            assert layers == entangling_mask.shape[0]
+        self._entangling_mask = entangling_mask
         self._dynamic_parameters = dynamic_parameters
 
     @property
@@ -266,7 +275,10 @@ class MaskedCircuit(object):
         return mask
 
     def active(self) -> int:
-        """Number of active gates in the circuit."""
+        """
+        Number of active gates in the circuit based on layer, wire, and parameter mask.
+        Entangling gates are not included.
+        """
         mask = self.mask
         return mask.size - np.sum(mask)
 
@@ -284,6 +296,11 @@ class MaskedCircuit(object):
     def parameter_mask(self):
         """Returns the encapsulated parameter mask."""
         return self._parameter_mask
+
+    @property
+    def entangling_mask(self):
+        """Returns the encapsulated mask of entangling gates."""
+        return self._entangling_mask
 
     def perturb(
         self,
@@ -315,6 +332,9 @@ class MaskedCircuit(object):
             self._wire_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
             self._parameter_mask.perturb(amount=amount, mode=mode)
+        elif axis == PerturbationAxis.ENTANGLING:
+            if self._entangling_mask:
+                self._entangling_mask.perturb(amount=amount, mode=mode)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
@@ -325,6 +345,9 @@ class MaskedCircuit(object):
             self._wire_mask.shrink(amount)
         elif axis == PerturbationAxis.RANDOM:
             self._parameter_mask.shrink(amount)
+        elif axis == PerturbationAxis.ENTANGLING:
+            if self._entangling_mask:
+                self._entangling_mask.shrink(amount)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
@@ -333,6 +356,8 @@ class MaskedCircuit(object):
         self._layer_mask.clear()
         self._wire_mask.clear()
         self._parameter_mask.clear()
+        if self.entangling_mask is not None:
+            self._entangling_mask.clear()
 
     def apply_mask(self, values: np.ndarray):
         """
@@ -372,6 +397,10 @@ class MaskedCircuit(object):
         clone._wire_mask = self._wire_mask.copy(clone)
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
+        if self._entangling_mask is not None:
+            clone._entangling_mask = self._entangling_mask.copy(clone)
+        else:
+            clone._entangling_mask = None
         clone._dynamic_parameters = self._dynamic_parameters
         return clone
 
@@ -480,8 +509,15 @@ class FreezableMaskedCircuit(MaskedCircuit):
         layers: int,
         wires: int,
         default_value: Optional[float] = None,
+        entangling_mask: Optional[Mask] = None,
     ):
-        super().__init__(parameters, layers, wires, default_value=default_value)
+        super().__init__(
+            parameters,
+            layers,
+            wires,
+            default_value=default_value,
+            entangling_mask=entangling_mask,
+        )
         self._parameter_freeze_mask = Mask(shape=parameters.shape)
         self._layer_freeze_mask = Mask(shape=(layers,))
         self._wire_freeze_mask = Mask(shape=(wires,))
