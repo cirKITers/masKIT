@@ -61,7 +61,7 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
-        entangling_mask=Mask(shape=(layers, wires)),
+        entangling_mask=Mask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
     mc.layer_mask[current_layers:] = True
