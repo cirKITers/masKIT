@@ -25,14 +25,14 @@ def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
 
         for wire in range(0, wires - 1, 2):
             if (
-                masked_circuit.entangling_mask
+                masked_circuit.entangling_mask is not None
                 and masked_circuit.entangling_mask[layer, wire]
             ):
                 continue
             qml.CZ(wires=[wire, wire + 1])
         for wire in range(1, wires - 1, 2):
             if (
-                masked_circuit.entangling_mask
+                masked_circuit.entangling_mask is not None
                 and masked_circuit.entangling_mask[layer, wire]
             ):
                 continue

@@ -207,7 +207,7 @@ class MaskedCircuit(object):
         self._layer_mask = Mask(shape=(layers,), parent=self)
         self._wire_mask = Mask(shape=(wires,), parent=self)
         self.default_value = default_value
-        if entangling_mask:
+        if entangling_mask is not None:
             assert layers == entangling_mask.shape[0]
         self._entangling_mask = entangling_mask
 
@@ -317,7 +317,7 @@ class MaskedCircuit(object):
         self._layer_mask.clear()
         self._wire_mask.clear()
         self._parameter_mask.clear()
-        if self.entangling_mask:
+        if self.entangling_mask is not None:
             self._entangling_mask.clear()
 
     def apply_mask(self, values: np.ndarray):
@@ -358,7 +358,7 @@ class MaskedCircuit(object):
         clone._wire_mask = self._wire_mask.copy(clone)
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
-        if self._entangling_mask:
+        if self._entangling_mask is not None:
             clone._entangling_mask = self._entangling_mask.copy(clone)
         else:
             clone._entangling_mask = None
