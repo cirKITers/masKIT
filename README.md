@@ -5,6 +5,13 @@
 
 submitted: Tag 1.0
 
+## Contributing
+
+You love research as much as we do? Anything missing? We welcome all support,
+whether on bug reports, feature requests, code, reviews, tests, documentation,
+blog posts, and more.
+Please have a look at our [contribution guidelines](docs/CONTRIBUTING.md).
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
