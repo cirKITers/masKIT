@@ -14,7 +14,7 @@ classifiers = [
 ]
 requires-python = ">=3.7"
 dynamic = ["version", "description"]
-license = "LICENSE"
+license = {file = "LICENSE"}
 keywords = ["quantum computing",]
 dependencies = [
     "pennylane ~= 0.16.0",
