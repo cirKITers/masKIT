@@ -10,6 +10,13 @@ Welcome to masKIT's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Development
+   :hidden:
+
+   CONTRIBUTING.md
+
 
 
 Indices and tables
