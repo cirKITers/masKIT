@@ -53,7 +53,7 @@ So you want to actively contribute to masKIT – You. Are. Awesome! 🥳 Now, wi
 
 - In case you just want to get started contributing to open source research projects, check out the [recommended first issues](https://github.com/cirkiters/maskit/contribute). 
   These features are similar to existing features of masKIT or build on common programming principles – perfect to learn the ropes of contributing without worrying much about technical details.
-- Every contribution should have an associated issue – check out how to [suggest enhancements]() and [report bugs]() to find and possibly open an issue as appropriate. 
+- Every contribution should have an associated issue – check out how to [suggest enhancements](#how-to-suggest-a-feature-or-enhancement) and [report bugs](#how-to-report-a-bug) to find and possibly open an issue as appropriate.
   This allows you to get feedback before investing too much time, and shows to others that you are tackling the issue.
 
 To actually contribute to the masKIT repository, you need to open and maintain a Pull Request.
