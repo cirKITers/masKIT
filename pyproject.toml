@@ -1,20 +1,27 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
+requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "maskit"
-author = "Eileen Kuehn, Christof Wendenius"
-author-email = "eileen.kuehn@kit.edu"
-home-page = "https://github.com/cirKITers/masKIT"
-classifiers = [ "License :: OSI Approved :: MIT License",]
-description-file = "README.md"
-requires = [
+[project]
+name = "maskit"
+authors = [
+    {name = "Eileen Kuehn", email = "eileen.kuehn@kit.edu"},
+    {name = "Christof Wendenius", email = "christof.wendenius@kit.edu"},
+]
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+]
+requires-python = ">=3.7"
+dynamic = ["version", "description"]
+license = {file = "LICENSE"}
+keywords = ["quantum computing",]
+dependencies = [
     "pennylane ~= 0.16.0",
     "typing_extensions",
 ]
 
-[tool.flit.metadata.requires-extra]
+[project.optional-dependencies]
 test = [
     "pytest >=4.3.0",
     "flake8",
@@ -22,3 +29,6 @@ test = [
     "black",
 ]
 dev = ["pre-commit"]
+
+[project.urls]
+Source = "https://github.com/cirKITers/masKIT"
