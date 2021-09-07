@@ -22,3 +22,7 @@ test = [
     "black",
 ]
 dev = ["pre-commit"]
+doc = [
+    "sphinx",
+    "myst_parser",
+]
