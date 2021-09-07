@@ -44,7 +44,8 @@ class Mask(object):
         mask: Optional[np.ndarray] = None,
     ):
         super().__init__()
-        self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
+        #: encapsulated mask
+        self.mask: np.ndarray = np.zeros(shape, dtype=bool, requires_grad=False)
         if mask is not None:
             assert mask.dtype == bool, "Mask must be of type bool"
             assert mask.shape == shape, "Shape of mask must be equal to shape"
@@ -124,7 +125,7 @@ class Mask(object):
         Perturbs the Mask by the given ``mode`` of type :py:class:`~.PerturbationMode`
         ``amount`` times. If no amount is given or ``amount=None``, a random ``amount``
         is determined given by the actual size of the py:attr:`~.mask`. If ``amount``
-        is smaller than `1`, it is interpreted as the fraction of the py:attr:`~.mask`s
+        is smaller than `1`, it is interpreted as the fraction of the py:attr:`~.mask` s
         size.
         Note that the ``amount`` is automatically limited to the actual size of the
         py:attr:`~.mask`.
@@ -293,7 +294,7 @@ class MaskedCircuit(object):
     ):
         """
         Perturbs the MaskedCircuit for a given ``axis`` that is of type
-        :py:class:`~.PerturbationAxis`. The perturbation is applied ``amount``times
+        :py:class:`~.PerturbationAxis`. The perturbation is applied ``amount`` times
         and depends on the given ``mode`` of type :py:class:`~.PerturbationMode`.
         If no amount is given, that is ``amount=None``, a random ``amount`` is
         determined given by the actual size of the py:attr:`~.mask`. The ``amount``
