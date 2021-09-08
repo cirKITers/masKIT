@@ -29,7 +29,9 @@ def cross_entropy(
     :param targets: Ground truth labels for supplied samples.
     :param epsilon: Amount to clip predictions as log is not defined for `0` and `1`.
     """
-    assert predictions.shape == targets.shape
+    assert (
+        predictions.shape == targets.shape
+    ), f"Shape of predictions {predictions.shape} must match targets {targets.shape}"
     predictions = np.clip(predictions, epsilon, 1.0 - epsilon)
     sample_count = 1 if predictions.ndim == 1 else predictions.shape[0]
     return -np.sum(targets * np.log(predictions)) / sample_count
