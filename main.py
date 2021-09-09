@@ -272,7 +272,7 @@ if __name__ == "__main__":
                         "perturb": {
                             "amount": 1,
                             "mode": PerturbationMode.ADD,
-                            "axis": PerturbationAxis.RANDOM,
+                            "axis": PerturbationAxis.PARAMETERS,
                         },
                     },
                 ],
@@ -282,7 +282,7 @@ if __name__ == "__main__":
                         "perturb": {
                             "amount": 0.05,
                             "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.RANDOM,
+                            "axis": PerturbationAxis.PARAMETERS,
                         }
                     },
                 ],
