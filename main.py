@@ -86,7 +86,11 @@ def train(
     wires = train_params["wires"]
     layers = train_params["layers"]
     steps = train_params.get("steps", 1000)
-    dev = get_device(train_params.get("sim_local", True), wires=wires)
+    dev = get_device(
+        train_params.get("sim_local", True),
+        wires=wires,
+        shots=train_params.get("shots", None),
+    )
     step_size = train_params.get("step_size", None)
     if step_size:
         opt = train_params["optimizer"].value(step_size)
@@ -205,7 +209,11 @@ def test(
         pass
     elif train_params["dataset"] == "iris":
         wires = train_params["wires"]
-        dev = get_device(train_params["sim_local"], wires=wires)
+        dev = get_device(
+            train_params["sim_local"],
+            wires=wires,
+            shots=train_params.get("shots", None),
+        )
         circuit = qml.QNode(iris_circuit, dev)
         correct = 0
         N = len(test_data)
