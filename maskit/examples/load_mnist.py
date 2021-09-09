@@ -63,9 +63,7 @@ def load_mnist(wires, params):
     if "test_size" in params:
         test_size = min(params["test_size"], MAX_TEST_SAMPLES)
 
-    classes = []
-    if "classes" in params:
-        classes = params["classes"]
+    classes = params.get("classes", [])
 
     x_train, y_train = zip(*((x, y) for x, y in zip(x_train, y_train) if y in classes))
     x_test, y_test = zip(*((x, y) for x, y in zip(x_test, y_test) if y in classes))
@@ -93,7 +91,7 @@ def load_mnist(wires, params):
     x_train = pca.transform(x_train)
     x_test = pca.transform(x_test)
 
-    if "shuffle" in params and params["shuffle"]:
+    if params.get("shuffle", True):
         c = list(zip(x_train, y_train))
         np.random.shuffle(c)
         x_train, y_train = zip(*c)

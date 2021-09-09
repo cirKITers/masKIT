@@ -4,16 +4,18 @@ from maskit.examples.utils import one_hot
 
 np.random.seed(42)
 
+MAX_TRAIN_SAMPLES = 150
+
 
 def load_iris(wires, params):
-    train_size = 150
+    train_size = MAX_TRAIN_SAMPLES
     if "train_size" in params:
-        train_size = min(params["train_size"], 150)
+        train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
     data, target = datasets.load_iris(return_X_y=True)
     target = target.reshape((150, 1))
     dataset = np.concatenate((data, target), axis=1)
 
-    if "shuffle" in params and params["shuffle"]:
+    if params.get("shuffle", True):
         np.random.shuffle(dataset)
 
     train, test = dataset[:train_size, :], dataset[train_size:, :]
@@ -21,9 +23,7 @@ def load_iris(wires, params):
     x_train, y_train = np.split(train, [4], axis=1)
     x_test, y_test = np.split(test, [4], axis=1)
 
-    print(y_train)
     y_train = one_hot(y_train, 4)
-    print(y_train)
     y_test = one_hot(y_test, 4)
 
     return x_train, y_train, x_test, y_test

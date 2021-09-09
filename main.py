@@ -240,8 +240,8 @@ if __name__ == "__main__":
         "wires": 4,
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
-        "steps": 100,
-        "dataset": "iris",
+        "steps": 1000,
+        "dataset": "simple",
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
         "ensemble_kwargs": {
