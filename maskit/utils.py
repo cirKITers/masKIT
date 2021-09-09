@@ -13,7 +13,7 @@ def cross_entropy(
 ) -> float:
     """
     Cross entropy calculation between :py:attr:`targets` (encoded as one-hot vectors)
-    and :py:attr:`predictions`.
+    and :py:attr:`predictions`. Predictions are normalized to sum up to `1.0`.
 
     .. note::
 
