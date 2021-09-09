@@ -193,7 +193,7 @@ class TestMaskedCircuits:
         size = 3
         mp = self._create_circuit(size)
         mp.parameter_mask[:] = True
-        mp.shrink(amount=1, axis=PerturbationAxis.RANDOM)
+        mp.shrink(amount=1, axis=PerturbationAxis.PARAMETERS)
         assert pnp.sum(mp.mask) == mp.mask.size - 1
 
     def test_shrink_entangling(self):
@@ -219,7 +219,7 @@ class TestMaskedCircuits:
         perturb_operation = {
             "perturb": {
                 "amount": 1,
-                "axis": PerturbationAxis.RANDOM,
+                "axis": PerturbationAxis.PARAMETERS,
                 "mode": PerturbationMode.ADD,
             }
         }
@@ -274,7 +274,7 @@ class TestMaskedCircuits:
         )
         mp.parameter_mask[:] = True
         mp.perturb(
-            axis=PerturbationAxis.RANDOM, amount=0.5, mode=PerturbationMode.INVERT
+            axis=PerturbationAxis.PARAMETERS, amount=0.5, mode=PerturbationMode.INVERT
         )
         assert pnp.sum(mp.parameters == 0) == round(0.5 * 4 * 3 * 2)
 
@@ -365,7 +365,7 @@ class TestFreezableMaskedCircuit:
         assert pnp.sum(mp.wire_freeze_mask) == 1
         assert pnp.sum(mp.mask) == 2 * size - 1
         # Test freezing of parameters
-        mp.freeze(axis=PerturbationAxis.RANDOM, amount=1, mode=PerturbationMode.ADD)
+        mp.freeze(axis=PerturbationAxis.PARAMETERS, amount=1, mode=PerturbationMode.ADD)
         assert pnp.sum(mp.parameter_freeze_mask) == 1
         assert pnp.sum(mp.mask) == 2 * size - 1 or pnp.sum(mp.mask) == 2 * size
         # Test wrong axis

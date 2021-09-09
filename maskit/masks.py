@@ -12,7 +12,7 @@ class PerturbationAxis(Enum):
     #: Perturbation affects whole layers
     LAYERS = 1
     #: Perturbation affects random locations in parameter mask
-    RANDOM = 2
+    PARAMETERS = 2
     #: Perturbation affects entangling gates
     ENTANGLING = 3
 
@@ -304,7 +304,7 @@ class MaskedCircuit(object):
 
     def perturb(
         self,
-        axis: PerturbationAxis = PerturbationAxis.RANDOM,
+        axis: PerturbationAxis = PerturbationAxis.PARAMETERS,
         amount: Optional[Union[int, float]] = None,
         mode: PerturbationMode = PerturbationMode.INVERT,
     ):
@@ -330,7 +330,7 @@ class MaskedCircuit(object):
             self._layer_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.WIRES:
             self._wire_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
+        elif axis == PerturbationAxis.PARAMETERS:  # Axis is on parameters
             self._parameter_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.ENTANGLING:
             if self._entangling_mask:
@@ -343,7 +343,7 @@ class MaskedCircuit(object):
             self._layer_mask.shrink(amount)
         elif axis == PerturbationAxis.WIRES:
             self._wire_mask.shrink(amount)
-        elif axis == PerturbationAxis.RANDOM:
+        elif axis == PerturbationAxis.PARAMETERS:
             self._parameter_mask.shrink(amount)
         elif axis == PerturbationAxis.ENTANGLING:
             if self._entangling_mask:
@@ -577,7 +577,7 @@ class FreezableMaskedCircuit(MaskedCircuit):
             self._layer_freeze_mask.perturb(amount=amount, mode=mode)
         elif axis == PerturbationAxis.WIRES:
             self._wire_freeze_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.RANDOM:  # Axis is on parameters
+        elif axis == PerturbationAxis.PARAMETERS:  # Axis is on parameters
             self._parameter_freeze_mask.perturb(amount=amount, mode=mode)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
