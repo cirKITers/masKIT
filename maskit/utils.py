@@ -32,6 +32,14 @@ def cross_entropy(
     assert (
         predictions.shape == targets.shape
     ), f"Shape of predictions {predictions.shape} must match targets {targets.shape}"
+    current_sum = np.sum(predictions, axis=predictions.ndim - 1)
+
+    if predictions.ndim == 1:
+        sample_count = 1
+        predictions = predictions / current_sum
+    else:
+        sample_count = predictions.shape[0]
+        predictions = predictions / current_sum[:, np.newaxis]
+
     predictions = np.clip(predictions, epsilon, 1.0 - epsilon)
-    sample_count = 1 if predictions.ndim == 1 else predictions.shape[0]
     return -np.sum(targets * np.log(predictions)) / sample_count
