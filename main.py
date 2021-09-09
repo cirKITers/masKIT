@@ -3,10 +3,8 @@ from typing import List, Optional
 import random
 import pennylane as qml
 from pennylane import numpy as np
-
-from maskit.masks import MaskedCircuit, PerturbationAxis, PerturbationMode
-
 from maskit.examples.load_data import load_data
+from maskit.masks import Mask, MaskedCircuit, PerturbationAxis, PerturbationMode
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit
 from maskit.log_results import log_results
@@ -46,7 +44,11 @@ def cost_iris(
 
 
 def init_parameters(
-    layers: int, current_layers: int, wires: int, default_value: Optional[float]
+    layers: int,
+    current_layers: int,
+    wires: int,
+    default_value: Optional[float],
+    dynamic_parameters: bool = True,
 ) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
@@ -58,6 +60,8 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
+        entangling_mask=Mask(shape=(layers, wires - 1)),
+        dynamic_parameters=dynamic_parameters,
     )
     mc.layer_mask[current_layers:] = True
     return mc
@@ -81,7 +85,11 @@ def train(
     wires = train_params["wires"]
     layers = train_params["layers"]
     steps = train_params.get("steps", 1000)
-    dev = get_device(train_params.get("sim_local", True), wires=wires)
+    dev = get_device(
+        train_params.get("sim_local", True),
+        wires=wires,
+        shots=train_params.get("shots", None),
+    )
     step_size = train_params.get("step_size", None)
     if step_size:
         opt = train_params["optimizer"].value(step_size)
@@ -127,7 +135,15 @@ def train(
             )
 
     # set up parameters
-    masked_circuit = init_parameters(layers, current_layers, wires, default_value)
+    masked_circuit = init_parameters(
+        layers,
+        current_layers,
+        wires,
+        default_value,
+        dynamic_parameters=False
+        if train_params["optimizer"] == ExtendedOptimizers.ADAM
+        else True,
+    )
 
     # -----------------------------
     # ======= TRAINING LOOP =======
@@ -179,6 +195,9 @@ def train(
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "mask": masked_circuit.mask.unwrap(),
+        "__wire_mask": masked_circuit.wire_mask.mask,
+        "__layer_mask": masked_circuit.layer_mask.mask,
+        "__parameter_mask": masked_circuit.parameter_mask.mask,
         "__rotations": rotations,
     }
 
@@ -186,7 +205,9 @@ def train(
 def test(
     train_params,
     params,
-    mask,
+    wire_mask,
+    layer_mask,
+    parameter_mask,
     layers: int,
     rotations: List,
     test_data: Optional[List] = None,
@@ -201,22 +222,33 @@ def test(
     ):
         # TODO: probably needs some refactoring for the other datasets
         wires = train_params["wires"]
-        dev = get_device(train_params["sim_local"], wires=wires)
+        dev = get_device(
+            train_params["sim_local"],
+            wires=wires,
+            shots=train_params.get("shots", None),
+        )
         circuit = qml.QNode(iris_circuit, dev)
         correct = 0
         N = len(test_data)
         costs = []
-        masked_circuit = MaskedCircuit(parameters=params, layers=layers, wires=wires)
+        masked_circuit = MaskedCircuit(
+            parameters=params,
+            layers=layers,
+            wires=wires,
+            wire_mask=wire_mask,
+            layer_mask=layer_mask,
+            parameter_mask=parameter_mask,
+        )
         for _step, (data, target) in enumerate(zip(test_data, test_target)):
             output = circuit(
-                params,
+                masked_circuit.differentiable_parameters,
                 data,
                 rotations,
                 masked_circuit,
             )
             c = cost_iris(
                 circuit,
-                params,
+                masked_circuit.differentiable_parameters,
                 data,
                 target,
                 rotations,
@@ -296,7 +328,9 @@ if __name__ == "__main__":
         test(
             train_params,
             result["params"],
-            result["mask"],
+            result["__wire_mask"],
+            result["__layer_mask"],
+            result["__parameter_mask"],
             result["final_layers"],
             result["__rotations"],
             test_data=test_data,
