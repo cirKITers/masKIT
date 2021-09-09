@@ -283,8 +283,6 @@ if __name__ == "__main__":
         train = log_results(train)
 
     data_params = {
-        "wires": train_params["wires"],
-        "embedding": None,
         "classes": [6, 9],
         "train_size": 120,
         "test_size": 100,
