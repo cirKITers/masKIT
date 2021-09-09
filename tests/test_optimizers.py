@@ -1,3 +1,4 @@
+from maskit.masks import PerturbationAxis as Axis
 import random
 from tests.configurations import RANDOM
 from maskit.ensembles import Ensemble
@@ -24,7 +25,10 @@ class TestLBFGSBOptimizer:
         optimizer = L_BFGS_B()
         mp = create_circuit(3, layer_size=2)
         mp_step = mp.copy()
-        circuit = qml.QNode(plain_variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(
+            plain_variational_circuit,
+            device(mp.mask_for_axis(Axis.WIRES).size),
+        )
 
         def cost_fn(params):
             return plain_cost(
@@ -51,7 +55,10 @@ class TestLBFGSBOptimizer:
         original_optimizer = ExtendedGradientDescentOptimizer()
         mp = create_circuit(3, layer_size=2)
         mp_original = mp.copy()
-        circuit = qml.QNode(plain_variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(
+            plain_variational_circuit,
+            device(mp.mask_for_axis(Axis.WIRES).size),
+        )
 
         def cost_fn(params):
             return plain_cost(
@@ -70,7 +77,9 @@ class TestLBFGSBOptimizer:
         optimizer = L_BFGS_B()
         mp = create_circuit(3, layer_size=2)
         mp_step = mp.copy()
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(
+            variational_circuit, device(mp.mask_for_axis(Axis.WIRES).size)
+        )
 
         def cost_fn(params, masked_circuit=None):
             return cost(
@@ -96,7 +105,9 @@ class TestLBFGSBOptimizer:
         optimizer = L_BFGS_B()
         ensemble = Ensemble(dropout=RANDOM)
         mp = create_circuit(3, layer_size=2)
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(
+            variational_circuit, device(mp.mask_for_axis(Axis.WIRES).size)
+        )
 
         def cost_fn(params, masked_circuit=None):
             return cost(

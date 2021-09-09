@@ -1,7 +1,7 @@
 import random as rand
 import pennylane.numpy as np
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union, TypeVar
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union, TypeVar
 
 Self = TypeVar("Self")
 
@@ -37,7 +37,7 @@ class Mask(object):
     :param mask: Preset of values that is taken by mask
     """
 
-    __slots__ = ("mask", "_parent")
+    __slots__ = ("mask", "values", "_parent")
 
     def __init__(
         self,
@@ -205,27 +205,16 @@ class MaskedCircuit(object):
         defaults to None
     """
 
-    __slots__ = (
-        "_layer_mask",
-        "_wire_mask",
-        "_parameter_mask",
-        "_entangling_mask",
-        "parameters",
-        "default_value",
-        "_dynamic_parameters",
-    )
+    __slots__ = ("parameters", "default_value", "_dynamic_parameters", "masks")
 
     def __init__(
         self,
         parameters: np.ndarray,
         layers: int,
         wires: int,
+        masks: Optional[Iterable[Tuple[PerturbationAxis, Type[Mask]]]] = None,
         dynamic_parameters: bool = True,
         default_value: Optional[float] = None,
-        parameter_mask: Optional[np.ndarray] = None,
-        layer_mask: Optional[np.ndarray] = None,
-        wire_mask: Optional[np.ndarray] = None,
-        entangling_mask: Optional[Mask] = None,
     ):
         assert (
             layers == parameters.shape[0]
@@ -234,16 +223,31 @@ class MaskedCircuit(object):
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
         self.parameters = parameters
-        self._parameter_mask = Mask(
-            shape=parameters.shape, parent=self, mask=parameter_mask
-        )
-        self._layer_mask = Mask(shape=(layers,), parent=self, mask=layer_mask)
-        self._wire_mask = Mask(shape=(wires,), parent=self, mask=wire_mask)
         self.default_value = default_value
-        if entangling_mask is not None:
-            assert layers == entangling_mask.shape[0]
-        self._entangling_mask = entangling_mask
         self._dynamic_parameters = dynamic_parameters
+
+        self.masks: Dict[PerturbationAxis, Mask] = {}
+        if masks is not None:
+            for axis, mask_type in masks:
+                if axis == PerturbationAxis.PARAMETERS:
+                    shape = parameters.shape
+                elif axis == PerturbationAxis.WIRES:
+                    shape = (wires,)
+                elif axis == PerturbationAxis.LAYERS:
+                    shape = (layers,)
+                # TODO: elif PerturbationAxis.ENTANGLING is missing!
+                self.masks[axis] = mask_type(
+                    shape=shape, parent=self
+                )  # TODO: initial mask is missing
+
+    def register_mask(self, axis: PerturbationAxis, mask: Mask) -> None:
+        assert (
+            axis not in self.masks
+        ), f"Mask for axis {axis} already set: {self.masks[axis]}"
+        self.masks[axis] = mask
+
+    def mask_for_axis(self, axis: PerturbationAxis) -> Mask:
+        return self.masks[axis]
 
     @property
     def differentiable_parameters(self) -> np.ndarray:
@@ -269,9 +273,14 @@ class MaskedCircuit(object):
         Accumulated mask of layer, wire, and parameter masks.
         Note that this mask is readonly.
         """
-        mask = self.parameter_mask.mask.copy()
-        mask[self.layer_mask.mask, :] = True
-        mask[:, self.wire_mask.mask] = True
+        if PerturbationAxis.PARAMETERS in self.masks:
+            mask = self.masks[PerturbationAxis.PARAMETERS].mask.copy()
+        else:
+            mask = np.zeros(self.parameters.shape, dtype=bool, requires_grad=False)
+        if PerturbationAxis.WIRES in self.masks:
+            mask[:, self.masks[PerturbationAxis.WIRES].mask] = True
+        if PerturbationAxis.LAYERS in self.masks:
+            mask[self.masks[PerturbationAxis.LAYERS].mask, :] = True
         return mask
 
     def active(self) -> int:
@@ -281,26 +290,6 @@ class MaskedCircuit(object):
         """
         mask = self.mask
         return mask.size - np.sum(mask)
-
-    @property
-    def layer_mask(self):
-        """Returns the encapsulated layer mask."""
-        return self._layer_mask
-
-    @property
-    def wire_mask(self):
-        """Returns the encapsulated wire mask."""
-        return self._wire_mask
-
-    @property
-    def parameter_mask(self):
-        """Returns the encapsulated parameter mask."""
-        return self._parameter_mask
-
-    @property
-    def entangling_mask(self):
-        """Returns the encapsulated mask of entangling gates."""
-        return self._entangling_mask
 
     def perturb(
         self,
@@ -326,38 +315,21 @@ class MaskedCircuit(object):
         ), f"The selected perturbation mode {mode} is not supported."
         if amount == 0:
             return
-        if axis == PerturbationAxis.LAYERS:
-            self._layer_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.WIRES:
-            self._wire_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.PARAMETERS:  # Axis is on parameters
-            self._parameter_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.ENTANGLING:
-            if self._entangling_mask:
-                self._entangling_mask.perturb(amount=amount, mode=mode)
-        else:
+        if axis in self.masks:
+            self.masks[axis].perturb(amount=amount, mode=mode)
+        else:  # TODO: change error
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
     def shrink(self, axis: PerturbationAxis = PerturbationAxis.LAYERS, amount: int = 1):
-        if axis == PerturbationAxis.LAYERS:
-            self._layer_mask.shrink(amount)
-        elif axis == PerturbationAxis.WIRES:
-            self._wire_mask.shrink(amount)
-        elif axis == PerturbationAxis.PARAMETERS:
-            self._parameter_mask.shrink(amount)
-        elif axis == PerturbationAxis.ENTANGLING:
-            if self._entangling_mask:
-                self._entangling_mask.shrink(amount)
-        else:
+        if axis in self.masks:
+            self.masks[axis].shrink(amount)
+        else:  # TODO: change error
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
     def clear(self):
         """Resets all masks."""
-        self._layer_mask.clear()
-        self._wire_mask.clear()
-        self._parameter_mask.clear()
-        if self.entangling_mask is not None:
-            self._entangling_mask.clear()
+        for mask in self.masks.values():
+            mask.clear()
 
     def apply_mask(self, values: np.ndarray):
         """
@@ -380,28 +352,26 @@ class MaskedCircuit(object):
             return
         np_indices = tuple(zip(*indices))
         if not np.all(mask.mask[np_indices]):
-            if self.wire_mask is mask:
-                self.parameters[:, np_indices] = self.default_value
-            elif self.layer_mask is mask:
-                self.parameters[np_indices, :] = self.default_value
-            elif self.parameter_mask is mask:
-                self.parameters[np_indices] = self.default_value
-            else:
-                raise NotImplementedError(f"The mask {mask} is not supported")
+            for axis, registered_mask in self.masks.items():
+                if mask == registered_mask:
+                    if axis == PerturbationAxis.WIRES:
+                        self.parameters[:, np_indices] = self.default_value
+                    elif axis == PerturbationAxis.LAYERS:
+                        self.parameters[np_indices, :] = self.default_value
+                    elif axis == PerturbationAxis.PARAMETERS:
+                        self.parameters[np_indices] = self.default_value
+                    else:
+                        raise NotImplementedError(f"The mask {mask} is not supported")
 
     def copy(self: Self) -> Self:
         """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
-        clone._parameter_mask = self._parameter_mask.copy(clone)
-        clone._layer_mask = self._layer_mask.copy(clone)
-        clone._wire_mask = self._wire_mask.copy(clone)
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
-        if self._entangling_mask is not None:
-            clone._entangling_mask = self._entangling_mask.copy(clone)
-        else:
-            clone._entangling_mask = None
         clone._dynamic_parameters = self._dynamic_parameters
+        clone.masks = {}
+        for axis, mask in self.masks.items():
+            clone.masks[axis] = mask.copy(clone)
         return clone
 
     def expanded_parameters(self, changed_parameters: np.ndarray) -> np.ndarray:
@@ -443,7 +413,9 @@ class MaskedCircuit(object):
         length = 0
         first_layer = True
         result = ["["]
-        for layer, layer_hidden in enumerate(self.layer_mask):
+        for layer, layer_hidden in enumerate(
+            self.mask_for_axis(PerturbationAxis.LAYERS)
+        ):
             if first_layer:
                 result.append("[")
                 first_layer = False
@@ -451,8 +423,15 @@ class MaskedCircuit(object):
                 result.append("\n [")
             first_wire = True
             first_value = True
-            for wire, wire_hidden in enumerate(self.wire_mask):
-                if isinstance(self.parameter_mask[layer][wire].unwrap(), np.ndarray):
+            for wire, wire_hidden in enumerate(
+                self.mask_for_axis(PerturbationAxis.WIRES)
+            ):
+                if isinstance(
+                    self.mask_for_axis(PerturbationAxis.PARAMETERS)[layer][
+                        wire
+                    ].unwrap(),
+                    np.ndarray,
+                ):
                     if first_wire:
                         result.append("[")
                         first_wire = False
@@ -460,7 +439,7 @@ class MaskedCircuit(object):
                         result.append("\n  [")
                     first_value = True
                     for parameter, parameter_hidden in enumerate(
-                        self.parameter_mask[layer][wire]
+                        self.mask_for_axis(PerturbationAxis.PARAMETERS)[layer][wire]
                     ):
                         if not (layer_hidden or wire_hidden or parameter_hidden):
                             value = format_value(
@@ -477,7 +456,9 @@ class MaskedCircuit(object):
                     result += "]"
                 else:
                     if not (
-                        layer_hidden or wire_hidden or self.parameter_mask[layer][wire]
+                        layer_hidden
+                        or wire_hidden
+                        or self.mask_for_axis(PerturbationAxis.PARAMETERS)[layer][wire]
                     ):
                         value = format_value(self.parameters[layer][wire])
                         length = len(value)
@@ -492,6 +473,47 @@ class MaskedCircuit(object):
         result.append("]")
         return "".join(result).format(placeholder="-" * length)
 
+    @classmethod
+    def full_circuit(
+        cls,
+        parameters: np.ndarray,
+        layers: int,
+        wires: int,
+        dynamic_parameters: bool = True,
+        default_value: Optional[float] = None,
+        entangling_mask: Optional[Mask] = None,
+        wire_mask: Optional[Mask] = None,
+        layer_mask: Optional[Mask] = None,
+        parameter_mask: Optional[Mask] = None,
+    ):
+        initializable_masks = [
+            axis for axis in PerturbationAxis if axis != PerturbationAxis.ENTANGLING
+        ]
+        if wire_mask is not None:
+            initializable_masks.remove(PerturbationAxis.WIRES)
+        if layer_mask is not None:
+            initializable_masks.remove(PerturbationAxis.LAYERS)
+        if parameter_mask is not None:
+            initializable_masks.remove(PerturbationAxis.PARAMETERS)
+        circuit = cls(
+            parameters=parameters,
+            layers=layers,
+            wires=wires,
+            masks=[(axis, Mask) for axis in initializable_masks],
+            dynamic_parameters=dynamic_parameters,
+            default_value=default_value,
+        )
+        if wire_mask is not None:
+            circuit.register_mask(PerturbationAxis.WIRES, mask=wire_mask)
+        if layer_mask is not None:
+            circuit.register_mask(PerturbationAxis.LAYERS, mask=layer_mask)
+        if parameter_mask is not None:
+            circuit.register_mask(PerturbationAxis.PARAMETERS, mask=parameter_mask)
+        if entangling_mask is not None:
+            assert layers == entangling_mask.shape[0]
+            circuit.register_mask(PerturbationAxis.ENTANGLING, mask=entangling_mask)
+        return circuit
+
 
 class FreezableMaskedCircuit(MaskedCircuit):
     """
@@ -501,7 +523,7 @@ class FreezableMaskedCircuit(MaskedCircuit):
     parameters.
     """
 
-    __slots__ = "_layer_freeze_mask", "_wire_freeze_mask", "_parameter_freeze_mask"
+    __slots__ = "freeze_masks"
 
     def __init__(
         self,
@@ -509,18 +531,28 @@ class FreezableMaskedCircuit(MaskedCircuit):
         layers: int,
         wires: int,
         default_value: Optional[float] = None,
-        entangling_mask: Optional[Mask] = None,
+        dynamic_parameters: bool = True,
+        masks: Optional[Iterable[Tuple[PerturbationAxis, Type[Mask]]]] = None,
+        freeze_masks: Optional[Iterable[Tuple[PerturbationAxis, Type[Mask]]]] = None,
     ):
         super().__init__(
             parameters,
             layers,
             wires,
             default_value=default_value,
-            entangling_mask=entangling_mask,
+            dynamic_parameters=dynamic_parameters,
+            masks=masks,
         )
-        self._parameter_freeze_mask = Mask(shape=parameters.shape)
-        self._layer_freeze_mask = Mask(shape=(layers,))
-        self._wire_freeze_mask = Mask(shape=(wires,))
+        self.freeze_masks: Dict[PerturbationAxis, Mask] = {}
+        if freeze_masks is not None:
+            for axis, mask_type in freeze_masks:
+                if axis == PerturbationAxis.PARAMETERS:
+                    shape = parameters.shape
+                elif axis == PerturbationAxis.WIRES:
+                    shape = (wires,)
+                elif axis == PerturbationAxis.LAYERS:
+                    shape = (layers,)
+                self.freeze_masks[axis] = mask_type(shape=shape)
 
     @property
     def mask(self) -> np.ndarray:
@@ -529,25 +561,16 @@ class FreezableMaskedCircuit(MaskedCircuit):
         Note that this mask is readonly.
         """
         base = super().mask
-        base[self._parameter_freeze_mask.mask] = True
-        base[self._layer_freeze_mask, :] = True
-        base[:, self._wire_freeze_mask.mask] = True
+        if PerturbationAxis.PARAMETERS in self.freeze_masks:
+            base[self.freeze_masks[PerturbationAxis.PARAMETERS].mask] = True
+        if PerturbationAxis.LAYERS in self.freeze_masks:
+            base[self.freeze_masks[PerturbationAxis.LAYERS].mask, :] = True
+        if PerturbationAxis.WIRES in self.freeze_masks:
+            base[:, self.freeze_masks[PerturbationAxis.WIRES].mask] = True
         return base
 
-    @property
-    def parameter_freeze_mask(self) -> Mask:
-        """Returns the encapsulated freezing parameter mask."""
-        return self._parameter_freeze_mask
-
-    @property
-    def wire_freeze_mask(self) -> Mask:
-        """Returns the encapsulated freezing wire mask."""
-        return self._wire_freeze_mask
-
-    @property
-    def layer_freeze_mask(self) -> Mask:
-        """Returns the encapsulated freezing layer mask."""
-        return self._layer_freeze_mask
+    def freeze_mask_for_axis(self, axis: PerturbationAxis) -> Mask:
+        return self.freeze_masks[axis]
 
     def freeze(
         self,
@@ -573,27 +596,69 @@ class FreezableMaskedCircuit(MaskedCircuit):
         ), f"The selected perturbation mode {mode} is not supported."
         if amount == 0:
             return
-        if axis == PerturbationAxis.LAYERS:
-            self._layer_freeze_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.WIRES:
-            self._wire_freeze_mask.perturb(amount=amount, mode=mode)
-        elif axis == PerturbationAxis.PARAMETERS:  # Axis is on parameters
-            self._parameter_freeze_mask.perturb(amount=amount, mode=mode)
+        if axis in self.freeze_masks:
+            self.freeze_mask_for_axis(axis).perturb(amount=amount, mode=mode)
         else:
             raise NotImplementedError(f"The perturbation {axis} is not supported")
 
     def copy(self: Self) -> Self:
         """Returns a copy of the current FreezableMaskedCircuit."""
         clone = super().copy()
-        clone._parameter_freeze_mask = self._parameter_freeze_mask.copy()
-        clone._layer_freeze_mask = self._layer_freeze_mask.copy()
-        clone._wire_freeze_mask = self._wire_freeze_mask.copy()
+        clone.freeze_masks = {}
+        for axis, mask in self.freeze_masks.items():
+            clone.freeze_masks[axis] = mask.copy()
         return clone
+
+    @classmethod
+    def full_circuit(
+        cls,
+        parameters: np.ndarray,
+        layers: int,
+        wires: int,
+        dynamic_parameters: bool = True,
+        default_value: Optional[float] = None,
+        entangling_mask: Optional[Mask] = None,
+        wire_mask: Optional[Mask] = None,
+        layer_mask: Optional[Mask] = None,
+        parameter_mask: Optional[Mask] = None,
+    ):
+        initializable_masks = [
+            axis for axis in PerturbationAxis if axis != PerturbationAxis.ENTANGLING
+        ]
+        if wire_mask is not None:
+            initializable_masks.remove(PerturbationAxis.WIRES)
+        if layer_mask is not None:
+            initializable_masks.remove(PerturbationAxis.LAYERS)
+        if parameter_mask is not None:
+            initializable_masks.remove(PerturbationAxis.PARAMETERS)
+        circuit = cls(
+            parameters=parameters,
+            layers=layers,
+            wires=wires,
+            masks=[(axis, Mask) for axis in initializable_masks],
+            freeze_masks=[
+                (axis, Mask)
+                for axis in PerturbationAxis
+                if axis != PerturbationAxis.ENTANGLING
+            ],
+            dynamic_parameters=dynamic_parameters,
+            default_value=default_value,
+        )
+        if wire_mask is not None:
+            circuit.register_mask(PerturbationAxis.WIRES, mask=wire_mask)
+        if layer_mask is not None:
+            circuit.register_mask(PerturbationAxis.LAYERS, mask=layer_mask)
+        if parameter_mask is not None:
+            circuit.register_mask(PerturbationAxis.PARAMETERS, mask=parameter_mask)
+        if entangling_mask is not None:
+            assert layers == entangling_mask.shape[0]
+            circuit.register_mask(PerturbationAxis.ENTANGLING, mask=entangling_mask)
+        return circuit
 
 
 if __name__ == "__main__":
     parameter = MaskedCircuit(
         np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
     )
-    parameter.wire_mask[1] = True
+    parameter.mask_for_axis(PerturbationAxis.WIRES)[1] = True
     print(parameter)
