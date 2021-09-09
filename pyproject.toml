@@ -20,5 +20,7 @@ test = [
     "flake8",
     "flake8-bugbear",
     "black",
+    "scikit-learn",
+    "tensorflow",
 ]
 dev = ["pre-commit"]
