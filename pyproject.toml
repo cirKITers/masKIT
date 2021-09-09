@@ -28,7 +28,7 @@ test = [
     "flake8-bugbear",
     "black",
     "scikit-learn",
-    "tensorflow",
+    "tensorflow >=2.5.0",
 ]
 dev = ["pre-commit"]
 
