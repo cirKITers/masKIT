@@ -4,12 +4,12 @@ import random
 import pennylane as qml
 from pennylane import numpy as np
 
-from maskit.masks import (
+from maskit._masks import (
     Mask,
-    MaskedCircuit,
     PerturbationAxis as Axis,
     PerturbationMode as Mode,
 )
+from maskit._masked_circuits import MaskedCircuit
 from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, iris_circuit

@@ -6,13 +6,12 @@ import pytest
 import pennylane as qml
 import pennylane.numpy as pnp
 
-from maskit.masks import (
-    FreezableMaskedCircuit,
-    MaskedCircuit,
+from maskit._masks import (
     Mask,
     PerturbationAxis as Axis,
     PerturbationMode,
 )
+from maskit._masked_circuits import FreezableMaskedCircuit, MaskedCircuit
 
 
 class TestMaskedCircuits:

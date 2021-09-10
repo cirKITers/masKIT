@@ -1,4 +1,4 @@
-from maskit.masks import PerturbationAxis as Axis
+from maskit._masks import PerturbationAxis as Axis
 import random
 from tests.configurations import RANDOM
 from maskit.ensembles import Ensemble

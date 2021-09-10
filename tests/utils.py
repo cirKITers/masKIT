@@ -1,7 +1,8 @@
 import pennylane as qml
 import pennylane.numpy as pnp
 
-from maskit.masks import FreezableMaskedCircuit, MaskedCircuit, PerturbationAxis as Axis
+from maskit._masks import PerturbationAxis as Axis
+from maskit._masked_circuits import FreezableMaskedCircuit, MaskedCircuit
 
 
 def device(wires: int):

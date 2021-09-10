@@ -1,4 +1,5 @@
-from maskit.masks import MaskedCircuit, PerturbationAxis as Axis
+from maskit._masks import PerturbationAxis as Axis
+from maskit._masked_circuits import MaskedCircuit
 import pennylane as qml
 from pennylane import numpy as np
 

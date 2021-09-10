@@ -1,4 +1,4 @@
-from maskit.masks import PerturbationAxis, PerturbationMode
+from maskit._masks import PerturbationAxis, PerturbationMode
 
 
 CLASSICAL = {

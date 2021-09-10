@@ -1,4 +1,4 @@
-from maskit.masks import PerturbationAxis as Axis
+from maskit._masks import PerturbationAxis as Axis
 from tests.utils import cost, create_circuit, device, variational_circuit
 from tests.configurations import QHACK, GROWING, RANDOM, CLASSICAL
 import pytest
