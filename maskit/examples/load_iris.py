@@ -1,24 +1,25 @@
 from pennylane import numpy as np
 from sklearn import datasets
-from maskit.examples.utils import one_hot
+from maskit.examples.utils import one_hot, Data
 
-np.random.seed(42)
-
-MAX_TRAIN_SAMPLES = 150
+NUM_SAMPLES = 150
 
 
-def load_iris(wires, params):
-    train_size = MAX_TRAIN_SAMPLES
-    if "train_size" in params:
-        train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
+def load_iris(train_size, test_size, shuffle):
+    train_size = min(train_size, NUM_SAMPLES)
+    if train_size + test_size > NUM_SAMPLES:
+        test_size = NUM_SAMPLES - train_size
     data, target = datasets.load_iris(return_X_y=True)
-    target = target.reshape((150, 1))
+    target = target.reshape((train_size + test_size, 1))
     dataset = np.concatenate((data, target), axis=1)
 
-    if params.get("shuffle", True):
+    if shuffle:
         np.random.shuffle(dataset)
 
-    train, test = dataset[:train_size, :], dataset[train_size:, :]
+    train, test = (
+        dataset[:train_size, :],
+        dataset[train_size:, :],
+    )
 
     x_train, y_train = np.split(train, [4], axis=1)
     x_test, y_test = np.split(test, [4], axis=1)
@@ -26,11 +27,6 @@ def load_iris(wires, params):
     y_train = one_hot(y_train, 4)
     y_test = one_hot(y_test, 4)
 
-    return x_train, y_train, x_test, y_test
+    data = Data(x_train, y_train, x_test, y_test)
 
-
-if __name__ == "__main__":
-    data_params = {"wires": 10, "embedding": None, "classes": [6, 9], "train_size": 120}
-    train_data, train_target, test_data, test_target = load_iris(10, data_params)
-    print(train_data)
-    print(train_target)
+    return data

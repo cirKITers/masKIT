@@ -116,11 +116,7 @@ def train(
                 masked_circuit,
             )
 
-    elif (
-        train_params["dataset"] == "iris"
-        or train_params["dataset"] == "mnist"
-        or train_params["dataset"] == "circles"
-    ):
+    elif train_params["dataset"] in ["iris", "mnist", "circles"]:
         # TODO: probably needs some refactoring for the other datasets
         circuit = qml.QNode(iris_circuit, dev)
 
@@ -149,11 +145,7 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if (
-            train_params["dataset"] == "iris"
-            or train_params["dataset"] == "mnist"
-            or train_params["dataset"] == "circles"
-        ):
+        if train_params["dataset"] in ["iris", "mnist", "circles"]:
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
@@ -215,11 +207,7 @@ def test(
 ):
     if train_params["dataset"] == "simple":
         pass
-    elif (
-        train_params["dataset"] == "iris"
-        or train_params["dataset"] == "mnist"
-        or train_params["dataset"] == "circles"
-    ):
+    elif train_params["dataset"] in ["iris", "mnist", "circles"]:
         # TODO: probably needs some refactoring for the other datasets
         wires = train_params["wires"]
         dev = get_device(
@@ -272,8 +260,8 @@ if __name__ == "__main__":
         "wires": 4,
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
-        "steps": 1000,
-        "dataset": "simple",
+        "steps": 100,
+        "dataset": "circles",
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
         "ensemble_kwargs": {
@@ -315,15 +303,16 @@ if __name__ == "__main__":
         train = log_results(train)
 
     data_params = {
+        "wires": train_params["wires"],
         "classes": [6, 9],
         "train_size": 120,
         "test_size": 100,
         "shuffle": True,
     }
-    train_data, train_target, test_data, test_target = load_data(
-        train_params["dataset"], train_params["wires"], None, data_params
+    data = load_data(train_params["dataset"], **data_params)
+    result = train(
+        train_params, train_data=data.train_data, train_target=data.train_target
     )
-    result = train(train_params, train_data=train_data, train_target=train_target)
     if train_params["testing"]:
         test(
             train_params,
@@ -333,6 +322,6 @@ if __name__ == "__main__":
             result["__parameter_mask"],
             result["final_layers"],
             result["__rotations"],
-            test_data=test_data,
-            test_target=test_target,
+            test_data=data.test_data,
+            test_target=data.test_target,
         )

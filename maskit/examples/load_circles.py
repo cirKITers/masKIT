@@ -1,16 +1,9 @@
 from sklearn import datasets
 from pennylane import numpy as np
-from maskit.examples.utils import one_hot
-
-DEFAULT_TRAIN_SIZE = 150
-DEFAULT_TEST_SIZE = 50
+from maskit.examples.utils import one_hot, Data
 
 
-def load_circles(wires, params):
-    train_size = params.get("train_size", DEFAULT_TRAIN_SIZE)
-    test_size = params.get("test_size", DEFAULT_TEST_SIZE)
-    shuffle = params.get("shuffle", True)
-
+def load_circles(train_size, test_size, shuffle):
     # TODO: currently hardcoded to 4 to fit with iris
     # num_classes = 2
     num_classes = 4
@@ -24,11 +17,6 @@ def load_circles(wires, params):
     )
     y_train, y_test = one_hot(y_train, num_classes), one_hot(y_test, num_classes)
 
-    return x_train, y_train, x_test, y_test
+    data = Data(x_train, y_train, x_test, y_test)
 
-
-if __name__ == "__main__":
-    data_params = {"wires": 10, "embedding": None, "classes": [6, 9], "train_size": 120}
-    train_data, train_target, test_data, test_target = load_circles(10, data_params)
-    print(train_data)
-    print(train_target)
+    return data
