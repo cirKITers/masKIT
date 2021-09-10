@@ -392,8 +392,34 @@ class TestMaskedCircuits:
 
 class TestFreezableMaskedCircuit:
     def test_init(self):
-        mp = create_freezable_circuit(3)
+        size = 3
+        mp = create_freezable_circuit(size)
         assert mp
+        with pytest.raises(NotImplementedError):
+            FreezableMaskedCircuit(
+                parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+                layers=size,
+                wires=size,
+                freeze_masks=[(Axis.ENTANGLING, Mask)],
+            )
+
+        mp = FreezableMaskedCircuit.full_circuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+            wire_mask=pnp.ones((size,), dtype=bool),
+            entangling_mask=Mask(shape=(size, size - 1)),
+        )
+        assert mp
+
+    def test_mask(self):
+        size = 3
+        mp = FreezableMaskedCircuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+        )
+        assert mp.mask.size == size * size
 
     def test_freeze(self):
         size = 3
