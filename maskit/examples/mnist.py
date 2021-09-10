@@ -55,7 +55,7 @@ def nearest_power_of_two(x):
     return 2 ** (math.ceil(math.log(x, 2)))
 
 
-def load_mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True):
+def mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     train_size = min(train_size, MAX_TRAIN_SAMPLES)
     test_size = min(test_size, MAX_TEST_SAMPLES)
