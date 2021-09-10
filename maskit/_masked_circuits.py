@@ -376,6 +376,10 @@ class FreezableMaskedCircuit(MaskedCircuit):
                     shape = (wires,)
                 elif axis == Axis.LAYERS:
                     shape = (layers,)
+                else:
+                    raise NotImplementedError(
+                        f"The perturbation {axis} is not supported"
+                    )
                 self.freeze_masks[axis] = mask_type(shape=shape)
 
     @property
