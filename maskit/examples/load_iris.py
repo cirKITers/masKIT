@@ -5,7 +5,7 @@ from maskit.examples.utils import one_hot, Data
 NUM_SAMPLES = 150
 
 
-def load_iris(train_size, test_size, shuffle):
+def load_iris(train_size=100, test_size=50, shuffle=True):
     train_size = min(train_size, NUM_SAMPLES)
     if train_size + test_size > NUM_SAMPLES:
         test_size = NUM_SAMPLES - train_size

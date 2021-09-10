@@ -3,8 +3,7 @@ import collections
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
-
-np.random.seed(42)
+from maskit.examples.utils import Data
 
 MAX_TRAIN_SAMPLES = 11471
 MAX_TEST_SAMPLES = 1952
@@ -33,19 +32,16 @@ def convert_to_binary(x):
         x_new.append(c)
 
     x_new = np.concatenate(x_new)
-    print(x_new.shape)
     return x_new
 
 
 def convert_label(y, classes):
+    assert y in classes
     # TODO: currently hardcoded to fit with iris dataset
     # num_classes = len(classes)
     num_classes = 4
     a = [0.0 for i in range(num_classes)]
-    for i in range(num_classes):
-        if y == classes[i]:
-            a[i] = 1.0
-            break
+    a[classes.index(y)] = 1.0
     return a
 
 
@@ -55,18 +51,16 @@ def apply_PCA(wires, x_train):
     return pca
 
 
-def load_mnist(wires, params):
+def load_mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    train_size, test_size = MAX_TRAIN_SAMPLES, MAX_TEST_SAMPLES
-    if "train_size" in params:
-        train_size = min(params["train_size"], MAX_TRAIN_SAMPLES)
-    if "test_size" in params:
-        test_size = min(params["test_size"], MAX_TEST_SAMPLES)
-
-    classes = params.get("classes", [])
+    train_size = min(train_size, MAX_TRAIN_SAMPLES)
+    test_size = min(test_size, MAX_TEST_SAMPLES)
 
     x_train, y_train = zip(*((x, y) for x, y in zip(x_train, y_train) if y in classes))
     x_test, y_test = zip(*((x, y) for x, y in zip(x_test, y_test) if y in classes))
+
+    x_train, y_train = x_train[0], y_train[0]
+    x_test, y_test = x_test[0], y_test[0]
 
     x_train = [reduce_image(x) for x in x_train]
     x_test = [reduce_image(x) for x in x_test]
@@ -91,7 +85,7 @@ def load_mnist(wires, params):
     x_train = pca.transform(x_train)
     x_test = pca.transform(x_test)
 
-    if params.get("shuffle", True):
+    if shuffle:
         c = list(zip(x_train, y_train))
         np.random.shuffle(c)
         x_train, y_train = zip(*c)
@@ -105,18 +99,25 @@ def load_mnist(wires, params):
 
     y_train, y_test = np.array(y_train), np.array(y_test)
 
-    return x_train, y_train, x_test, y_test
+    data = Data(x_train, y_train, x_test, y_test)
+
+    return data
 
 
 if __name__ == "__main__":
+    np.random.seed(42)
+
     data_params = {
         "wires": 2,
         "embedding": None,
-        "classes": [6, 7, 8, 9],
-        "train_size": 120,
+        "classes": [
+            6,
+            7,
+        ],
+        "train_size": 1,
+        "test_size": 1,
     }
-    train_data, train_target, test_data, test_target = load_mnist(
-        data_params["wires"], data_params
-    )
-    print(train_data)
-    print(train_target)
+    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+    print(x_train[0])
+    print(y_train[0])
+    reduce_image(x_train[0])

@@ -10,7 +10,9 @@ def load_data(dataset, **kwargs):
     classes = kwargs.get("classes", [6, 9])
     wires = kwargs.get("wires", 4)
 
-    if dataset == "iris":
+    if dataset == "simple":
+        return [None, None, None, None]
+    elif dataset == "iris":
         return load_iris(train_size, test_size, shuffle)
     elif dataset == "mnist":
         return load_mnist(wires, classes, train_size, test_size, shuffle)
