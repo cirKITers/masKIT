@@ -38,7 +38,7 @@ class Mask(object):
     :param mask: Preset of values that is taken by mask
     """
 
-    __slots__ = ("mask", "values", "_parent")
+    __slots__ = ("mask", "_parent")
 
     def __init__(
         self,
