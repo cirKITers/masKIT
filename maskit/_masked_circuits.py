@@ -306,12 +306,13 @@ class MaskedCircuit(object):
         parameter_mask: Optional[Mask] = None,
     ):
         initializable_masks = [axis for axis in Axis if axis != Axis.ENTANGLING]
-        if wire_mask is not None:
-            initializable_masks.remove(Axis.WIRES)
-        if layer_mask is not None:
-            initializable_masks.remove(Axis.LAYERS)
-        if parameter_mask is not None:
-            initializable_masks.remove(Axis.PARAMETERS)
+        for axis, mask in (
+            (Axis.WIRES, wire_mask),
+            (Axis.LAYERS, layer_mask),
+            (Axis.PARAMETERS, parameter_mask),
+        ):
+            if mask is not None:
+                initializable_masks.remove(axis)
         circuit = cls(
             parameters=parameters,
             layers=layers,
@@ -320,12 +321,13 @@ class MaskedCircuit(object):
             dynamic_parameters=dynamic_parameters,
             default_value=default_value,
         )
-        if wire_mask is not None:
-            circuit.register_mask(Axis.WIRES, mask=wire_mask)
-        if layer_mask is not None:
-            circuit.register_mask(Axis.LAYERS, mask=layer_mask)
-        if parameter_mask is not None:
-            circuit.register_mask(Axis.PARAMETERS, mask=parameter_mask)
+        for axis, mask in (
+            (Axis.WIRES, wire_mask),
+            (Axis.LAYERS, layer_mask),
+            (Axis.PARAMETERS, parameter_mask),
+        ):
+            if mask is not None:
+                circuit.register_mask(axis=axis, mask=mask)
         if entangling_mask is not None:
             assert layers == entangling_mask.shape[0]
             circuit.register_mask(Axis.ENTANGLING, mask=entangling_mask)
@@ -440,12 +442,13 @@ class FreezableMaskedCircuit(MaskedCircuit):
         parameter_mask: Optional[Mask] = None,
     ):
         initializable_masks = [axis for axis in Axis if axis != Axis.ENTANGLING]
-        if wire_mask is not None:
-            initializable_masks.remove(Axis.WIRES)
-        if layer_mask is not None:
-            initializable_masks.remove(Axis.LAYERS)
-        if parameter_mask is not None:
-            initializable_masks.remove(Axis.PARAMETERS)
+        for axis, mask in (
+            (Axis.WIRES, wire_mask),
+            (Axis.LAYERS, layer_mask),
+            (Axis.PARAMETERS, parameter_mask),
+        ):
+            if mask is not None:
+                initializable_masks.remove(axis)
         circuit = cls(
             parameters=parameters,
             layers=layers,
@@ -455,12 +458,13 @@ class FreezableMaskedCircuit(MaskedCircuit):
             dynamic_parameters=dynamic_parameters,
             default_value=default_value,
         )
-        if wire_mask is not None:
-            circuit.register_mask(Axis.WIRES, mask=wire_mask)
-        if layer_mask is not None:
-            circuit.register_mask(Axis.LAYERS, mask=layer_mask)
-        if parameter_mask is not None:
-            circuit.register_mask(Axis.PARAMETERS, mask=parameter_mask)
+        for axis, mask in (
+            (Axis.WIRES, wire_mask),
+            (Axis.LAYERS, layer_mask),
+            (Axis.PARAMETERS, parameter_mask),
+        ):
+            if mask is not None:
+                circuit.register_mask(axis=axis, mask=mask)
         if entangling_mask is not None:
             assert layers == entangling_mask.shape[0]
             circuit.register_mask(Axis.ENTANGLING, mask=entangling_mask)
