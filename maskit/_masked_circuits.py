@@ -60,7 +60,12 @@ class MaskedCircuit(object):
                     shape = (wires,)
                 elif axis == Axis.LAYERS:
                     shape = (layers,)
-                # TODO: elif Axis.ENTANGLING is missing!
+                else:
+                    # ENTANGLING axis currently is not supported as the shape cannot
+                    #   be inferred automatically
+                    raise NotImplementedError(
+                        f"The perturbation {axis} is not supported"
+                    )
                 self.masks[axis] = mask_type(
                     shape=shape, parent=self
                 )  # TODO: initial mask is missing
