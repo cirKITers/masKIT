@@ -3,10 +3,7 @@ import pytest
 
 import pennylane.numpy as pnp
 
-from maskit._masks import (
-    Mask,
-    PerturbationMode,
-)
+from maskit._masks import Mask, PerturbationMode
 
 
 class TestMask:

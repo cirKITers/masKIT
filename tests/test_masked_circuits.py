@@ -51,6 +51,13 @@ class TestMaskedCircuits:
                 wires=size,
                 entangling_mask=Mask(shape=(size + 1, size)),
             )
+        with pytest.raises(NotImplementedError):
+            MaskedCircuit(
+                parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+                layers=size,
+                wires=size,
+                masks=[(Axis.ENTANGLING, Mask)],
+            )
         mc = MaskedCircuit.full_circuit(
             parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
             layers=size,
@@ -60,6 +67,38 @@ class TestMaskedCircuits:
         assert pnp.array_equal(
             mc.mask_for_axis(Axis.WIRES), pnp.ones((size,), dtype=bool)
         )
+
+    def test_mask(self):
+        """
+        The aggregated mask is built dynamically from the registered masks for the
+        different axes. The test ensures that the mask covers the whole set of
+        parameters.
+        """
+        size = 3
+        # test circuit with all masks
+        mc = MaskedCircuit.full_circuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+        )
+        assert mc.mask.size == size * size
+
+        # test circuit with no masks
+        mc = MaskedCircuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+        )
+        assert mc.mask.size == size * size
+
+        # test circuit containing only layer mask
+        mc = MaskedCircuit(
+            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
+            layers=size,
+            wires=size,
+            masks=[(Axis.LAYERS, Mask)],
+        )
+        assert mc.mask.size == size * size
 
     def test_wrong_mode(self):
         mp = self._create_circuit_with_entangling_gates(3)
