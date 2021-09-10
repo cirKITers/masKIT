@@ -10,14 +10,14 @@ MAX_TRAIN_SAMPLES = 11471
 MAX_TEST_SAMPLES = 1952
 
 
-def reduce_image(x):
+def reduce_image(x: np.ndarray) -> np.ndarray:
     x = np.reshape(x, [1, 28, 28, 1])
     x = tf.image.resize(x, [4, 4])
     x = np.reshape(x, [4, 4])
     return x / 255
 
 
-def remove_contradicting(xs, ys):
+def remove_contradicting(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
     mapping = collections.defaultdict(set)
     for x, y in zip(xs, ys):
         mapping[str(x)].add(y)
@@ -25,7 +25,7 @@ def remove_contradicting(xs, ys):
     return zip(*((x, y) for x, y in zip(xs, ys) if len(mapping[str(x)]) == 1))
 
 
-def convert_to_binary(x):
+def convert_to_binary(x: np.ndarray) -> np.ndarray:
     x_new = []
     for a in x:
         c = (a < 0.5).astype(int)
@@ -36,7 +36,7 @@ def convert_to_binary(x):
     return x_new
 
 
-def convert_label(y, classes):
+def convert_label(y: int, classes: list) -> list:
     assert y in classes
     # Measuring n qubits gets 2^n results to compare against this vector
     num_classes = nearest_power_of_two(len(classes))
@@ -45,13 +45,13 @@ def convert_label(y, classes):
     return a
 
 
-def apply_PCA(wires, x_train):
+def apply_PCA(wires: int, x_train: np.ndarray):
     pca = PCA(n_components=wires)
     pca.fit(x_train)
     return pca
 
 
-def nearest_power_of_two(x):
+def nearest_power_of_two(x: int) -> int:
     return 2 ** (math.ceil(math.log(x, 2)))
 
 
@@ -103,22 +103,3 @@ def mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True):
     data = Data(x_train, y_train, x_test, y_test)
 
     return data
-
-
-if __name__ == "__main__":
-    np.random.seed(42)
-
-    data_params = {
-        "wires": 2,
-        "embedding": None,
-        "classes": [
-            6,
-            7,
-        ],
-        "train_size": 1,
-        "test_size": 1,
-    }
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    print(x_train[0])
-    print(y_train[0])
-    reduce_image(x_train[0])

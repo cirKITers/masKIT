@@ -2,7 +2,7 @@ from pennylane import numpy as np
 from typing import NamedTuple
 
 
-def one_hot(a, num_classes):
+def one_hot(a: np.ndarray, num_classes: int) -> np.ndarray:
     return np.squeeze(np.eye(num_classes)[a.astype(int).reshape(-1)])
 
 
