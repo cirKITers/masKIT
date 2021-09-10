@@ -56,3 +56,14 @@ def iris_circuit(params, data, rotations, masked_circuit):
         params=params, rotations=rotations, masked_circuit=masked_circuit
     )
     return qml.probs(wires=[0, 1])
+
+
+def basis_circuit(params, data, rotations, masked_circuit, wires, wires_to_measure):
+    masked_circuit = masked_circuit.unwrap()
+    qml.templates.embeddings.AngleEmbedding(
+        features=data, wires=range(wires), rotation="X"
+    )
+    basic_variational_circuit(
+        params=params, rotations=rotations, masked_circuit=masked_circuit
+    )
+    return qml.probs(wires=range(wires_to_measure))

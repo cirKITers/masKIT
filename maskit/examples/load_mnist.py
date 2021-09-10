@@ -1,5 +1,6 @@
 import tensorflow as tf
 import collections
+import math
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
@@ -37,9 +38,8 @@ def convert_to_binary(x):
 
 def convert_label(y, classes):
     assert y in classes
-    # TODO: currently hardcoded to fit with iris dataset
-    # num_classes = len(classes)
-    num_classes = 4
+    # Measuring n qubits gets 2^n results to compare against this vector
+    num_classes = nearest_power_of_two(len(classes))
     a = [0.0 for i in range(num_classes)]
     a[classes.index(y)] = 1.0
     return a
@@ -51,6 +51,10 @@ def apply_PCA(wires, x_train):
     return pca
 
 
+def nearest_power_of_two(x):
+    return 2 ** (math.ceil(math.log(x, 2)))
+
+
 def load_mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     train_size = min(train_size, MAX_TRAIN_SAMPLES)
@@ -58,9 +62,6 @@ def load_mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=Tr
 
     x_train, y_train = zip(*((x, y) for x, y in zip(x_train, y_train) if y in classes))
     x_test, y_test = zip(*((x, y) for x, y in zip(x_test, y_test) if y in classes))
-
-    x_train, y_train = x_train[0], y_train[0]
-    x_test, y_test = x_test[0], y_test[0]
 
     x_train = [reduce_image(x) for x in x_train]
     x_test = [reduce_image(x) for x in x_test]
