@@ -66,4 +66,4 @@ def basis_circuit(params, data, rotations, masked_circuit, wires, wires_to_measu
     basic_variational_circuit(
         params=params, rotations=rotations, masked_circuit=masked_circuit
     )
-    return qml.probs(wires=range(wires_to_measure))
+    return qml.probs(wires=wires_to_measure.tolist())

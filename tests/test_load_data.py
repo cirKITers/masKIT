@@ -1,4 +1,4 @@
-from maskit.examples.load_data import load_data
+from maskit.datasets import load_data
 
 
 class TestLoadData:

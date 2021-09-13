@@ -1,14 +1,14 @@
 from pennylane import numpy as np
 from sklearn import datasets
-from maskit.examples.utils import one_hot, Data
+from maskit.datasets.utils import one_hot, Data
 
-NUM_SAMPLES = 150
+MAX_SAMPLES = 150
 
 
 def iris(train_size=100, test_size=50, shuffle=True):
-    train_size = min(train_size, NUM_SAMPLES)
-    if train_size + test_size > NUM_SAMPLES:
-        test_size = NUM_SAMPLES - train_size
+    train_size = min(train_size, MAX_SAMPLES)
+    if train_size + test_size > MAX_SAMPLES:
+        test_size = MAX_SAMPLES - train_size
     data, target = datasets.load_iris(return_X_y=True)
     target = target.reshape((train_size + test_size, 1))
     dataset = np.concatenate((data, target), axis=1)

@@ -1,5 +1,5 @@
 from sklearn import datasets
-from maskit.examples.utils import one_hot, Data
+from maskit.datasets.utils import one_hot, Data
 
 
 def circles(train_size=100, test_size=50, shuffle=True):

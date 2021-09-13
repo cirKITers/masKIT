@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install .[test] .[samples]
+        pip install .[test]
         python -m pip install codecov pytest-cov
     - name: Test with pytest
       run: |

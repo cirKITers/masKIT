@@ -4,7 +4,7 @@ import math
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
-from maskit.examples.utils import Data
+from maskit.datasets.utils import Data
 
 MAX_TRAIN_SAMPLES = 11471
 MAX_TEST_SAMPLES = 1952

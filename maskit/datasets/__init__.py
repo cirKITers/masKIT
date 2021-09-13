@@ -1,6 +1,7 @@
-from maskit.examples.circles import circles
-from maskit.examples.iris import iris
-from maskit.examples.mnist import mnist
+from maskit.datasets.circles import circles
+from maskit.datasets.iris import iris
+from maskit.datasets.mnist import mnist
+from maskit.datasets.utils import Data
 
 
 def load_data(dataset, **kwargs):
@@ -11,7 +12,7 @@ def load_data(dataset, **kwargs):
     wires = kwargs.get("wires", 4)
 
     if dataset == "simple":
-        return [None, None, None, None]
+        return Data(None, None, None, None)
     elif dataset == "iris":
         return iris(train_size, test_size, shuffle)
     elif dataset == "mnist":

@@ -3,7 +3,7 @@ from typing import List, Optional
 import random
 import pennylane as qml
 from pennylane import numpy as np
-from maskit.examples.load_data import load_data
+from maskit.datasets import load_data
 from maskit.masks import Mask, MaskedCircuit, PerturbationAxis, PerturbationMode
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, basis_circuit
@@ -38,8 +38,8 @@ def cost_basis(
     target,
     rotations: List,
     masked_circuit: MaskedCircuit,
-    wires,
-    wires_to_measure,
+    wires: int,
+    wires_to_measure: list[int],
 ):
     prediction = circuit(
         params, data, rotations, masked_circuit, wires, wires_to_measure
@@ -268,7 +268,7 @@ def test(
 if __name__ == "__main__":
     train_params = {
         "wires": 4,
-        "wires_to_measure": 2,
+        "wires_to_measure": [0, 1],
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
@@ -320,7 +320,7 @@ if __name__ == "__main__":
         "test_size": 100,
         "shuffle": True,
     }
-    data = load_data(train_params["dataset"], **data_params)
+    data = load_data(train_params.get("dataset"), **data_params)
     result = train(
         train_params, train_data=data.train_data, train_target=data.train_target
     )
