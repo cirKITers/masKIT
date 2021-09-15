@@ -37,6 +37,16 @@
       "contributions": [
         "review"
       ]
+    },
+    {
+      "login": "nikmetz",
+      "name": "Niklas Metz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23529838?v=4",
+      "profile": "https://github.com/nikmetz",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
