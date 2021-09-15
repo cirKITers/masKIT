@@ -3,8 +3,14 @@ from typing import List, Optional
 import random
 import pennylane as qml
 from pennylane import numpy as np
+
+from maskit._masks import (
+    Mask,
+    PerturbationAxis as Axis,
+    PerturbationMode as Mode,
+)
+from maskit._masked_circuits import MaskedCircuit
 from maskit.datasets import load_data
-from maskit.masks import Mask, MaskedCircuit, PerturbationAxis, PerturbationMode
 from maskit.utils import cross_entropy, check_params
 from maskit.circuits import variational_circuit, basis_circuit
 from maskit.log_results import log_results
@@ -59,7 +65,7 @@ def init_parameters(
     )
     params_zero = np.zeros((layers - current_layers, wires))
     params_combined = np.concatenate((params_uniform, params_zero))
-    mc = MaskedCircuit(
+    mc = MaskedCircuit.full_circuit(
         parameters=params_combined,
         layers=layers,
         wires=wires,
@@ -67,7 +73,7 @@ def init_parameters(
         entangling_mask=Mask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
-    mc.layer_mask[current_layers:] = True
+    mc.mask_for_axis(Axis.LAYERS)[current_layers:] = True
     return mc
 
 
@@ -195,9 +201,9 @@ def train(
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "mask": masked_circuit.mask.unwrap(),
-        "__wire_mask": masked_circuit.wire_mask.mask,
-        "__layer_mask": masked_circuit.layer_mask.mask,
-        "__parameter_mask": masked_circuit.parameter_mask.mask,
+        "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES).mask,
+        "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS).mask,
+        "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS).mask,
         "__rotations": rotations,
     }
 
@@ -227,7 +233,7 @@ def test(
         correct = 0
         N = len(test_data)
         costs = []
-        masked_circuit = MaskedCircuit(
+        masked_circuit = MaskedCircuit.full_circuit(
             parameters=params,
             layers=layers,
             wires=wires,
@@ -285,8 +291,8 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 1,
-                            "mode": PerturbationMode.ADD,
-                            "axis": PerturbationAxis.PARAMETERS,
+                            "mode": Mode.ADD,
+                            "axis": Axis.PARAMETERS,
                         },
                     },
                 ],
@@ -295,8 +301,8 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 0.05,
-                            "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.PARAMETERS,
+                            "mode": Mode.REMOVE,
+                            "axis": Axis.PARAMETERS,
                         }
                     },
                 ],

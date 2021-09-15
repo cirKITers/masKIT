@@ -2,7 +2,7 @@ from collections import deque
 from typing import Dict, NamedTuple, Optional
 from pennylane import numpy as np
 
-from maskit.masks import MaskedCircuit
+from maskit._masked_circuits import MaskedCircuit
 
 
 class EnsembleResult(NamedTuple):
