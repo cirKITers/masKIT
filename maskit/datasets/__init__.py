@@ -8,12 +8,12 @@ def load_data(dataset: str, **kwargs):
     """
     Returns the data for the requested ``dataset``.
 
-    :param dataset (str): Name of the chosen dataset.
+    :param dataset: Name of the chosen dataset.
         Available datasets are: iris, mnist and circles.
     :param kwargs: Further arguments for dataset selection. Possible arguments:
         train_size (int): Size of the training dataset
         test_size (int): Size of the testing dataset
-        shuffle (boolean): if the dataset should be shuffled
+        shuffle (bool): if the dataset should be shuffled
         classes (list[int]): which numbers of the mnist dataset should be included
         wires (int): number of wires in the circuit
     :raises ValueError: Raised if a not supported dataset is requested

@@ -5,7 +5,7 @@ from maskit.datasets.utils import one_hot, Data
 MAX_SAMPLES = 150
 
 
-def iris(train_size=100, test_size=50, shuffle=True):
+def iris(train_size=100, test_size=50, shuffle=True) -> Data:
     train_size = min(train_size, MAX_SAMPLES)
     if train_size + test_size > MAX_SAMPLES:
         test_size = MAX_SAMPLES - train_size
@@ -27,6 +27,4 @@ def iris(train_size=100, test_size=50, shuffle=True):
     y_train = one_hot(y_train, 4)
     y_test = one_hot(y_test, 4)
 
-    data = Data(x_train, y_train, x_test, y_test)
-
-    return data
+    return Data(x_train, y_train, x_test, y_test)

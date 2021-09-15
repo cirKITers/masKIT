@@ -39,7 +39,7 @@ def cost_basis(
     rotations: List,
     masked_circuit: MaskedCircuit,
     wires: int,
-    wires_to_measure: list[int],
+    wires_to_measure: List[int],
 ):
     prediction = circuit(
         params, data, rotations, masked_circuit, wires, wires_to_measure
