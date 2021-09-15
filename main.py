@@ -3,11 +3,10 @@ from typing import List, Optional
 import random
 import pennylane as qml
 from pennylane import numpy as np
-
+from maskit.datasets import load_data
 from maskit.masks import Mask, MaskedCircuit, PerturbationAxis, PerturbationMode
-from maskit.iris import load_iris
 from maskit.utils import cross_entropy, check_params
-from maskit.circuits import variational_circuit, iris_circuit
+from maskit.circuits import variational_circuit, basis_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
 from maskit.ensembles import (
@@ -32,15 +31,19 @@ def cost(
     return 1 - circuit(params, rotations, masked_circuit)[0]
 
 
-def cost_iris(
+def cost_basis(
     circuit,
     params,
     data,
     target,
     rotations: List,
     masked_circuit: MaskedCircuit,
+    wires: int,
+    wires_to_measure: List[int],
 ):
-    prediction = circuit(params, data, rotations, masked_circuit)
+    prediction = circuit(
+        params, data, rotations, masked_circuit, wires, wires_to_measure
+    )
     return cross_entropy(predictions=prediction, targets=target)
 
 
@@ -69,7 +72,9 @@ def init_parameters(
 
 
 def train(
-    train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
+    train_params,
+    train_data: Optional[np.ndarray] = None,
+    train_target: Optional[np.ndarray] = None,
 ):
     logging_costs = {}
     logging_branch_selection = {}
@@ -84,6 +89,7 @@ def train(
 
     # set up circuit, training, dataset
     wires = train_params["wires"]
+    wires_to_measure = train_params["wires_to_measure"]
     layers = train_params["layers"]
     steps = train_params.get("steps", 1000)
     dev = get_device(
@@ -117,17 +123,19 @@ def train(
                 masked_circuit,
             )
 
-    elif train_params["dataset"] == "iris":
-        circuit = qml.QNode(iris_circuit, dev)
+    elif train_params["dataset"] in ["iris", "mnist", "circles"]:
+        circuit = qml.QNode(basis_circuit, dev)
 
         def cost_fn(params, masked_circuit=None):
-            return cost_iris(
+            return cost_basis(
                 circuit,
                 params,
                 data,
                 target,
                 rotations,
                 masked_circuit,
+                wires,
+                wires_to_measure,
             )
 
     # set up parameters
@@ -145,7 +153,7 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dataset"] == "iris":
+        if train_data is not None and train_target is not None:
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
@@ -202,19 +210,20 @@ def test(
     parameter_mask,
     layers: int,
     rotations: List,
-    test_data: Optional[List] = None,
-    test_target: Optional[List] = None,
+    test_data: Optional[np.ndarray] = None,
+    test_target: Optional[np.ndarray] = None,
 ):
-    if train_params["dataset"] == "simple":
+    if test_data is None or test_target is None:
         pass
-    elif train_params["dataset"] == "iris":
+    elif test_data is not None and test_target is not None:
         wires = train_params["wires"]
+        wires_to_measure = train_params["wires_to_measure"]
         dev = get_device(
             train_params["sim_local"],
             wires=wires,
             shots=train_params.get("shots", None),
         )
-        circuit = qml.QNode(iris_circuit, dev)
+        circuit = qml.QNode(basis_circuit, dev)
         correct = 0
         N = len(test_data)
         costs = []
@@ -232,14 +241,18 @@ def test(
                 data,
                 rotations,
                 masked_circuit,
+                wires,
+                wires_to_measure,
             )
-            c = cost_iris(
+            c = cost_basis(
                 circuit,
                 masked_circuit.differentiable_parameters,
                 data,
                 target,
                 rotations,
                 masked_circuit,
+                wires,
+                wires_to_measure,
             )
             costs.append(c)
             same = np.argmax(target) == np.argmax(output)
@@ -256,7 +269,8 @@ def test(
 
 if __name__ == "__main__":
     train_params = {
-        "wires": 10,
+        "wires": 4,
+        "wires_to_measure": [0, 1],
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
@@ -300,10 +314,18 @@ if __name__ == "__main__":
     check_params(train_params)
     if train_params.get("logging", True):
         train = log_results(train)
-    train_data, train_target, test_data, test_target = (
-        load_iris() if train_params["dataset"] == "iris" else [None, None, None, None]
+
+    data_params = {
+        "wires": train_params["wires"],
+        "classes": [6, 9],
+        "train_size": 120,
+        "test_size": 100,
+        "shuffle": True,
+    }
+    data = load_data(train_params.get("dataset", "simple"), **data_params)
+    result = train(
+        train_params, train_data=data.train_data, train_target=data.train_target
     )
-    result = train(train_params, train_data=train_data, train_target=train_target)
     if train_params["testing"]:
         test(
             train_params,
@@ -313,6 +335,6 @@ if __name__ == "__main__":
             result["__parameter_mask"],
             result["final_layers"],
             result["__rotations"],
-            test_data=test_data,
-            test_target=test_target,
+            test_data=data.test_data,
+            test_target=data.test_target,
         )
