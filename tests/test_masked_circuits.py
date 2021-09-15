@@ -267,7 +267,7 @@ class TestMaskedCircuits:
             "perturb": {
                 "amount": 1,
                 "axis": Axis.PARAMETERS,
-                "mode": Mode.ADD,
+                "mode": Mode.SET,
             }
         }
         # test empty operations
@@ -370,7 +370,7 @@ class TestMaskedCircuits:
         circuit(mp.differentiable_parameters, rotations, mp)
         assert circuit.specs["gate_types"]["CZ"] == 12
 
-        mp.perturb(axis=Axis.ENTANGLING, mode=Mode.ADD, amount=6)
+        mp.perturb(axis=Axis.ENTANGLING, mode=Mode.SET, amount=6)
         circuit(mp.differentiable_parameters, rotations, mp)
         assert circuit.specs["gate_types"]["CZ"] == 6
 
@@ -429,10 +429,10 @@ class TestFreezableMaskedCircuit:
         )
         # Test 0 amount
         mask = mp.mask
-        mp.freeze(axis=Axis.LAYERS, amount=0, mode=Mode.ADD)
+        mp.freeze(axis=Axis.LAYERS, amount=0, mode=Mode.SET)
         assert pnp.array_equal(mp.mask, mask)
         # Test freezing of layers
-        mp.freeze(axis=Axis.LAYERS, amount=1, mode=Mode.ADD)
+        mp.freeze(axis=Axis.LAYERS, amount=1, mode=Mode.SET)
         assert (
             mp.differentiable_parameters.size
             == mp.mask_for_axis(Axis.PARAMETERS).size - size
@@ -440,26 +440,26 @@ class TestFreezableMaskedCircuit:
         assert pnp.sum(mp.freeze_mask_for_axis(Axis.LAYERS)) == 1
         assert pnp.sum(mp.mask) == size
         # Test freezing of wires
-        mp.freeze(axis=Axis.WIRES, amount=1, mode=Mode.ADD)
+        mp.freeze(axis=Axis.WIRES, amount=1, mode=Mode.SET)
         assert pnp.sum(mp.freeze_mask_for_axis(Axis.WIRES)) == 1
         assert pnp.sum(mp.mask) == 2 * size - 1
         # Test freezing of parameters
-        mp.freeze(axis=Axis.PARAMETERS, amount=1, mode=Mode.ADD)
+        mp.freeze(axis=Axis.PARAMETERS, amount=1, mode=Mode.SET)
         assert pnp.sum(mp.freeze_mask_for_axis(Axis.PARAMETERS)) == 1
         assert pnp.sum(mp.mask) == 2 * size - 1 or pnp.sum(mp.mask) == 2 * size
         # Test wrong axis
         with pytest.raises(NotImplementedError):
-            mp.freeze(axis=10, amount=1, mode=Mode.ADD)
+            mp.freeze(axis=10, amount=1, mode=Mode.SET)
 
     def test_copy(self):
         mp = create_freezable_circuit(3)
-        mp.perturb(amount=5, mode=Mode.ADD)
-        mp.freeze(amount=2, axis=Axis.LAYERS, mode=Mode.ADD)
+        mp.perturb(amount=5, mode=Mode.SET)
+        mp.freeze(amount=2, axis=Axis.LAYERS, mode=Mode.SET)
         mp_copy = mp.copy()
         assert isinstance(mp_copy, FreezableMaskedCircuit)
         assert pnp.array_equal(mp.mask, mp_copy.mask)
-        mp.perturb(amount=5, mode=Mode.REMOVE)
-        mp.freeze(amount=2, axis=Axis.LAYERS, mode=Mode.REMOVE)
+        mp.perturb(amount=5, mode=Mode.RESET)
+        mp.freeze(amount=2, axis=Axis.LAYERS, mode=Mode.RESET)
         assert pnp.sum(mp.mask) == 0
         assert not pnp.array_equal(mp.mask, mp_copy.mask)
 
@@ -479,8 +479,8 @@ class TestFreezableMaskedCircuit:
                 masked_circuit,
             )
 
-        mp.freeze(axis=Axis.LAYERS, amount=2, mode=Mode.ADD)
-        mp.freeze(axis=Axis.WIRES, amount=2, mode=Mode.ADD)
+        mp.freeze(axis=Axis.LAYERS, amount=2, mode=Mode.SET)
+        mp.freeze(axis=Axis.WIRES, amount=2, mode=Mode.SET)
 
         last_changeable = pnp.sum(mp.parameters[~mp.mask])
         frozen = pnp.sum(mp.parameters[mp.mask])

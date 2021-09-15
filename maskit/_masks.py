@@ -19,10 +19,10 @@ class PerturbationAxis(Enum):
 
 
 class PerturbationMode(Enum):
-    #: Adding new holes to the mask
-    ADD = 0
-    #: Removing holes from the mask
-    REMOVE = 1
+    #: Set a new value on a mask
+    SET = 0
+    #: Remove a value from the mask
+    RESET = 1
     #: Invert current state of the mask
     INVERT = 2
 
@@ -147,11 +147,11 @@ class Mask(object):
         count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
         if count == 0:
             return
-        if mode == PerturbationMode.ADD:
+        if mode == PerturbationMode.SET:
             indices = np.argwhere(~self.mask)
         elif mode == PerturbationMode.INVERT:
             indices = np.array([list(index) for index in np.ndindex(*self.mask.shape)])
-        elif mode == PerturbationMode.REMOVE:
+        elif mode == PerturbationMode.RESET:
             indices = np.argwhere(self.mask)
         else:
             raise NotImplementedError(f"The perturbation mode {mode} is not supported")

@@ -404,7 +404,7 @@ class FreezableMaskedCircuit(MaskedCircuit):
         self,
         axis: Axis = Axis.LAYERS,
         amount: Optional[Union[int, float]] = None,
-        mode: Mode = Mode.ADD,
+        mode: Mode = Mode.SET,
     ):
         """
         Freezes the parameter values for a given ``axis`` that is of type

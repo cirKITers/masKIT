@@ -291,7 +291,7 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 1,
-                            "mode": Mode.ADD,
+                            "mode": Mode.SET,
                             "axis": Axis.PARAMETERS,
                         },
                     },
@@ -301,7 +301,7 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 0.05,
-                            "mode": Mode.REMOVE,
+                            "mode": Mode.RESET,
                             "axis": Axis.PARAMETERS,
                         }
                     },

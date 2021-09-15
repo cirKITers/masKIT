@@ -50,7 +50,7 @@ class TestMask:
 
         for i in range(1, size + 1):
             mp.perturb(i)
-            mp.perturb(i, mode=PerturbationMode.REMOVE)
+            mp.perturb(i, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
 
     def test_percentage_perturbation(self):
@@ -81,9 +81,9 @@ class TestMask:
         mp = Mask((size,))
 
         for amount in [random.randrange(size), 0, size, size + 1]:
-            mp.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+            mp.perturb(amount=amount, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
-            mp.perturb(amount=amount, mode=PerturbationMode.ADD)
+            mp.perturb(amount=amount, mode=PerturbationMode.SET)
             assert pnp.sum(mp.mask) == min(amount, size)
             mp.clear()
 
@@ -94,7 +94,7 @@ class TestMask:
         for amount in [random.randrange(size), 0, size, size + 1]:
             mp.perturb(amount=amount, mode=PerturbationMode.INVERT)
             reversed_amount = pnp.sum(mp.mask).unwrap()  # unwrap tensor
-            mp.perturb(amount=reversed_amount, mode=PerturbationMode.REMOVE)
+            mp.perturb(amount=reversed_amount, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
 
     def test_perturbation_add_remove(self):
@@ -102,15 +102,15 @@ class TestMask:
         mp = Mask((size,))
 
         for amount in [random.randrange(size), 0, size, size + 1]:
-            mp.perturb(amount=amount, mode=PerturbationMode.ADD)
+            mp.perturb(amount=amount, mode=PerturbationMode.SET)
             assert pnp.sum(mp.mask) == min(amount, size)
-            mp.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+            mp.perturb(amount=amount, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
 
     @pytest.mark.parametrize(
         "mode",
         [
-            (PerturbationMode.ADD, PerturbationMode.INVERT),
+            (PerturbationMode.SET, PerturbationMode.INVERT),
             (PerturbationMode.INVERT, PerturbationMode.INVERT),
         ],
     )
