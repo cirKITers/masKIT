@@ -42,7 +42,7 @@ class TestMask:
     def test_wrong_mode(self):
         mp = Mask((3,))
         with pytest.raises(NotImplementedError):
-            mp.perturb(mode=10)
+            mp.perturb(mode=10, amount=1)
 
     def test_perturbation(self):
         size = 3
