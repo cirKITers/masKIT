@@ -1,5 +1,5 @@
 from pennylane import numpy as np
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 def one_hot(a: np.ndarray, num_classes: int) -> np.ndarray:
@@ -7,7 +7,7 @@ def one_hot(a: np.ndarray, num_classes: int) -> np.ndarray:
 
 
 class DataSet(NamedTuple):
-    train_data: np.ndarray
-    train_target: np.ndarray
-    test_data: np.ndarray
-    test_target: np.ndarray
+    train_data: Optional[np.ndarray]
+    train_target: Optional[np.ndarray]
+    test_data: Optional[np.ndarray]
+    test_target: Optional[np.ndarray]

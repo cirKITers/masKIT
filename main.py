@@ -72,7 +72,9 @@ def init_parameters(
 
 
 def train(
-    train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
+    train_params,
+    train_data: Optional[np.ndarray] = None,
+    train_target: Optional[np.ndarray] = None,
 ):
     logging_costs = {}
     logging_branch_selection = {}
@@ -151,7 +153,7 @@ def train(
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dataset"] in ["iris", "mnist", "circles"]:
+        if train_data is not None and train_target is not None:
             data = train_data[step % len(train_data)]
             target = train_target[step % len(train_target)]
 
@@ -208,12 +210,12 @@ def test(
     parameter_mask,
     layers: int,
     rotations: List,
-    test_data: Optional[List] = None,
-    test_target: Optional[List] = None,
+    test_data: Optional[np.ndarray] = None,
+    test_target: Optional[np.ndarray] = None,
 ):
-    if train_params["dataset"] == "simple":
+    if test_data is None or test_target is None:
         pass
-    elif train_params["dataset"] in ["iris", "mnist", "circles"]:
+    elif test_data is not None and test_target is not None:
         wires = train_params["wires"]
         wires_to_measure = train_params["wires_to_measure"]
         dev = get_device(
@@ -320,7 +322,7 @@ if __name__ == "__main__":
         "test_size": 100,
         "shuffle": True,
     }
-    data = load_data(train_params.get("dataset"), **data_params)
+    data = load_data(train_params.get("dataset", "simple"), **data_params)
     result = train(
         train_params, train_data=data.train_data, train_target=data.train_target
     )

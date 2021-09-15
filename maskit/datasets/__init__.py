@@ -1,29 +1,32 @@
+from typing import Tuple
+
 from maskit.datasets.circles import circles
 from maskit.datasets.iris import iris
 from maskit.datasets.mnist import mnist
 from maskit.datasets.utils import DataSet
 
 
-def load_data(dataset: str, **kwargs):
+def load_data(
+    dataset: str,
+    train_size: int = 100,
+    test_size: int = 50,
+    shuffle: bool = True,
+    classes: Tuple[int, ...] = (6, 9),
+    wires: int = 4,
+) -> DataSet:
     """
     Returns the data for the requested ``dataset``.
 
     :param dataset: Name of the chosen dataset.
         Available datasets are: iris, mnist and circles.
-    :param kwargs: Further arguments for dataset selection. Possible arguments:
-        train_size (int): Size of the training dataset
-        test_size (int): Size of the testing dataset
-        shuffle (bool): if the dataset should be shuffled
-        classes (list[int]): which numbers of the mnist dataset should be included
-        wires (int): number of wires in the circuit
+    :param train_size: Size of the training dataset
+    :param test_size: Size of the testing dataset
+    :param shuffle: if the dataset should be shuffled
+    :param classes: which numbers of the mnist dataset should be included
+    :param wires: number of wires in the circuit
+
     :raises ValueError: Raised if a not supported dataset is requested
     """
-    train_size = kwargs.get("train_size", 100)
-    test_size = kwargs.get("test_size", 50)
-    shuffle = kwargs.get("shuffle", True)
-    classes = kwargs.get("classes", [6, 9])
-    wires = kwargs.get("wires", 4)
-
     if dataset == "simple":
         return DataSet(None, None, None, None)
     elif dataset == "iris":

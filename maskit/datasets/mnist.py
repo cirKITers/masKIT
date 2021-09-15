@@ -1,9 +1,11 @@
+from typing import List
 import tensorflow as tf
 import collections
 import math
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
+
 from maskit.datasets.utils import DataSet
 
 MAX_TRAIN_SAMPLES = 11471
@@ -36,7 +38,7 @@ def convert_to_binary(x: np.ndarray) -> np.ndarray:
     return x_new
 
 
-def convert_label(y: int, classes: list) -> list:
+def convert_label(y: int, classes: List[int]) -> List[float]:
     assert y in classes
     # Measuring n qubits gets 2^n results to compare against this vector
     num_classes = nearest_power_of_two(len(classes))
