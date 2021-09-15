@@ -5,7 +5,7 @@ import pennylane as qml
 from pennylane import numpy as np
 
 from maskit._masks import (
-    Mask,
+    DropoutMask,
     PerturbationAxis as Axis,
     PerturbationMode as Mode,
 )
@@ -70,7 +70,7 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
-        entangling_mask=Mask(shape=(layers, wires - 1)),
+        entangling_mask=DropoutMask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
     mc.mask_for_axis(Axis.LAYERS)[current_layers:] = True

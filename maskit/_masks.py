@@ -1,10 +1,13 @@
 import random as rand
 import pennylane.numpy as np
+from abc import abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Protocol, Tuple, TypeVar, Union
 
 if TYPE_CHECKING:
     from maskit._masked_circuits import MaskedCircuit
+
+T = TypeVar("T")
 
 
 class PerturbationAxis(Enum):
@@ -27,7 +30,7 @@ class PerturbationMode(Enum):
     INVERT = 2
 
 
-class Mask(object):
+class Mask(Protocol[T]):
     """
     A Mask encapsulates a :py:attr:`~.mask` storing boolean value if a specific value
     is masked or not. In case a specific position is `True`, the according value is
@@ -39,20 +42,6 @@ class Mask(object):
     """
 
     __slots__ = ("mask", "_parent")
-
-    def __init__(
-        self,
-        shape: Tuple[int, ...],
-        parent: Optional["MaskedCircuit"] = None,
-        mask: Optional[np.ndarray] = None,
-    ):
-        super().__init__()
-        self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
-        if mask is not None:
-            assert mask.dtype == bool, "Mask must be of type bool"
-            assert mask.shape == shape, "Shape of mask must be equal to shape"
-            self.mask[:] = mask
-        self._parent = parent
 
     def __len__(self) -> int:
         """Returns the len of the encapsulated :py:attr:`~.mask`"""
@@ -68,7 +57,7 @@ class Mask(object):
         """Returns the size of the encapsulated :py:attr:`~.mask`"""
         return self.mask.size
 
-    def __setitem__(self, key, value: bool):
+    def __setitem__(self, key, value: T):
         """
         Convenience function to set the value of a specific position of the
         encapsulated :py:attr:`~.mask`.
@@ -88,11 +77,13 @@ class Mask(object):
                 mask[2, 2] = True
         """
         if isinstance(key, int) or isinstance(key, slice) or isinstance(key, tuple):
-            before = self.mask.copy()
-            self.mask[key] = value
-            delta_indices = np.argwhere(before != self.mask)
             if self._parent is not None:
+                before = self.mask.copy()
+                self.mask[key] = value
+                delta_indices = np.argwhere(before != self.mask)
                 self._parent.mask_changed(self, delta_indices)
+            else:
+                self.mask[key] = value
         else:
             raise NotImplementedError(f"key {key}")
 
@@ -105,19 +96,21 @@ class Mask(object):
             return self.mask[key]
         raise NotImplementedError(f"key {key}")
 
-    def apply_mask(self, values: np.ndarray):
+    @abstractmethod
+    def apply_mask(self, values: np.ndarray) -> np.ndarray:
         """
         Applies the encapsulated py:attr:`~.mask` to the given ``values``.
         Note that the values should have the same shape as the py:attr:`~.mask`.
 
         :param values: Values where the mask should be applied to
         """
-        return values[~self.mask]
+        return NotImplemented
 
     def clear(self) -> None:
         """Resets the mask to not mask anything."""
-        self.mask = np.zeros_like(self.mask, dtype=bool, requires_grad=False)
+        self.mask = np.zeros_like(self.mask, dtype=self.mask.dtype, requires_grad=False)
 
+    @abstractmethod
     def perturb(
         self,
         amount: Optional[Union[int, float]] = None,
@@ -137,6 +130,20 @@ class Mask(object):
         :param mode: How to perturb, defaults to PerturbationMode.INVERT
         :raises NotImplementedError: Raised in case of an unknown mode
         """
+        return NotImplemented
+
+    @abstractmethod
+    def shrink(self, amount: int = 1):
+        return NotImplemented
+
+    def copy(self, parent: Optional["MaskedCircuit"] = None) -> "Mask":
+        """Returns a copy of the current Mask."""
+        clone = object.__new__(type(self))
+        clone.mask = self.mask.copy()
+        clone._parent = parent
+        return clone
+
+    def _count_for_amount(self, amount: Optional[Union[int, float]]):
         assert (
             amount is None or amount >= 0
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
@@ -144,7 +151,35 @@ class Mask(object):
             if amount < 1:
                 amount *= self.mask.size
             amount = round(amount)
-        count = abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
+        return abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
+
+
+class DropoutMask(Mask[bool]):
+    def __init__(
+        self,
+        shape: Tuple[int, ...],
+        parent: Optional["MaskedCircuit"] = None,
+        mask: Optional[np.ndarray] = None,
+    ):
+        super().__init__()
+        self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
+        if mask is not None:
+            assert mask.dtype == bool, "Mask must be of type bool"
+            assert (
+                mask.shape == shape
+            ), f"Shape of mask ({mask.shape}) must be equal to {shape}"
+            self.mask[:] = mask
+        self._parent = parent
+
+    def apply_mask(self, values: np.ndarray):
+        return values[~self.mask]
+
+    def perturb(
+        self,
+        amount: Optional[Union[int, float]] = None,
+        mode: PerturbationMode = PerturbationMode.INVERT,
+    ):
+        count = self._count_for_amount(amount=amount)
         if count == 0:
             return
         if mode == PerturbationMode.SET:
@@ -173,10 +208,3 @@ class Mask(object):
         index = index[:amount]
         if index.size > 0:
             self[tuple(zip(*index))] = False
-
-    def copy(self, parent: Optional["MaskedCircuit"] = None) -> "Mask":
-        """Returns a copy of the current Mask."""
-        clone = object.__new__(type(self))
-        clone.mask = self.mask.copy()
-        clone._parent = parent
-        return clone

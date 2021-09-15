@@ -1,7 +1,12 @@
 import pennylane.numpy as np
 
 from typing import Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
-from maskit._masks import Mask, PerturbationAxis as Axis, PerturbationMode as Mode
+from maskit._masks import (
+    Mask,
+    DropoutMask,
+    PerturbationAxis as Axis,
+    PerturbationMode as Mode,
+)
 
 Self = TypeVar("Self")
 
@@ -322,7 +327,7 @@ class MaskedCircuit(object):
             parameters=parameters,
             layers=layers,
             wires=wires,
-            masks=[(axis, Mask) for axis in initializable_masks],
+            masks=[(axis, DropoutMask) for axis in initializable_masks],
             dynamic_parameters=dynamic_parameters,
             default_value=default_value,
         )
@@ -462,8 +467,10 @@ class FreezableMaskedCircuit(MaskedCircuit):
             parameters=parameters,
             layers=layers,
             wires=wires,
-            masks=[(axis, Mask) for axis in initializable_masks],
-            freeze_masks=[(axis, Mask) for axis in Axis if axis != Axis.ENTANGLING],
+            masks=[(axis, DropoutMask) for axis in initializable_masks],
+            freeze_masks=[
+                (axis, DropoutMask) for axis in Axis if axis != Axis.ENTANGLING
+            ],
             dynamic_parameters=dynamic_parameters,
             default_value=default_value,
         )

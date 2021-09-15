@@ -5,7 +5,11 @@ import pennylane as qml
 import pennylane.numpy as pnp
 
 from maskit.circuits import variational_circuit as original_variational_circuit
-from maskit._masks import PerturbationAxis as Axis, PerturbationMode as Mode, Mask
+from maskit._masks import (
+    PerturbationAxis as Axis,
+    PerturbationMode as Mode,
+    DropoutMask,
+)
 from maskit._masked_circuits import FreezableMaskedCircuit, MaskedCircuit
 
 from tests.utils import cost, create_freezable_circuit, device, variational_circuit
@@ -49,14 +53,14 @@ class TestMaskedCircuits:
                 parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
                 layers=size,
                 wires=size,
-                entangling_mask=Mask(shape=(size + 1, size)),
+                entangling_mask=DropoutMask(shape=(size + 1, size)),
             )
         with pytest.raises(NotImplementedError):
             MaskedCircuit(
                 parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
                 layers=size,
                 wires=size,
-                masks=[(Axis.ENTANGLING, Mask)],
+                masks=[(Axis.ENTANGLING, DropoutMask)],
             )
         mc = MaskedCircuit.full_circuit(
             parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
@@ -96,7 +100,7 @@ class TestMaskedCircuits:
             parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
             layers=size,
             wires=size,
-            masks=[(Axis.LAYERS, Mask)],
+            masks=[(Axis.LAYERS, DropoutMask)],
         )
         assert mc.mask.size == size * size
 
@@ -386,7 +390,7 @@ class TestMaskedCircuits:
             parameters=parameters,
             layers=size,
             wires=size,
-            entangling_mask=Mask(shape=(size, size - 1)),
+            entangling_mask=DropoutMask(shape=(size, size - 1)),
         )
 
 
@@ -400,7 +404,7 @@ class TestFreezableMaskedCircuit:
                 parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
                 layers=size,
                 wires=size,
-                freeze_masks=[(Axis.ENTANGLING, Mask)],
+                freeze_masks=[(Axis.ENTANGLING, DropoutMask)],
             )
 
         mp = FreezableMaskedCircuit.full_circuit(
@@ -408,7 +412,7 @@ class TestFreezableMaskedCircuit:
             layers=size,
             wires=size,
             wire_mask=pnp.ones((size,), dtype=bool),
-            entangling_mask=Mask(shape=(size, size - 1)),
+            entangling_mask=DropoutMask(shape=(size, size - 1)),
         )
         assert mp
 
