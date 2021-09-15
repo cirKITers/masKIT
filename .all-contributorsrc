@@ -14,7 +14,8 @@
         "code",
         "ideas",
         "maintenance",
-        "bug"
+        "bug",
+        "review"
       ]
     },
     {
@@ -36,6 +37,16 @@
       "profile": "https://github.com/maxfischer2781",
       "contributions": [
         "review"
+      ]
+    },
+    {
+      "login": "nikmetz",
+      "name": "Niklas Metz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/23529838?v=4",
+      "profile": "https://github.com/nikmetz",
+      "contributions": [
+        "code",
+        "test"
       ]
     }
   ],
