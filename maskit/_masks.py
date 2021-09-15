@@ -2,7 +2,8 @@ import random as rand
 import pennylane.numpy as np
 from abc import abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Protocol, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, TypeVar, Union
+from typing_extensions import Protocol
 
 if TYPE_CHECKING:
     from maskit._masked_circuits import MaskedCircuit
