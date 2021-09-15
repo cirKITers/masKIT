@@ -4,7 +4,7 @@ import math
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
-from maskit.datasets.utils import Data
+from maskit.datasets.utils import DataSet
 
 MAX_TRAIN_SAMPLES = 11471
 MAX_TEST_SAMPLES = 1952
@@ -55,7 +55,9 @@ def nearest_power_of_two(x: int) -> int:
     return 2 ** (math.ceil(math.log(x, 2)))
 
 
-def mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True) -> Data:
+def mnist(
+    wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True
+) -> DataSet:
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     train_size = min(train_size, MAX_TRAIN_SAMPLES)
     test_size = min(test_size, MAX_TEST_SAMPLES)
@@ -100,4 +102,4 @@ def mnist(wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True) -
 
     y_train, y_test = np.array(y_train), np.array(y_test)
 
-    return Data(x_train, y_train, x_test, y_test)
+    return DataSet(x_train, y_train, x_test, y_test)
