@@ -208,3 +208,61 @@ class DropoutMask(Mask[bool]):
         index = index[:amount]
         if index.size > 0:
             self[tuple(zip(*index))] = False
+
+
+class ValueMask(Mask[float]):
+    def __init__(
+        self,
+        shape: Tuple[int, ...],
+        parent: Optional["MaskedCircuit"] = None,
+        mask: Optional[np.ndarray] = None,
+    ):
+        super().__init__()
+        self.mask = np.zeros(shape, dtype=float, requires_grad=False)
+        if mask is not None:
+            assert mask.dtype == float, "Mask must be of type float"
+            assert (
+                mask.shape == shape
+            ), f"Shape of mask ({mask.shape}) must be equal to {shape}"
+            self.mask[:] = mask
+        self._parent = parent
+
+    def apply_mask(self, values: np.ndarray):
+        return values + self.mask
+
+    def perturb(
+        self,
+        amount: Optional[Union[int, float]] = None,
+        mode: PerturbationMode = PerturbationMode.INVERT,
+        value: Optional[float] = np.pi,
+    ):
+        count = self._count_for_amount(amount=amount)
+        if count == 0:
+            return
+        if mode == PerturbationMode.SET:  # INVERT might be added here
+            indices = np.array([list(index) for index in np.ndindex(*self.mask.shape)])
+        elif mode == PerturbationMode.RESET:
+            indices = np.argwhere(self.mask != 0)
+        else:
+            raise NotImplementedError(f"The perturbation mode {mode} is not supported")
+        if indices.size == 0:
+            return
+        indices = tuple(
+            zip(
+                *indices[
+                    np.random.choice(
+                        len(indices), min(count, len(indices)), replace=False
+                    )
+                ]
+            )
+        )
+        if mode == PerturbationMode.SET and value is not None:
+            self[indices] = value
+        elif mode == PerturbationMode.RESET:
+            self[indices] = 0
+
+    def shrink(self, amount: int = 1):
+        index = np.argwhere(self.mask != 0)
+        index = index[:amount]
+        if index.size > 0:
+            self[tuple(zip(*index))] = 0

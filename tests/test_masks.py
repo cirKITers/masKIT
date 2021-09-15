@@ -3,10 +3,10 @@ import pytest
 
 import pennylane.numpy as pnp
 
-from maskit._masks import DropoutMask, PerturbationMode
+from maskit._masks import DropoutMask, ValueMask, PerturbationMode
 
 
-class TestMask:
+class TestDropoutMask:
     def test_init(self):
         size = 3
         with pytest.raises(AssertionError):
@@ -157,3 +157,42 @@ class TestMask:
         result = mp.apply_mask(pnp.ones((size,), dtype=bool))
         assert pnp.sum(mp.mask) == 1
         assert pnp.sum(result) == size - 1
+
+
+class TestValueMask:
+    def test_init(self):
+        vm = ValueMask((3,))
+        assert vm
+        assert vm.mask.dtype == float
+
+    def test_apply_mask(self):
+        size = 3
+        mp = ValueMask((size,))
+        with pytest.raises(ValueError):
+            mp.apply_mask(pnp.ones((size - 1,)))
+        mp.mask[1] = 1
+        result = mp.apply_mask(pnp.ones((size,), dtype=float))
+        assert pnp.sum(mp.mask) == 1
+        print(result)
+        assert pnp.sum(result) == size + 1
+        mp.mask[1] = -1
+        result = mp.apply_mask(pnp.ones((size,), dtype=float))
+        assert pnp.sum(result) == size - 1
+
+    def test_perturbation(self):
+        size = 3
+        mp = ValueMask((size,))
+
+        for i in range(1, size + 1):
+            mp.perturb(i, mode=PerturbationMode.SET, value=1)
+            mp.perturb(i, mode=PerturbationMode.RESET)
+            assert pnp.sum(mp.mask) == 0
+
+    def test_shrink(self):
+        size = 3
+        mp = ValueMask((size,))
+
+        for amount in range(size + 1):
+            mp[:] = 1
+            mp.shrink(amount)
+            assert pnp.sum(mp.mask) == size - amount
