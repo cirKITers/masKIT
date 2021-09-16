@@ -1,6 +1,6 @@
 import pennylane as qml
 from pennylane import numpy as np
-from typing import List
+from typing import List, Tuple
 
 from maskit._masks import PerturbationAxis as Axis
 from maskit._masked_circuits import MaskedCircuit
@@ -24,7 +24,7 @@ def cost_basis(
     rotations: List,
     masked_circuit: MaskedCircuit,
     wires: int,
-    wires_to_measure: List[int],
+    wires_to_measure: Tuple[int, ...],
 ):
     prediction = circuit(
         params, data, rotations, masked_circuit, wires, wires_to_measure
