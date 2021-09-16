@@ -1,7 +1,35 @@
-from maskit._masks import PerturbationAxis as Axis
-from maskit._masked_circuits import MaskedCircuit
 import pennylane as qml
 from pennylane import numpy as np
+from typing import List
+
+from maskit._masks import PerturbationAxis as Axis
+from maskit._masked_circuits import MaskedCircuit
+from maskit.utils import cross_entropy
+
+
+def cost(
+    circuit,
+    params,
+    rotations: List,
+    masked_circuit: MaskedCircuit,
+):
+    return 1 - circuit(params, rotations, masked_circuit)[0]
+
+
+def cost_basis(
+    circuit,
+    params,
+    data,
+    target,
+    rotations: List,
+    masked_circuit: MaskedCircuit,
+    wires: int,
+    wires_to_measure: List[int],
+):
+    prediction = circuit(
+        params, data, rotations, masked_circuit, wires, wires_to_measure
+    )
+    return cross_entropy(predictions=prediction, targets=target)
 
 
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
@@ -28,14 +56,14 @@ def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
 
         for wire in range(0, wires - 1, 2):
             if (
-                masked_circuit.mask_for_axis(Axis.ENTANGLING) is not None
+                Axis.ENTANGLING in masked_circuit.masks
                 and masked_circuit.mask_for_axis(Axis.ENTANGLING)[layer, wire]
             ):
                 continue
             qml.CZ(wires=[wire, wire + 1])
         for wire in range(1, wires - 1, 2):
             if (
-                masked_circuit.mask_for_axis(Axis.ENTANGLING) is not None
+                Axis.ENTANGLING in masked_circuit.masks
                 and masked_circuit.mask_for_axis(Axis.ENTANGLING)[layer, wire]
             ):
                 continue
