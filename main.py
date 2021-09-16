@@ -195,26 +195,25 @@ def train(
 
 
 def test(
-    train_params,
     params,
-    wire_mask,
-    layer_mask,
-    parameter_mask,
-    layers: int,
+    wire_mask: Mask,
+    layer_mask: Mask,
+    parameter_mask: Mask,
+    final_layers: int,
     rotations: List,
+    wires: int = 1,
+    layers: int = 1,
+    wires_to_measure: Tuple[int, ...] = (0,),
+    shots: Optional[int] = None,
+    sim_local: bool = True,
     data: Optional[np.ndarray] = None,
     target: Optional[np.ndarray] = None,
+    **kwargs,
 ):
     if data is None or target is None:
         pass
     elif data is not None and target is not None:
-        wires = train_params["wires"]
-        wires_to_measure = train_params["wires_to_measure"]
-        dev = get_device(
-            train_params["sim_local"],
-            wires=wires,
-            shots=train_params.get("shots", None),
-        )
+        dev = get_device(sim_local, wires=wires, shots=shots)
         circuit = qml.QNode(basis_circuit, dev)
         correct = 0
         N = len(data)
@@ -323,13 +322,13 @@ if __name__ == "__main__":
     result = train(**train_params, data=data.train_data, target=data.train_target)
     if testing:
         test(
-            train_params,
             result["params"],
             result["__wire_mask"],
             result["__layer_mask"],
             result["__parameter_mask"],
             result["final_layers"],
             result["__rotations"],
+            **train_params,
             data=data.test_data,
             target=data.test_target,
         )
