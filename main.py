@@ -88,7 +88,6 @@ class LoggingData:
 
 
 def train(
-    seed: int = 1337,
     wires: int = 1,
     wires_to_measure: Tuple[int, ...] = (0,),
     layers: int = 1,
@@ -106,9 +105,6 @@ def train(
     target: Optional[np.ndarray] = None,
 ):
     log_data = LoggingData(interval=log_interval)
-
-    np.random.seed(seed)
-    random.seed(seed)
 
     # set up circuit, training, dataset
     dev = get_device(sim_local=sim_local, wires=wires, shots=shots)
@@ -191,9 +187,9 @@ def train(
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "mask": masked_circuit.mask.unwrap(),
-        "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES).mask,
-        "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS).mask,
-        "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS).mask,
+        "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES),
+        "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS),
+        "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS),
         "__rotations": rotations,
     }
 
@@ -311,6 +307,9 @@ if __name__ == "__main__":
     check_params(train_params)
     if train_params.pop("logging", True):
         train = log_results(train)
+    seed = train_params.pop("seed", 1337)
+    np.random.seed(seed)
+    random.seed(seed)
 
     data_params = {
         "wires": train_params["wires"],
