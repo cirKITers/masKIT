@@ -9,8 +9,9 @@ from maskit._masks import (
     PerturbationAxis as Axis,
     PerturbationMode as Mode,
     DropoutMask,
+    FreezeMask,
 )
-from maskit._masked_circuits import FreezableMaskedCircuit, MaskedCircuit
+from maskit._masked_circuits import MaskedCircuit
 
 from tests.utils import cost, create_freezable_circuit, device, variational_circuit
 
@@ -66,7 +67,7 @@ class TestMaskedCircuits:
             parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
             layers=size,
             wires=size,
-            wire_mask=pnp.ones((size,), dtype=bool),
+            wire_mask=DropoutMask(shape=(size,), mask=pnp.ones((size,), dtype=bool)),
         )
         assert pnp.array_equal(
             mc.mask_for_axis(Axis.WIRES), pnp.ones((size,), dtype=bool)
@@ -85,7 +86,7 @@ class TestMaskedCircuits:
             layers=size,
             wires=size,
         )
-        assert mc.mask.size == size * size
+        assert mc.mask_for_type(DropoutMask).size == size * size
 
         # test circuit with no masks
         mc = MaskedCircuit(
@@ -93,7 +94,7 @@ class TestMaskedCircuits:
             layers=size,
             wires=size,
         )
-        assert mc.mask.size == size * size
+        assert mc.mask_for_type(DropoutMask).size == size * size
 
         # test circuit containing only layer mask
         mc = MaskedCircuit(
@@ -102,7 +103,7 @@ class TestMaskedCircuits:
             wires=size,
             masks=[(Axis.LAYERS, DropoutMask)],
         )
-        assert mc.mask.size == size * size
+        assert mc.mask_for_type(DropoutMask).size == size * size
 
     def test_wrong_mode(self):
         mp = self._create_circuit_with_entangling_gates(3)
@@ -111,7 +112,7 @@ class TestMaskedCircuits:
 
     def test_wrong_axis(self):
         mp = self._create_circuit_with_entangling_gates(3)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             mp.perturb(axis=10)
 
     @pytest.mark.parametrize("axis", list(Axis))
@@ -138,7 +139,7 @@ class TestMaskedCircuits:
     def test_perturb_entangling(self):
         size = 3
         mp = self._create_circuit(size)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             mp.perturb(axis=Axis.ENTANGLING, amount=1)
         # ensure nothing has happened as entangling mask is None
         assert (
@@ -171,19 +172,19 @@ class TestMaskedCircuits:
     def test_apply_mask(self):
         size = 3
         mp = self._create_circuit(size)
-        with pytest.raises(IndexError):
+        with pytest.raises(ValueError):
             mp.apply_mask(pnp.ones((size, size - 1)))
         mp.mask_for_axis(Axis.WIRES)[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
-        assert pnp.sum(~mp.mask) == size
+        assert pnp.sum(~mp.mask_for_type(DropoutMask)) == size
         assert pnp.sum(result) == size
         mp.mask_for_axis(Axis.LAYERS)[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
-        assert pnp.sum(~mp.mask) == 1
+        assert pnp.sum(~mp.mask_for_type(DropoutMask)) == 1
         assert pnp.sum(result) == 1
         mp.mask_for_axis(Axis.PARAMETERS)[(size - 1, size - 1)] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
-        assert pnp.sum(~mp.mask) == 0
+        assert pnp.sum(~mp.mask_for_type(DropoutMask)) == 0
         assert pnp.sum(result) == 0
 
     def test_copy(self):
@@ -195,7 +196,9 @@ class TestMaskedCircuits:
         mp.mask_for_axis(Axis.WIRES)[0] = True
         mp.mask_for_axis(Axis.PARAMETERS)[0, 0] = True
 
-        assert pnp.sum(mp.mask) > pnp.sum(new_mp.mask)
+        assert pnp.sum(mp.mask_for_type(DropoutMask)) > pnp.sum(
+            new_mp.mask_for_type(DropoutMask)
+        )
         assert pnp.sum(new_mp.mask_for_axis(Axis.WIRES)) == 0
         assert pnp.sum(new_mp.mask_for_axis(Axis.LAYERS)) == pnp.sum(
             mp.mask_for_axis(Axis.LAYERS)
@@ -227,21 +230,30 @@ class TestMaskedCircuits:
         mp = self._create_circuit(size)
         mp.mask_for_axis(Axis.LAYERS)[:] = True
         mp.shrink(amount=1, axis=Axis.LAYERS)
-        assert pnp.sum(mp.mask) == mp.mask.size - size
+        assert (
+            pnp.sum(mp.mask_for_type(DropoutMask))
+            == mp.mask_for_type(DropoutMask).size - size
+        )
 
     def test_shrink_wire(self):
         size = 3
         mp = self._create_circuit(size)
         mp.mask_for_axis(Axis.WIRES)[:] = True
         mp.shrink(amount=1, axis=Axis.WIRES)
-        assert pnp.sum(mp.mask) == mp.mask.size - size
+        assert (
+            pnp.sum(mp.mask_for_type(DropoutMask))
+            == mp.mask_for_type(DropoutMask).size - size
+        )
 
     def test_shrink_parameter(self):
         size = 3
         mp = self._create_circuit(size)
         mp.mask_for_axis(Axis.PARAMETERS)[:] = True
         mp.shrink(amount=1, axis=Axis.PARAMETERS)
-        assert pnp.sum(mp.mask) == mp.mask.size - 1
+        assert (
+            pnp.sum(mp.mask_for_type(DropoutMask))
+            == mp.mask_for_type(DropoutMask).size - 1
+        )
 
     def test_shrink_entangling(self):
         size = 3
@@ -255,14 +267,16 @@ class TestMaskedCircuits:
 
         # also test in case no mask is set
         mp = self._create_circuit(size)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             mp.shrink(amount=1, axis=Axis.ENTANGLING)
         assert Axis.ENTANGLING not in mp.masks
-        assert pnp.sum(mp.mask) == 0  # also ensure that nothing else was shrunk
+        assert (
+            pnp.sum(mp.mask_for_type(DropoutMask)) == 0
+        )  # also ensure that nothing else was shrunk
 
     def test_shrink_wrong_axis(self):
         mp = self._create_circuit(3)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             mp.shrink(amount=1, axis=10)
 
     def test_execute(self):
@@ -278,13 +292,13 @@ class TestMaskedCircuits:
         assert MaskedCircuit.execute(mp, []) == mp
         # test existing method
         MaskedCircuit.execute(mp, [perturb_operation])
-        assert pnp.sum(mp.mask) == 1
+        assert pnp.sum(mp.mask_for_type(DropoutMask)) == 1
         # test existing method with copy
         new_mp = MaskedCircuit.execute(
             mp, [{"clear": {}}, {"copy": {}}, perturb_operation]
         )
         assert mp != new_mp
-        assert pnp.sum(new_mp.mask) == 1
+        assert pnp.sum(new_mp.mask_for_type(DropoutMask)) == 1
         # test non-existing method
         with pytest.raises(AttributeError):
             MaskedCircuit.execute(mp, [{"non_existent": {"test": 1}}])
@@ -399,73 +413,58 @@ class TestFreezableMaskedCircuit:
         size = 3
         mp = create_freezable_circuit(size)
         assert mp
-        with pytest.raises(NotImplementedError):
-            FreezableMaskedCircuit(
-                parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
-                layers=size,
-                wires=size,
-                freeze_masks=[(Axis.ENTANGLING, DropoutMask)],
-            )
-
-        mp = FreezableMaskedCircuit.full_circuit(
-            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
-            layers=size,
-            wires=size,
-            wire_mask=pnp.ones((size,), dtype=bool),
-            entangling_mask=DropoutMask(shape=(size, size - 1)),
-        )
-        assert mp
-
-    def test_mask(self):
-        size = 3
-        mp = FreezableMaskedCircuit(
-            parameters=pnp.random.uniform(low=0, high=1, size=(size, size)),
-            layers=size,
-            wires=size,
-        )
-        assert mp.mask.size == size * size
 
     def test_freeze(self):
         size = 3
         mp = create_freezable_circuit(size)
         assert (
-            mp.differentiable_parameters.size == mp.mask_for_axis(Axis.PARAMETERS).size
+            mp.differentiable_parameters.size
+            == mp.mask_for_axis(Axis.PARAMETERS, mask_type=FreezeMask).size
         )
         # Test 0 amount
-        mask = mp.mask
-        mp.freeze(axis=Axis.LAYERS, amount=0, mode=Mode.SET)
-        assert pnp.array_equal(mp.mask, mask)
+        # FIXME: does not test the same thing, befor it tested the whole mask
+        mask = mp.mask_for_type(FreezeMask)
+        mp.perturb(axis=Axis.LAYERS, amount=0, mode=Mode.SET, mask=FreezeMask)
+        assert pnp.array_equal(mp.mask_for_type(FreezeMask), mask)
         # Test freezing of layers
-        mp.freeze(axis=Axis.LAYERS, amount=1, mode=Mode.SET)
+        mp.perturb(axis=Axis.LAYERS, amount=1, mode=Mode.SET, mask=FreezeMask)
         assert (
             mp.differentiable_parameters.size
             == mp.mask_for_axis(Axis.PARAMETERS).size - size
         )
-        assert pnp.sum(mp.freeze_mask_for_axis(Axis.LAYERS)) == 1
-        assert pnp.sum(mp.mask) == size
+        assert pnp.sum(mp.mask_for_axis(axis=Axis.LAYERS, mask_type=FreezeMask)) == 1
+        assert pnp.sum(mp._mask_for_differentiable_parameters()) == size
         # Test freezing of wires
-        mp.freeze(axis=Axis.WIRES, amount=1, mode=Mode.SET)
-        assert pnp.sum(mp.freeze_mask_for_axis(Axis.WIRES)) == 1
-        assert pnp.sum(mp.mask) == 2 * size - 1
+        mp.perturb(axis=Axis.WIRES, amount=1, mode=Mode.SET, mask=FreezeMask)
+        assert pnp.sum(mp.mask_for_axis(axis=Axis.WIRES, mask_type=FreezeMask)) == 1
+        assert pnp.sum(mp._mask_for_differentiable_parameters()) == 2 * size - 1
         # Test freezing of parameters
-        mp.freeze(axis=Axis.PARAMETERS, amount=1, mode=Mode.SET)
-        assert pnp.sum(mp.freeze_mask_for_axis(Axis.PARAMETERS)) == 1
-        assert pnp.sum(mp.mask) == 2 * size - 1 or pnp.sum(mp.mask) == 2 * size
+        mp.perturb(axis=Axis.PARAMETERS, amount=1, mode=Mode.SET, mask=FreezeMask)
+        assert (
+            pnp.sum(mp.mask_for_axis(axis=Axis.PARAMETERS, mask_type=FreezeMask)) == 1
+        )
+        assert (
+            pnp.sum(mp._mask_for_differentiable_parameters()) == 2 * size - 1
+            or pnp.sum(mp._mask_for_differentiable_parameters()) == 2 * size
+        )
         # Test wrong axis
-        with pytest.raises(NotImplementedError):
-            mp.freeze(axis=10, amount=1, mode=Mode.SET)
+        with pytest.raises(ValueError):
+            mp.perturb(axis=10, amount=1, mode=Mode.SET, mask=FreezeMask)
 
     def test_copy(self):
         mp = create_freezable_circuit(3)
         mp.perturb(amount=5, mode=Mode.SET)
-        mp.freeze(amount=2, axis=Axis.LAYERS, mode=Mode.SET)
+        mp.perturb(amount=2, axis=Axis.LAYERS, mode=Mode.SET, mask=FreezeMask)
         mp_copy = mp.copy()
-        assert isinstance(mp_copy, FreezableMaskedCircuit)
-        assert pnp.array_equal(mp.mask, mp_copy.mask)
+        assert pnp.array_equal(
+            mp.mask_for_type(FreezeMask), mp_copy.mask_for_type(FreezeMask)
+        )
         mp.perturb(amount=5, mode=Mode.RESET)
-        mp.freeze(amount=2, axis=Axis.LAYERS, mode=Mode.RESET)
-        assert pnp.sum(mp.mask) == 0
-        assert not pnp.array_equal(mp.mask, mp_copy.mask)
+        mp.perturb(amount=2, axis=Axis.LAYERS, mode=Mode.RESET, mask=FreezeMask)
+        assert pnp.sum(mp.mask_for_type(FreezeMask)) == 0
+        assert not pnp.array_equal(
+            mp.mask_for_type(FreezeMask), mp_copy.mask_for_type(FreezeMask)
+        )
 
     def test_complex(self):
         random.seed(1234)
@@ -483,17 +482,25 @@ class TestFreezableMaskedCircuit:
                 masked_circuit,
             )
 
-        mp.freeze(axis=Axis.LAYERS, amount=2, mode=Mode.SET)
-        mp.freeze(axis=Axis.WIRES, amount=2, mode=Mode.SET)
+        mp.perturb(axis=Axis.LAYERS, amount=2, mode=Mode.SET, mask=FreezeMask)
+        mp.perturb(axis=Axis.WIRES, amount=2, mode=Mode.SET, mask=FreezeMask)
 
-        last_changeable = pnp.sum(mp.parameters[~mp.mask])
-        frozen = pnp.sum(mp.parameters[mp.mask])
+        last_changeable = pnp.sum(
+            mp.parameters[~mp._mask_for_differentiable_parameters()]
+        )
+        frozen = pnp.sum(mp.parameters[mp._mask_for_differentiable_parameters()])
         for _ in range(10):
             params = optimizer.step(
                 cost_fn, mp.differentiable_parameters, masked_circuit=mp
             )
             mp.differentiable_parameters = params
-            current_changeable = pnp.sum(mp.parameters[~mp.mask])
+            current_changeable = pnp.sum(
+                mp.parameters[~mp._mask_for_differentiable_parameters()]
+            )
             assert last_changeable - current_changeable != 0
-            assert frozen - pnp.sum(mp.parameters[mp.mask]) == 0
+            assert (
+                frozen
+                - pnp.sum(mp.parameters[mp._mask_for_differentiable_parameters()])
+                == 0
+            )
             last_changeable = current_changeable

@@ -42,7 +42,17 @@ class Mask(Protocol[T]):
     :param mask: Preset of values that is taken by mask
     """
 
+    relevant_for_differentiation: bool = False
     __slots__ = ("mask", "_parent")
+
+    @abstractmethod
+    def __init__(
+        self,
+        shape: Tuple[int, ...],
+        parent: Optional["MaskedCircuit"] = None,
+        mask: Optional[np.ndarray] = None,
+    ):
+        pass
 
     def __len__(self) -> int:
         """Returns the len of the encapsulated :py:attr:`~.mask`"""
@@ -156,6 +166,8 @@ class Mask(Protocol[T]):
 
 
 class DropoutMask(Mask[bool]):
+    relevant_for_differentiation = True
+
     def __init__(
         self,
         shape: Tuple[int, ...],
@@ -211,7 +223,19 @@ class DropoutMask(Mask[bool]):
             self[tuple(zip(*index))] = False
 
 
+class FreezeMask(DropoutMask):
+    """
+    A FreezeMask provides the same functionality as a :py:class:`~.DropoutMask`.
+    However, the meaning is a bit different. Marked positions are interpreted as
+    being frozen and underlying values therefore cannot be changed.
+    """
+
+    pass
+
+
 class ValueMask(Mask[float]):
+    relevant_for_differentiation = False
+
     def __init__(
         self,
         shape: Tuple[int, ...],

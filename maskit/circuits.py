@@ -1,4 +1,4 @@
-from maskit._masks import PerturbationAxis as Axis
+from maskit._masks import PerturbationAxis as Axis, DropoutMask
 from maskit._masked_circuits import MaskedCircuit
 import pennylane as qml
 from pennylane import numpy as np
@@ -7,7 +7,7 @@ from pennylane import numpy as np
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
     full_parameters = masked_circuit.expanded_parameters(params)
     wires = len(masked_circuit.mask_for_axis(Axis.WIRES))
-    mask = masked_circuit.mask
+    dropout_mask = masked_circuit.mask_for_type(DropoutMask)
     for wire, _is_masked in enumerate(masked_circuit.mask_for_axis(Axis.WIRES)):
         qml.RY(np.pi / 4, wires=wire)
     r = -1
@@ -16,7 +16,7 @@ def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
             masked_circuit.mask_for_axis(Axis.WIRES)
         ):
             r += 1
-            if mask[layer][wire]:
+            if dropout_mask[layer][wire]:
                 continue
             if rotations[r] == 0:
                 rotation = qml.RX

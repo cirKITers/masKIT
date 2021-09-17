@@ -1,8 +1,8 @@
 import pennylane as qml
 import pennylane.numpy as pnp
 
-from maskit._masks import PerturbationAxis as Axis
-from maskit._masked_circuits import FreezableMaskedCircuit, MaskedCircuit
+from maskit._masks import PerturbationAxis as Axis, DropoutMask, FreezeMask
+from maskit._masked_circuits import MaskedCircuit
 
 
 def device(wires: int):
@@ -34,9 +34,21 @@ def create_freezable_circuit(size: int, layer_size: int = 1):
         parameters = pnp.random.uniform(
             low=-pnp.pi, high=pnp.pi, size=(size, size, layer_size)
         )
-    return FreezableMaskedCircuit.full_circuit(
-        parameters=parameters, layers=size, wires=size
+    return MaskedCircuit(
+        parameters=parameters,
+        layers=size,
+        wires=size,
+        masks=(
+            (axis, mask_type)
+            for axis in Axis
+            if axis is not Axis.ENTANGLING
+            for mask_type in [DropoutMask, FreezeMask]
+        ),
     )
+    # TODO: remove me
+    # return FreezableMaskedCircuit.full_circuit(
+    #     parameters=parameters, layers=size, wires=size
+    # )
 
 
 def variational_circuit(params, masked_circuit: MaskedCircuit = None):
