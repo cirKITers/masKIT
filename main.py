@@ -304,8 +304,22 @@ if __name__ == "__main__":
         "log_interval": 5,
     }
     check_params(train_params)
-    if train_params.pop("logging", True):
-        train = log_results(train)
+    logging_activated = train_params.pop("logging", True)
+    if logging_activated:
+        train = log_results(
+            train,
+            exclude=(
+                "data",
+                "target",
+            ),
+        )
+        test = log_results(
+            test,
+            exclude=(
+                "data",
+                "target",
+            ),
+        )
     seed = train_params.pop("seed", 1337)
     np.random.seed(seed)
     random.seed(seed)
