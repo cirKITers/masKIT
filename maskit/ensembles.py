@@ -10,6 +10,8 @@ class EnsembleResult(NamedTuple):
     branch: MaskedCircuit
     #: name of branch as configured
     branch_name: str
+    #: number of active gates of selected branch
+    active: int
     #: cost of selected branch
     cost: float
     #: gradient of selected branch
@@ -73,6 +75,7 @@ class Ensemble(object):
             return EnsembleResult(
                 branch=masked_circuit,
                 branch_name="center",
+                active=basic_active_gates,
                 cost=objective_fn(
                     masked_circuit.differentiable_parameters,
                     masked_circuit=masked_circuit,
@@ -109,6 +112,7 @@ class Ensemble(object):
         return EnsembleResult(
             branch=selected_branch,
             branch_name=branch_name,
+            active=selected_branch.active(),
             cost=branch_costs[minimum_index].unwrap(),
             gradient=branch_gradients[minimum_index],
             brutto_steps=1 + len(branches) * ensemble_steps,

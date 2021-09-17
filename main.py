@@ -67,7 +67,7 @@ class LoggingData:
 
     def log_result(self, result: EnsembleResult, step):
         self.cost_values.append(result.cost)
-        self.active_count_values.append(result.netto)
+        self.active_count_values.append(result.active)
         if result.ensemble:
             self.branch_selection[step] = result.branch_name
             self.branch_cost["brutto"][step] = result.brutto
