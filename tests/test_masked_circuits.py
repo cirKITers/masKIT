@@ -428,19 +428,21 @@ class TestFreezableMaskedCircuit:
             == mp.mask_for_axis(Axis.PARAMETERS).size - size
         )
         assert pnp.sum(mp.mask_for_axis(axis=Axis.LAYERS, mask_type=FreezeMask)) == 1
-        assert pnp.sum(mp._mask_for_differentiable_parameters()) == size
+        assert pnp.sum(mp._accumulated_mask()) == size  # dropout and freeze mask
         # Test freezing of wires
         mp.perturb(axis=Axis.WIRES, amount=1, mode=Mode.SET, mask=FreezeMask)
         assert pnp.sum(mp.mask_for_axis(axis=Axis.WIRES, mask_type=FreezeMask)) == 1
-        assert pnp.sum(mp._mask_for_differentiable_parameters()) == 2 * size - 1
+        assert (
+            pnp.sum(mp._accumulated_mask()) == 2 * size - 1
+        )  # dropout and freeze mask
         # Test freezing of parameters
         mp.perturb(axis=Axis.PARAMETERS, amount=1, mode=Mode.SET, mask=FreezeMask)
         assert (
             pnp.sum(mp.mask_for_axis(axis=Axis.PARAMETERS, mask_type=FreezeMask)) == 1
         )
         assert (
-            pnp.sum(mp._mask_for_differentiable_parameters()) == 2 * size - 1
-            or pnp.sum(mp._mask_for_differentiable_parameters()) == 2 * size
+            pnp.sum(mp._accumulated_mask()) == 2 * size - 1
+            or pnp.sum(mp._accumulated_mask()) == 2 * size  # dropout and freeze mask
         )
         # Test wrong axis
         with pytest.raises(ValueError):
@@ -478,22 +480,14 @@ class TestFreezableMaskedCircuit:
         mp.perturb(axis=Axis.LAYERS, amount=2, mode=Mode.SET, mask=FreezeMask)
         mp.perturb(axis=Axis.WIRES, amount=2, mode=Mode.SET, mask=FreezeMask)
 
-        last_changeable = pnp.sum(
-            mp.parameters[~mp._mask_for_differentiable_parameters()]
-        )
-        frozen = pnp.sum(mp.parameters[mp._mask_for_differentiable_parameters()])
+        last_changeable = pnp.sum(mp.parameters[~mp._accumulated_mask()])
+        frozen = pnp.sum(mp.parameters[mp._accumulated_mask()])
         for _ in range(10):
             params = optimizer.step(
                 cost_fn, mp.differentiable_parameters, masked_circuit=mp
             )
             mp.differentiable_parameters = params
-            current_changeable = pnp.sum(
-                mp.parameters[~mp._mask_for_differentiable_parameters()]
-            )
+            current_changeable = pnp.sum(mp.parameters[~mp._accumulated_mask()])
             assert last_changeable - current_changeable != 0
-            assert (
-                frozen
-                - pnp.sum(mp.parameters[mp._mask_for_differentiable_parameters()])
-                == 0
-            )
+            assert frozen - pnp.sum(mp.parameters[mp._accumulated_mask()]) == 0
             last_changeable = current_changeable

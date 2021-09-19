@@ -90,13 +90,13 @@ class MaskedCircuit(object):
     def mask_for_axis(self, axis: Axis, mask_type: Type[Mask] = DropoutMask) -> Mask:
         return self.masks[axis][mask_type]
 
-    def _mask_for_value_changes(self) -> np.ndarray:
+    def _accumulated_mask(self, for_differentiable=True) -> np.ndarray:
         result = None
         for mask_type in {
             key
             for value in self.masks.values()
             for key in value
-            if key.relevant_for_differentiation is False
+            if key.relevant_for_differentiation is for_differentiable
         }:
             the_mask = self.full_mask(mask_type)
             if result is None:
@@ -104,31 +104,17 @@ class MaskedCircuit(object):
             else:
                 result[the_mask] = True
         if result is None:
-            return np.zeros(shape=self.parameters.shape, dtype=float)
-        return result
-
-    def _mask_for_differentiable_parameters(self) -> np.ndarray:
-        result = None
-        for mask_type in {
-            key
-            for value in self.masks.values()
-            for key in value
-            if key.relevant_for_differentiation
-        }:
-            the_mask = self.full_mask(mask_type)
-            if result is None:
-                result = the_mask
-            else:
-                result[the_mask] = True
-        if result is None:
-            return np.zeros(shape=self.parameters.shape, dtype=bool)
+            return np.zeros(
+                shape=self.parameters.shape,
+                dtype=bool if for_differentiable is True else float,
+            )
         return result
 
     @property
     def differentiable_parameters(self) -> np.ndarray:
         """Subset of parameters that are not masked and therefore differentiable."""
         if self._dynamic_parameters:
-            return self.parameters[~self._mask_for_differentiable_parameters()]
+            return self.parameters[~self._accumulated_mask()]
         return self.parameters
 
     @differentiable_parameters.setter
@@ -137,7 +123,7 @@ class MaskedCircuit(object):
         Provides a setter for the differentiable parameters. It is ensured that the
         updated values are written into the underlying :py:attr:`~.parameters`.
         """
-        mask = self._mask_for_differentiable_parameters()
+        mask = self._accumulated_mask()
         if self._dynamic_parameters:
             self.parameters[~mask] = value
         else:
@@ -220,8 +206,8 @@ class MaskedCircuit(object):
 
         :param values: Values where the mask should be applied to
         """
-        value_mask = self._mask_for_value_changes()
-        diff_mask = self._mask_for_differentiable_parameters()
+        value_mask = self._accumulated_mask(for_differentiable=False)
+        diff_mask = self._accumulated_mask()
         result = values + value_mask
         return result[~diff_mask]
 
@@ -277,8 +263,8 @@ class MaskedCircuit(object):
 
         :param changed_parameters: Current set of differentiable parameters
         """
-        diff_mask = self._mask_for_differentiable_parameters()
-        value_mask = self._mask_for_value_changes()
+        diff_mask = self._accumulated_mask()
+        value_mask = self._accumulated_mask(for_differentiable=False)
         result = self.parameters.astype(object)
         if self._dynamic_parameters:
             result[~diff_mask] = changed_parameters.flatten()
