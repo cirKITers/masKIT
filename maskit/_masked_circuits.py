@@ -134,16 +134,26 @@ class MaskedCircuit(object):
         Accumulated mask of layer, wire, and parameter masks for a given type of Mask.
         Note that this mask is readonly.
         """
-        # TODO: this needs to be replaced by a specific function supported by `Mask`
-        #   this doesn't work by simply using bool and True
         if Axis.PARAMETERS in self.masks and mask_type in self.masks[Axis.PARAMETERS]:
             result = self.masks[Axis.PARAMETERS][mask_type].mask.copy()
         else:
-            result = np.zeros(self.parameters.shape, dtype=bool, requires_grad=False)
+            result = np.zeros(
+                self.parameters.shape,
+                dtype=mask_type.elemental_type,
+                requires_grad=False,
+            )
+        shape = result.shape
         if Axis.WIRES in self.masks and mask_type in self.masks[Axis.WIRES]:
-            result[:, self.masks[Axis.WIRES][mask_type].mask] = True
+            wires = self.masks[Axis.WIRES][mask_type].mask
+            # create new axes to match the shape to properly broadcast values
+            result = (
+                result
+                + wires[(np.newaxis, slice(None), *[np.newaxis] * (len(shape) - 2))]
+            )
         if Axis.LAYERS in self.masks and mask_type in self.masks[Axis.LAYERS]:
-            result[self.masks[Axis.LAYERS][mask_type].mask, :] = True
+            layers = self.masks[Axis.LAYERS][mask_type].mask
+            # create new axes to match the shape to properly broadcast values
+            result = result + layers[(slice(None), *[np.newaxis] * (len(shape) - 1))]
         return result
 
     def active(self) -> int:
