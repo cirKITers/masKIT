@@ -7,7 +7,7 @@ from pennylane import numpy as np
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
     full_parameters = masked_circuit.expanded_parameters(params)
     wires = len(masked_circuit.mask_for_axis(Axis.WIRES))
-    dropout_mask = masked_circuit.mask_for_type(DropoutMask)
+    dropout_mask = masked_circuit.full_mask(DropoutMask)
     for wire, _is_masked in enumerate(masked_circuit.mask_for_axis(Axis.WIRES)):
         qml.RY(np.pi / 4, wires=wire)
     r = -1

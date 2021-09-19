@@ -98,7 +98,7 @@ class MaskedCircuit(object):
             for key in value
             if key.relevant_for_differentiation is False
         }:
-            the_mask = self.mask_for_type(mask_type)
+            the_mask = self.full_mask(mask_type)
             if result is None:
                 result = the_mask
             else:
@@ -115,7 +115,7 @@ class MaskedCircuit(object):
             for key in value
             if key.relevant_for_differentiation
         }:
-            the_mask = self.mask_for_type(mask_type)
+            the_mask = self.full_mask(mask_type)
             if result is None:
                 result = the_mask
             else:
@@ -143,7 +143,7 @@ class MaskedCircuit(object):
         else:
             self.parameters[~mask] = value[~mask]
 
-    def mask_for_type(self, mask_type: Type[Mask]) -> np.ndarray:
+    def full_mask(self, mask_type: Type[Mask]) -> np.ndarray:
         """
         Accumulated mask of layer, wire, and parameter masks for a given type of Mask.
         Note that this mask is readonly.
@@ -151,21 +151,21 @@ class MaskedCircuit(object):
         # TODO: this needs to be replaced by a specific function supported by `Mask`
         #   this doesn't work by simply using bool and True
         if Axis.PARAMETERS in self.masks and mask_type in self.masks[Axis.PARAMETERS]:
-            mask = self.masks[Axis.PARAMETERS][mask_type].mask.copy()
+            result = self.masks[Axis.PARAMETERS][mask_type].mask.copy()
         else:
-            mask = np.zeros(self.parameters.shape, dtype=bool, requires_grad=False)
+            result = np.zeros(self.parameters.shape, dtype=bool, requires_grad=False)
         if Axis.WIRES in self.masks and mask_type in self.masks[Axis.WIRES]:
-            mask[:, self.masks[Axis.WIRES][mask_type].mask] = True
+            result[:, self.masks[Axis.WIRES][mask_type].mask] = True
         if Axis.LAYERS in self.masks and mask_type in self.masks[Axis.LAYERS]:
-            mask[self.masks[Axis.LAYERS][mask_type].mask, :] = True
-        return mask
+            result[self.masks[Axis.LAYERS][mask_type].mask, :] = True
+        return result
 
     def active(self) -> int:
         """
         Number of active gates in the circuit based on layer, wire, and parameter mask.
         Entangling gates are not included.
         """
-        mask = self.mask_for_type(mask_type=DropoutMask)
+        mask = self.full_mask(mask_type=DropoutMask)
         return mask.size - np.sum(mask)
 
     def perturb(

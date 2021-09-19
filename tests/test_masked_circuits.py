@@ -86,7 +86,7 @@ class TestMaskedCircuits:
             layers=size,
             wires=size,
         )
-        assert mc.mask_for_type(DropoutMask).size == size * size
+        assert mc.full_mask(DropoutMask).size == size * size
 
         # test circuit with no masks
         mc = MaskedCircuit(
@@ -94,7 +94,7 @@ class TestMaskedCircuits:
             layers=size,
             wires=size,
         )
-        assert mc.mask_for_type(DropoutMask).size == size * size
+        assert mc.full_mask(DropoutMask).size == size * size
 
         # test circuit containing only layer mask
         mc = MaskedCircuit(
@@ -103,7 +103,7 @@ class TestMaskedCircuits:
             wires=size,
             masks=[(Axis.LAYERS, DropoutMask)],
         )
-        assert mc.mask_for_type(DropoutMask).size == size * size
+        assert mc.full_mask(DropoutMask).size == size * size
 
     def test_wrong_mode(self):
         mp = self._create_circuit_with_entangling_gates(3)
@@ -176,15 +176,15 @@ class TestMaskedCircuits:
             mp.apply_mask(pnp.ones((size, size - 1)))
         mp.mask_for_axis(Axis.WIRES)[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
-        assert pnp.sum(~mp.mask_for_type(DropoutMask)) == size
+        assert pnp.sum(~mp.full_mask(DropoutMask)) == size
         assert pnp.sum(result) == size
         mp.mask_for_axis(Axis.LAYERS)[: size - 1] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
-        assert pnp.sum(~mp.mask_for_type(DropoutMask)) == 1
+        assert pnp.sum(~mp.full_mask(DropoutMask)) == 1
         assert pnp.sum(result) == 1
         mp.mask_for_axis(Axis.PARAMETERS)[(size - 1, size - 1)] = True
         result = mp.apply_mask(pnp.ones((size, size), dtype=bool))
-        assert pnp.sum(~mp.mask_for_type(DropoutMask)) == 0
+        assert pnp.sum(~mp.full_mask(DropoutMask)) == 0
         assert pnp.sum(result) == 0
 
     def test_copy(self):
@@ -196,8 +196,8 @@ class TestMaskedCircuits:
         mp.mask_for_axis(Axis.WIRES)[0] = True
         mp.mask_for_axis(Axis.PARAMETERS)[0, 0] = True
 
-        assert pnp.sum(mp.mask_for_type(DropoutMask)) > pnp.sum(
-            new_mp.mask_for_type(DropoutMask)
+        assert pnp.sum(mp.full_mask(DropoutMask)) > pnp.sum(
+            new_mp.full_mask(DropoutMask)
         )
         assert pnp.sum(new_mp.mask_for_axis(Axis.WIRES)) == 0
         assert pnp.sum(new_mp.mask_for_axis(Axis.LAYERS)) == pnp.sum(
@@ -231,8 +231,7 @@ class TestMaskedCircuits:
         mp.mask_for_axis(Axis.LAYERS)[:] = True
         mp.shrink(amount=1, axis=Axis.LAYERS)
         assert (
-            pnp.sum(mp.mask_for_type(DropoutMask))
-            == mp.mask_for_type(DropoutMask).size - size
+            pnp.sum(mp.full_mask(DropoutMask)) == mp.full_mask(DropoutMask).size - size
         )
 
     def test_shrink_wire(self):
@@ -241,8 +240,7 @@ class TestMaskedCircuits:
         mp.mask_for_axis(Axis.WIRES)[:] = True
         mp.shrink(amount=1, axis=Axis.WIRES)
         assert (
-            pnp.sum(mp.mask_for_type(DropoutMask))
-            == mp.mask_for_type(DropoutMask).size - size
+            pnp.sum(mp.full_mask(DropoutMask)) == mp.full_mask(DropoutMask).size - size
         )
 
     def test_shrink_parameter(self):
@@ -250,10 +248,7 @@ class TestMaskedCircuits:
         mp = self._create_circuit(size)
         mp.mask_for_axis(Axis.PARAMETERS)[:] = True
         mp.shrink(amount=1, axis=Axis.PARAMETERS)
-        assert (
-            pnp.sum(mp.mask_for_type(DropoutMask))
-            == mp.mask_for_type(DropoutMask).size - 1
-        )
+        assert pnp.sum(mp.full_mask(DropoutMask)) == mp.full_mask(DropoutMask).size - 1
 
     def test_shrink_entangling(self):
         size = 3
@@ -271,7 +266,7 @@ class TestMaskedCircuits:
             mp.shrink(amount=1, axis=Axis.ENTANGLING)
         assert Axis.ENTANGLING not in mp.masks
         assert (
-            pnp.sum(mp.mask_for_type(DropoutMask)) == 0
+            pnp.sum(mp.full_mask(DropoutMask)) == 0
         )  # also ensure that nothing else was shrunk
 
     def test_shrink_wrong_axis(self):
@@ -292,13 +287,13 @@ class TestMaskedCircuits:
         assert MaskedCircuit.execute(mp, []) == mp
         # test existing method
         MaskedCircuit.execute(mp, [perturb_operation])
-        assert pnp.sum(mp.mask_for_type(DropoutMask)) == 1
+        assert pnp.sum(mp.full_mask(DropoutMask)) == 1
         # test existing method with copy
         new_mp = MaskedCircuit.execute(
             mp, [{"clear": {}}, {"copy": {}}, perturb_operation]
         )
         assert mp != new_mp
-        assert pnp.sum(new_mp.mask_for_type(DropoutMask)) == 1
+        assert pnp.sum(new_mp.full_mask(DropoutMask)) == 1
         # test non-existing method
         with pytest.raises(AttributeError):
             MaskedCircuit.execute(mp, [{"non_existent": {"test": 1}}])
@@ -423,9 +418,9 @@ class TestFreezableMaskedCircuit:
         )
         # Test 0 amount
         # FIXME: does not test the same thing, befor it tested the whole mask
-        mask = mp.mask_for_type(FreezeMask)
+        mask = mp.full_mask(FreezeMask)
         mp.perturb(axis=Axis.LAYERS, amount=0, mode=Mode.SET, mask=FreezeMask)
-        assert pnp.array_equal(mp.mask_for_type(FreezeMask), mask)
+        assert pnp.array_equal(mp.full_mask(FreezeMask), mask)
         # Test freezing of layers
         mp.perturb(axis=Axis.LAYERS, amount=1, mode=Mode.SET, mask=FreezeMask)
         assert (
@@ -456,14 +451,12 @@ class TestFreezableMaskedCircuit:
         mp.perturb(amount=5, mode=Mode.SET)
         mp.perturb(amount=2, axis=Axis.LAYERS, mode=Mode.SET, mask=FreezeMask)
         mp_copy = mp.copy()
-        assert pnp.array_equal(
-            mp.mask_for_type(FreezeMask), mp_copy.mask_for_type(FreezeMask)
-        )
+        assert pnp.array_equal(mp.full_mask(FreezeMask), mp_copy.full_mask(FreezeMask))
         mp.perturb(amount=5, mode=Mode.RESET)
         mp.perturb(amount=2, axis=Axis.LAYERS, mode=Mode.RESET, mask=FreezeMask)
-        assert pnp.sum(mp.mask_for_type(FreezeMask)) == 0
+        assert pnp.sum(mp.full_mask(FreezeMask)) == 0
         assert not pnp.array_equal(
-            mp.mask_for_type(FreezeMask), mp_copy.mask_for_type(FreezeMask)
+            mp.full_mask(FreezeMask), mp_copy.full_mask(FreezeMask)
         )
 
     def test_complex(self):

@@ -174,7 +174,7 @@ def train(
             logging_branch_cost_step["netto"][step] = result.netto_steps
         logging_cost_values.append(result.cost)
         logging_dropout_count_values.append(
-            np.sum(masked_circuit.mask_for_type(DropoutMask))
+            np.sum(masked_circuit.full_mask(DropoutMask))
         )
         if step % train_params["log_interval"] == 0:
             # perform logging
@@ -191,7 +191,7 @@ def train(
 
     if __debug__:
         print(masked_circuit.parameters)
-        print(masked_circuit.mask_for_type(DropoutMask))
+        print(masked_circuit.full_mask(DropoutMask))
 
     return {
         "costs": logging_costs,
@@ -202,7 +202,7 @@ def train(
         "branch_step_costs": logging_branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
-        "dropout_mask": masked_circuit.mask_for_type(DropoutMask).unwrap(),
+        "dropout_mask": masked_circuit.full_mask(DropoutMask).unwrap(),
         "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES).mask,
         "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS).mask,
         "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS).mask,
