@@ -73,7 +73,7 @@ def init_parameters(
         entangling_mask=DropoutMask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
-    mc.mask_for_axis(Axis.LAYERS)[current_layers:] = True
+    mc.mask(Axis.LAYERS)[current_layers:] = True
     return mc
 
 
@@ -203,9 +203,9 @@ def train(
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
         "dropout_mask": masked_circuit.full_mask(DropoutMask).unwrap(),
-        "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES).mask,
-        "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS).mask,
-        "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS).mask,
+        "__wire_mask": masked_circuit.mask(Axis.WIRES).mask,
+        "__layer_mask": masked_circuit.mask(Axis.LAYERS).mask,
+        "__parameter_mask": masked_circuit.mask(Axis.PARAMETERS).mask,
         "__rotations": rotations,
     }
 

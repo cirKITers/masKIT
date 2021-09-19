@@ -53,25 +53,19 @@ def create_freezable_circuit(size: int, layer_size: int = 1):
 
 def variational_circuit(params, masked_circuit: MaskedCircuit = None):
     full_parameters = masked_circuit.expanded_parameters(params)
-    for layer, layer_hidden in enumerate(masked_circuit.mask_for_axis(Axis.LAYERS)):
+    for layer, layer_hidden in enumerate(masked_circuit.mask(Axis.LAYERS)):
         if not layer_hidden:
-            for wire, wire_hidden in enumerate(
-                masked_circuit.mask_for_axis(Axis.WIRES)
-            ):
+            for wire, wire_hidden in enumerate(masked_circuit.mask(Axis.WIRES)):
                 if not wire_hidden:
-                    if not masked_circuit.mask_for_axis(Axis.PARAMETERS)[layer][wire][
-                        0
-                    ]:
+                    if not masked_circuit.mask(Axis.PARAMETERS)[layer][wire][0]:
                         qml.RX(full_parameters[layer][wire][0], wires=wire)
-                    if not masked_circuit.mask_for_axis(Axis.PARAMETERS)[layer][wire][
-                        1
-                    ]:
+                    if not masked_circuit.mask(Axis.PARAMETERS)[layer][wire][1]:
                         qml.RY(full_parameters[layer][wire][1], wires=wire)
-            for wire in range(0, masked_circuit.mask_for_axis(Axis.LAYERS).size - 1, 2):
+            for wire in range(0, masked_circuit.mask(Axis.LAYERS).size - 1, 2):
                 qml.CZ(wires=[wire, wire + 1])
-            for wire in range(1, masked_circuit.mask_for_axis(Axis.LAYERS).size - 1, 2):
+            for wire in range(1, masked_circuit.mask(Axis.LAYERS).size - 1, 2):
                 qml.CZ(wires=[wire, wire + 1])
-    return qml.probs(wires=range(len(masked_circuit.mask_for_axis(Axis.WIRES))))
+    return qml.probs(wires=range(len(masked_circuit.mask(Axis.WIRES))))
 
 
 def plain_variational_circuit(params):

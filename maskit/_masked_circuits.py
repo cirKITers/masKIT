@@ -87,7 +87,7 @@ class MaskedCircuit(object):
         except KeyError:
             self.masks[axis] = {type(mask): mask}
 
-    def mask_for_axis(self, axis: Axis, mask_type: Type[Mask] = DropoutMask) -> Mask:
+    def mask(self, axis: Axis, mask_type: Type[Mask] = DropoutMask) -> Mask:
         return self.masks[axis][mask_type]
 
     def _accumulated_mask(self, for_differentiable=True) -> np.ndarray:
@@ -292,7 +292,7 @@ class MaskedCircuit(object):
         length = 0
         first_layer = True
         result = ["["]
-        for layer, layer_hidden in enumerate(self.mask_for_axis(Axis.LAYERS)):
+        for layer, layer_hidden in enumerate(self.mask(Axis.LAYERS)):
             if first_layer:
                 result.append("[")
                 first_layer = False
@@ -300,9 +300,9 @@ class MaskedCircuit(object):
                 result.append("\n [")
             first_wire = True
             first_value = True
-            for wire, wire_hidden in enumerate(self.mask_for_axis(Axis.WIRES)):
+            for wire, wire_hidden in enumerate(self.mask(Axis.WIRES)):
                 if isinstance(
-                    self.mask_for_axis(Axis.PARAMETERS)[layer][wire].unwrap(),
+                    self.mask(Axis.PARAMETERS)[layer][wire].unwrap(),
                     np.ndarray,
                 ):
                     if first_wire:
@@ -312,7 +312,7 @@ class MaskedCircuit(object):
                         result.append("\n  [")
                     first_value = True
                     for parameter, parameter_hidden in enumerate(
-                        self.mask_for_axis(Axis.PARAMETERS)[layer][wire]
+                        self.mask(Axis.PARAMETERS)[layer][wire]
                     ):
                         if not (layer_hidden or wire_hidden or parameter_hidden):
                             value = format_value(
@@ -331,7 +331,7 @@ class MaskedCircuit(object):
                     if not (
                         layer_hidden
                         or wire_hidden
-                        or self.mask_for_axis(Axis.PARAMETERS)[layer][wire]
+                        or self.mask(Axis.PARAMETERS)[layer][wire]
                     ):
                         value = format_value(self.parameters[layer][wire])
                         length = len(value)
@@ -392,5 +392,5 @@ if __name__ == "__main__":
     parameter = MaskedCircuit(
         np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
     )
-    parameter.mask_for_axis(Axis.WIRES)[1] = True
+    parameter.mask(Axis.WIRES)[1] = True
     print(parameter)
