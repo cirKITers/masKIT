@@ -2,8 +2,7 @@ import random as rand
 import pennylane.numpy as np
 from abc import abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Tuple, TypeVar, Union
-from typing_extensions import Protocol
+from typing import TYPE_CHECKING, Any, Generic, Optional, Tuple, TypeVar, Union, Type
 
 if TYPE_CHECKING:
     from maskit._masked_circuits import MaskedCircuit
@@ -31,7 +30,7 @@ class PerturbationMode(Enum):
     INVERT = 2
 
 
-class Mask(Protocol[T]):
+class Mask(Generic[T]):
     """
     A Mask encapsulates a :py:attr:`~.mask` storing boolean value if a specific value
     is masked or not. In case a specific position is `True`, the according value is
@@ -43,16 +42,25 @@ class Mask(Protocol[T]):
     """
 
     relevant_for_differentiation: bool = False
+    elemental_type: Type[T]
     __slots__ = ("mask", "_parent")
 
-    @abstractmethod
     def __init__(
         self,
         shape: Tuple[int, ...],
         parent: Optional["MaskedCircuit"] = None,
         mask: Optional[np.ndarray] = None,
     ):
-        pass
+        self.mask = np.zeros(shape, dtype=self.elemental_type, requires_grad=False)
+        if mask is not None:
+            assert (
+                mask.dtype == self.elemental_type
+            ), f"Mask must be of type {self.elemental_type}"
+            assert (
+                mask.shape == shape
+            ), f"Shape of mask ({mask.shape}) must be equal to {shape}"
+            self.mask[:] = mask
+        self._parent = parent
 
     def __len__(self) -> int:
         """Returns the len of the encapsulated :py:attr:`~.mask`"""
@@ -166,23 +174,8 @@ class Mask(Protocol[T]):
 
 
 class DropoutMask(Mask[bool]):
+    elemental_type = bool
     relevant_for_differentiation = True
-
-    def __init__(
-        self,
-        shape: Tuple[int, ...],
-        parent: Optional["MaskedCircuit"] = None,
-        mask: Optional[np.ndarray] = None,
-    ):
-        super().__init__()
-        self.mask = np.zeros(shape, dtype=bool, requires_grad=False)
-        if mask is not None:
-            assert mask.dtype == bool, "Mask must be of type bool"
-            assert (
-                mask.shape == shape
-            ), f"Shape of mask ({mask.shape}) must be equal to {shape}"
-            self.mask[:] = mask
-        self._parent = parent
 
     def apply_mask(self, values: np.ndarray):
         return values[~self.mask]
@@ -234,23 +227,8 @@ class FreezeMask(DropoutMask):
 
 
 class ValueMask(Mask[float]):
+    elemental_type = float
     relevant_for_differentiation = False
-
-    def __init__(
-        self,
-        shape: Tuple[int, ...],
-        parent: Optional["MaskedCircuit"] = None,
-        mask: Optional[np.ndarray] = None,
-    ):
-        super().__init__()
-        self.mask = np.zeros(shape, dtype=float, requires_grad=False)
-        if mask is not None:
-            assert mask.dtype == float, "Mask must be of type float"
-            assert (
-                mask.shape == shape
-            ), f"Shape of mask ({mask.shape}) must be equal to {shape}"
-            self.mask[:] = mask
-        self._parent = parent
 
     def apply_mask(self, values: np.ndarray):
         return values + self.mask
