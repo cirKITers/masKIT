@@ -42,7 +42,8 @@ class Mask(Generic[T]):
     """
 
     relevant_for_differentiation: bool = False
-    elemental_type: Type[T]
+    #: The underlying datatype of the encapsulated mask
+    dtype: Type[T]
     __slots__ = ("mask", "_parent")
 
     def __init__(
@@ -51,11 +52,9 @@ class Mask(Generic[T]):
         parent: Optional["MaskedCircuit"] = None,
         mask: Optional[np.ndarray] = None,
     ):
-        self.mask = np.zeros(shape, dtype=self.elemental_type, requires_grad=False)
+        self.mask = np.zeros(shape, dtype=self.dtype, requires_grad=False)
         if mask is not None:
-            assert (
-                mask.dtype == self.elemental_type
-            ), f"Mask must be of type {self.elemental_type}"
+            assert mask.dtype == self.dtype, f"Mask must be of type {self.dtype}"
             assert (
                 mask.shape == shape
             ), f"Shape of mask ({mask.shape}) must be equal to {shape}"
@@ -153,6 +152,14 @@ class Mask(Generic[T]):
 
     @abstractmethod
     def shrink(self, amount: int = 1):
+        """
+        Shrinks a Mask for ``amount`` given positions. Shrinking can be interpreted
+        as setting the ``amount`` leftmost values of the Mask that are different
+        from its default to its default value, e.g. to `False` in case of a boolean
+        `dtype` or `0` in case of floats.
+
+        :param amount: Number of items to reset to `0`, defaults to `1`
+        """
         return NotImplemented
 
     def copy(self, parent: Optional["MaskedCircuit"] = None) -> "Mask":
@@ -162,7 +169,17 @@ class Mask(Generic[T]):
         clone._parent = parent
         return clone
 
-    def _count_for_amount(self, amount: Optional[Union[int, float]]):
+    def _count_for_amount(self, amount: Optional[Union[int, float]]) -> int:
+        """
+        Returns a valid number of elements with respect to the current size of the
+        encapsulated :py:attr:`~.mask`. The number of elements is dependent on the
+        value of ``amount``: 1) either a random number is returned in case of `None`;
+        2) a specific percentage in case of an amount in the range of `[0, 1[`;
+        or 3) the absolute value is given.
+
+        :param amount: Amount of elements to consider, random if `None`, percentage
+            if in the range `[0, 1[`, or absolute value otherwise
+        """
         assert (
             amount is None or amount >= 0
         ), "Negative values are not supported, please use PerturbationMode.REMOVE"
@@ -170,11 +187,21 @@ class Mask(Generic[T]):
             if amount < 1:
                 amount *= self.mask.size
             amount = round(amount)
-        return abs(amount) if amount is not None else rand.randrange(0, self.mask.size)
+        return (
+            min(abs(amount), self.mask.size)
+            if amount is not None
+            else rand.randrange(0, self.mask.size)
+        )
 
 
 class DropoutMask(Mask[bool]):
-    elemental_type = bool
+    """
+    A DropoutMask marks the positions that should be dropped from a given array
+    and therefore an associated gate in a quantum circuit.
+    A position that will not be dropped is marked as `False`, and `True` otherwise.
+    """
+
+    dtype = bool
     relevant_for_differentiation = True
 
     def apply_mask(self, values: np.ndarray):
@@ -220,14 +247,19 @@ class FreezeMask(DropoutMask):
     """
     A FreezeMask provides the same functionality as a :py:class:`~.DropoutMask`.
     However, the meaning is a bit different. Marked positions are interpreted as
-    being frozen and underlying values therefore cannot be changed.
+    being frozen and underlying values therefore are not intended to be changed.
     """
 
     pass
 
 
 class ValueMask(Mask[float]):
-    elemental_type = float
+    """
+    A ValueMask shifts given values the mask is applied to with the stored values
+    inside the mask.
+    """
+
+    dtype = float
     relevant_for_differentiation = False
 
     def apply_mask(self, values: np.ndarray):

@@ -173,7 +173,6 @@ class TestValueMask:
         mp.mask[1] = 1
         result = mp.apply_mask(pnp.ones((size,), dtype=float))
         assert pnp.sum(mp.mask) == 1
-        print(result)
         assert pnp.sum(result) == size + 1
         mp.mask[1] = -1
         result = mp.apply_mask(pnp.ones((size,), dtype=float))

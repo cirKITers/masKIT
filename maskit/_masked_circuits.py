@@ -28,11 +28,8 @@ class MaskedCircuit(object):
         change size/order
     :param default_value: Default value for gates that are added back in. In case of
         `None` that is also the default, the last known value is assumed
-    :param parameter_mask: Initialization values of paramater mask, defaults to `None`
-    :param layer_mask: Initialization values of layer mask, defaults to `None`
-    :param wire_mask: Initialization values of wire mask, defaults to `None`
-    :param entangling_mask: The mask to apply for entangling gates within the circuit,
-        defaults to None
+    :param masks: List of tuples of `PerturbationAxis` and `Mask` types to specify
+        which masks are supported, defaults to `None`
     """
 
     __slots__ = ("parameters", "default_value", "_dynamic_parameters", "masks")
@@ -71,43 +68,44 @@ class MaskedCircuit(object):
                     raise NotImplementedError(
                         f"The perturbation {axis} is not supported"
                     )
-                try:
-                    self.masks[axis][mask_type] = mask_type(
-                        shape=shape, parent=self
-                    )  # TODO: initial mask is missing
-                except KeyError:
-                    self.masks[axis] = {mask_type: mask_type(shape=shape, parent=self)}
+                self.masks.setdefault(axis, {})[mask_type] = mask_type(
+                    shape=shape, parent=self
+                )  # TODO: initial mask is missing
 
     def register_mask(self, axis: Axis, mask: Mask) -> None:
-        assert axis not in self.masks or (
-            axis in self.masks and type(mask) not in self.masks[axis]
+        """
+        Registers a given `mask` for a given ``PerturbationAxis`` and the appropriate
+        type of `Mask`.
+
+        :param axis: The `PerturbationAxis` the mask is applied to
+        :param mask: The mask to register
+        """
+        assert type(mask) not in self.masks.get(
+            axis, {}
         ), f"{type(mask)} for {axis} already set: {self.masks[axis][type(mask)]}"
-        try:
-            self.masks[axis][type(mask)] = mask
-        except KeyError:
-            self.masks[axis] = {type(mask): mask}
+        self.masks.setdefault(axis, {})[type(mask)] = mask
 
     def mask(self, axis: Axis, mask_type: Type[Mask] = DropoutMask) -> Mask:
+        """
+        Returns the stored mask for a given `axis` and `mask_type`.
+
+        :param axis: The axis the mask is performed on
+        :param mask_type: The type of `Mask` to return
+        """
         return self.masks[axis][mask_type]
 
     def _accumulated_mask(self, for_differentiable=True) -> np.ndarray:
-        result = None
+        result = np.zeros(
+            shape=self.parameters.shape,
+            dtype=bool if for_differentiable is True else float,
+        )
         for mask_type in {
             key
             for value in self.masks.values()
             for key in value
             if key.relevant_for_differentiation is for_differentiable
         }:
-            the_mask = self.full_mask(mask_type)
-            if result is None:
-                result = the_mask
-            else:
-                result[the_mask] = True
-        if result is None:
-            return np.zeros(
-                shape=self.parameters.shape,
-                dtype=bool if for_differentiable is True else float,
-            )
+            result = result + self.full_mask(mask_type)
         return result
 
     @property
@@ -134,12 +132,12 @@ class MaskedCircuit(object):
         Accumulated mask of layer, wire, and parameter masks for a given type of Mask.
         Note that this mask is readonly.
         """
-        if Axis.PARAMETERS in self.masks and mask_type in self.masks[Axis.PARAMETERS]:
+        try:
             result = self.masks[Axis.PARAMETERS][mask_type].mask.copy()
-        else:
+        except KeyError:
             result = np.zeros(
                 self.parameters.shape,
-                dtype=mask_type.elemental_type,
+                dtype=mask_type.dtype,
                 requires_grad=False,
             )
         shape = result.shape
@@ -198,10 +196,19 @@ class MaskedCircuit(object):
     def shrink(
         self, axis: Axis = Axis.LAYERS, amount: int = 1, mask: Type[Mask] = DropoutMask
     ):
-        if axis in self.masks and mask in self.masks[axis]:
+        """
+        Shrinks the `mask` by a specified `amount` on a given `axis`.
+
+        :param axis: The `PerturbationAxis` the mask is applied on
+        :param amount: The number of elements to shrink
+        :param mask: The type of `Mask` to consider
+        """
+        try:
             self.masks[axis][mask].shrink(amount)
-        else:
-            raise ValueError(f"The mask {mask} on axis {axis} is not supported")
+        except KeyError:
+            raise ValueError(
+                f"The mask {mask} on axis {axis} is not supported"
+            ) from None
 
     def clear(self):
         """Resets all masks."""
@@ -369,6 +376,7 @@ class MaskedCircuit(object):
         layer_mask: Optional[Mask] = None,
         parameter_mask: Optional[Mask] = None,
     ):
+        """Helper to create a full circuit with `DropoutMasks`."""
         initializable_masks = [axis for axis in Axis if axis != Axis.ENTANGLING]
         for axis, mask in (
             (Axis.WIRES, wire_mask),
