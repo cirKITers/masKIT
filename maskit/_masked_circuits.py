@@ -188,10 +188,12 @@ class MaskedCircuit(object):
         ), f"The selected perturbation mode {mode} is not supported."
         if amount == 0:
             return
-        if axis in self.masks and mask in self.masks[axis]:
+        try:
             self.masks[axis][mask].perturb(amount=amount, mode=mode)
-        else:
-            raise ValueError(f"The mask {mask} on axis {axis} is not supported")
+        except KeyError:
+            raise ValueError(
+                f"The mask {mask} on axis {axis} is not supported"
+            ) from None
 
     def shrink(
         self, axis: Axis = Axis.LAYERS, amount: int = 1, mask: Type[Mask] = DropoutMask

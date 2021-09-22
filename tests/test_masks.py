@@ -160,11 +160,6 @@ class TestDropoutMask:
 
 
 class TestValueMask:
-    def test_init(self):
-        vm = ValueMask((3,))
-        assert vm
-        assert vm.mask.dtype == float
-
     def test_apply_mask(self):
         size = 3
         mp = ValueMask((size,))
