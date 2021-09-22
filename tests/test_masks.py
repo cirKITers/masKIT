@@ -3,23 +3,23 @@ import pytest
 
 import pennylane.numpy as pnp
 
-from maskit._masks import Mask, PerturbationMode
+from maskit._masks import DropoutMask, ValueMask, PerturbationMode
 
 
-class TestMask:
+class TestDropoutMask:
     def test_init(self):
         size = 3
         with pytest.raises(AssertionError):
-            Mask((size,), mask=pnp.array([True, True, False, False]))
+            DropoutMask((size,), mask=pnp.array([True, True, False, False]))
         with pytest.raises(AssertionError):
-            Mask((size,), mask=pnp.array([0, 1, 3]))
+            DropoutMask((size,), mask=pnp.array([0, 1, 3]))
         preset = [False, True, False]
-        mp = Mask((size,), mask=pnp.array(preset))
+        mp = DropoutMask((size,), mask=pnp.array(preset))
         assert pnp.array_equal(mp.mask, preset)
 
     def test_setting(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
         assert mp
         assert len(mp.mask) == mp.mask.size
         assert pnp.sum(mp.mask) == 0
@@ -40,22 +40,22 @@ class TestMask:
             mp[1, 2] = True
 
     def test_wrong_mode(self):
-        mp = Mask((3,))
+        mp = DropoutMask((3,))
         with pytest.raises(NotImplementedError):
-            mp.perturb(mode=10)
+            mp.perturb(mode=10, amount=1)
 
     def test_perturbation(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for i in range(1, size + 1):
             mp.perturb(i)
-            mp.perturb(i, mode=PerturbationMode.REMOVE)
+            mp.perturb(i, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
 
     def test_percentage_perturbation(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for i in [0.01, 0.1, 0.5, 0.9]:
             mp.perturb(amount=i)
@@ -64,7 +64,7 @@ class TestMask:
 
     def test_wrong_percentage_perturbation(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for i in [1.1, 1.5, 3.1]:
             mp.perturb(amount=i)
@@ -72,51 +72,51 @@ class TestMask:
             mp.clear()
 
     def test_negative_perturbation(self):
-        mp = Mask((3,))
+        mp = DropoutMask((3,))
         with pytest.raises(AssertionError):
             mp.perturb(amount=-1)
 
     def test_perturbation_remove_add(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for amount in [random.randrange(size), 0, size, size + 1]:
-            mp.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+            mp.perturb(amount=amount, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
-            mp.perturb(amount=amount, mode=PerturbationMode.ADD)
+            mp.perturb(amount=amount, mode=PerturbationMode.SET)
             assert pnp.sum(mp.mask) == min(amount, size)
             mp.clear()
 
     def test_perturbation_invert_remove(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for amount in [random.randrange(size), 0, size, size + 1]:
             mp.perturb(amount=amount, mode=PerturbationMode.INVERT)
             reversed_amount = pnp.sum(mp.mask).unwrap()  # unwrap tensor
-            mp.perturb(amount=reversed_amount, mode=PerturbationMode.REMOVE)
+            mp.perturb(amount=reversed_amount, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
 
     def test_perturbation_add_remove(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for amount in [random.randrange(size), 0, size, size + 1]:
-            mp.perturb(amount=amount, mode=PerturbationMode.ADD)
+            mp.perturb(amount=amount, mode=PerturbationMode.SET)
             assert pnp.sum(mp.mask) == min(amount, size)
-            mp.perturb(amount=amount, mode=PerturbationMode.REMOVE)
+            mp.perturb(amount=amount, mode=PerturbationMode.RESET)
             assert pnp.sum(mp.mask) == 0
 
     @pytest.mark.parametrize(
         "mode",
         [
-            (PerturbationMode.ADD, PerturbationMode.INVERT),
+            (PerturbationMode.SET, PerturbationMode.INVERT),
             (PerturbationMode.INVERT, PerturbationMode.INVERT),
         ],
     )
     def test_perturbation_mode(self, mode):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for amount in [0, size, size + 1]:
             mp.perturb(amount=amount, mode=mode[0])
@@ -125,7 +125,7 @@ class TestMask:
 
     def test_shrink(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
 
         for amount in range(size + 1):
             mp[:] = True
@@ -134,7 +134,7 @@ class TestMask:
 
     def test_shrink_nd(self):
         size = 3
-        mp = Mask((size, size - 1))
+        mp = DropoutMask((size, size - 1))
         for amount in range(mp.mask.size + 1):
             mp[:] = True
             mp.shrink(amount)
@@ -142,7 +142,7 @@ class TestMask:
 
     def test_copy(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
         new_mp = mp.copy()
         mp[0] = True
         assert pnp.sum(mp.mask) > pnp.sum(new_mp.mask)
@@ -150,10 +150,43 @@ class TestMask:
 
     def test_apply_mask(self):
         size = 3
-        mp = Mask((size,))
+        mp = DropoutMask((size,))
         with pytest.raises(IndexError):
             mp.apply_mask(pnp.ones((size - 1, size)))
         mp.mask[1] = True
         result = mp.apply_mask(pnp.ones((size,), dtype=bool))
         assert pnp.sum(mp.mask) == 1
         assert pnp.sum(result) == size - 1
+
+
+class TestValueMask:
+    def test_apply_mask(self):
+        size = 3
+        mp = ValueMask((size,))
+        with pytest.raises(ValueError):
+            mp.apply_mask(pnp.ones((size - 1,)))
+        mp.mask[1] = 1
+        result = mp.apply_mask(pnp.ones((size,), dtype=float))
+        assert pnp.sum(mp.mask) == 1
+        assert pnp.sum(result) == size + 1
+        mp.mask[1] = -1
+        result = mp.apply_mask(pnp.ones((size,), dtype=float))
+        assert pnp.sum(result) == size - 1
+
+    def test_perturbation(self):
+        size = 3
+        mp = ValueMask((size,))
+
+        for i in range(1, size + 1):
+            mp.perturb(i, mode=PerturbationMode.SET, value=1)
+            mp.perturb(i, mode=PerturbationMode.RESET)
+            assert pnp.sum(mp.mask) == 0
+
+    def test_shrink(self):
+        size = 3
+        mp = ValueMask((size,))
+
+        for amount in range(size + 1):
+            mp[:] = 1
+            mp.shrink(amount)
+            assert pnp.sum(mp.mask) == size - amount

@@ -7,7 +7,7 @@ CLASSICAL = {
         {
             "perturb": {
                 "amount": 0.1,
-                "mode": PerturbationMode.ADD,
+                "mode": PerturbationMode.SET,
                 "axis": PerturbationAxis.PARAMETERS,
             }
         },
@@ -23,7 +23,7 @@ RANDOM = {
         {
             "perturb": {
                 "amount": 1,
-                "mode": PerturbationMode.REMOVE,
+                "mode": PerturbationMode.RESET,
                 "axis": PerturbationAxis.PARAMETERS,
             }
         },
@@ -47,7 +47,7 @@ QHACK = {
         {
             "perturb": {
                 "amount": 1,
-                "mode": PerturbationMode.ADD,
+                "mode": PerturbationMode.SET,
                 "axis": PerturbationAxis.PARAMETERS,
             },
         },
@@ -57,7 +57,7 @@ QHACK = {
         {
             "perturb": {
                 "amount": 0.05,
-                "mode": PerturbationMode.REMOVE,
+                "mode": PerturbationMode.RESET,
                 "axis": PerturbationAxis.PARAMETERS,
             }
         },

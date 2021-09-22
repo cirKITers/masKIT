@@ -5,7 +5,7 @@ import pennylane as qml
 from pennylane import numpy as np
 
 from maskit._masks import (
-    Mask,
+    DropoutMask,
     PerturbationAxis as Axis,
     PerturbationMode as Mode,
 )
@@ -70,10 +70,10 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
-        entangling_mask=Mask(shape=(layers, wires - 1)),
+        entangling_mask=DropoutMask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
-    mc.mask_for_axis(Axis.LAYERS)[current_layers:] = True
+    mc.mask(Axis.LAYERS)[current_layers:] = True
     return mc
 
 
@@ -173,7 +173,9 @@ def train(
             logging_branch_cost_step["brutto"][step] = result.brutto_steps
             logging_branch_cost_step["netto"][step] = result.netto_steps
         logging_cost_values.append(result.cost)
-        logging_dropout_count_values.append(np.sum(masked_circuit.mask))
+        logging_dropout_count_values.append(
+            np.sum(masked_circuit.full_mask(DropoutMask))
+        )
         if step % train_params["log_interval"] == 0:
             # perform logging
             logging_costs[step] = np.average(logging_cost_values)
@@ -189,7 +191,7 @@ def train(
 
     if __debug__:
         print(masked_circuit.parameters)
-        print(masked_circuit.mask)
+        print(masked_circuit.full_mask(DropoutMask))
 
     return {
         "costs": logging_costs,
@@ -200,10 +202,10 @@ def train(
         "branch_step_costs": logging_branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
-        "mask": masked_circuit.mask.unwrap(),
-        "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES).mask,
-        "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS).mask,
-        "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS).mask,
+        "dropout_mask": masked_circuit.full_mask(DropoutMask).unwrap(),
+        "__wire_mask": masked_circuit.mask(Axis.WIRES).mask,
+        "__layer_mask": masked_circuit.mask(Axis.LAYERS).mask,
+        "__parameter_mask": masked_circuit.mask(Axis.PARAMETERS).mask,
         "__rotations": rotations,
     }
 
@@ -291,7 +293,7 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 1,
-                            "mode": Mode.ADD,
+                            "mode": Mode.SET,
                             "axis": Axis.PARAMETERS,
                         },
                     },
@@ -301,7 +303,7 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 0.05,
-                            "mode": Mode.REMOVE,
+                            "mode": Mode.RESET,
                             "axis": Axis.PARAMETERS,
                         }
                     },
