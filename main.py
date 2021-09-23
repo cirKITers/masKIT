@@ -6,6 +6,7 @@ import pennylane as qml
 from pennylane import numpy as np
 
 from maskit._masks import (
+    DropoutMask,
     Mask,
     PerturbationAxis as Axis,
     PerturbationMode as Mode,
@@ -47,10 +48,10 @@ def init_parameters(
         layers=layers,
         wires=wires,
         default_value=default_value,
-        entangling_mask=Mask(shape=(layers, wires - 1)),
+        entangling_mask=DropoutMask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
     )
-    mc.mask_for_axis(Axis.LAYERS)[current_layers:] = True
+    mc.mask(Axis.LAYERS)[current_layers:] = True
     return mc
 
 
@@ -174,7 +175,7 @@ def train(
 
     if __debug__:
         print(masked_circuit.parameters)
-        print(masked_circuit.mask)
+        print(masked_circuit.full_mask(DropoutMask))
 
     return {
         "costs": log_data.costs,
@@ -186,10 +187,10 @@ def train(
         "branch_step_costs": log_data.branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
-        "mask": masked_circuit.mask.unwrap(),
-        "__wire_mask": masked_circuit.mask_for_axis(Axis.WIRES),
-        "__layer_mask": masked_circuit.mask_for_axis(Axis.LAYERS),
-        "__parameter_mask": masked_circuit.mask_for_axis(Axis.PARAMETERS),
+        "dropout_mask": masked_circuit.full_mask(DropoutMask).unwrap(),
+        "__wire_mask": masked_circuit.mask(Axis.WIRES),
+        "__layer_mask": masked_circuit.mask(Axis.LAYERS),
+        "__parameter_mask": masked_circuit.mask(Axis.PARAMETERS),
         "__rotations": rotations,
     }
 
@@ -277,7 +278,7 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 1,
-                            "mode": Mode.ADD,
+                            "mode": Mode.SET,
                             "axis": Axis.PARAMETERS,
                         },
                     },
@@ -287,7 +288,7 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 0.05,
-                            "mode": Mode.REMOVE,
+                            "mode": Mode.RESET,
                             "axis": Axis.PARAMETERS,
                         }
                     },
