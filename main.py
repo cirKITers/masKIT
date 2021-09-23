@@ -37,6 +37,7 @@ def init_parameters(
     wires: int,
     default_value: Optional[float],
     dynamic_parameters: bool = True,
+    mask_type: Type[Mask] = DropoutMask,
 ) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
@@ -50,8 +51,9 @@ def init_parameters(
         default_value=default_value,
         entangling_mask=DropoutMask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
+        mask_type=mask_type,
     )
-    mc.mask(Axis.LAYERS)[current_layers:] = True
+    mc.mask(Axis.LAYERS, mask_type=mask_type)[current_layers:] = True
     return mc
 
 
@@ -104,6 +106,7 @@ def train(
     ensemble_kwargs: Optional[Dict] = None,
     data: Optional[np.ndarray] = None,
     target: Optional[np.ndarray] = None,
+    mask_type: Type[Mask] = DropoutMask,
 ):
     log_data = LoggingData(interval=log_interval)
 
@@ -152,6 +155,7 @@ def train(
         wires,
         default_value,
         dynamic_parameters=False if optimizer == ExtendedOptimizers.ADAM else True,
+        mask_type=mask_type,
     )
 
     # -----------------------------
@@ -175,35 +179,28 @@ def train(
 
     if __debug__:
         print(masked_circuit.parameters)
-        print(masked_circuit.full_mask(DropoutMask))
+        print(masked_circuit.full_mask(mask_type))
 
     return {
         "costs": log_data.costs,
         "final_cost": result.cost,
-        "maximum_active": masked_circuit.mask.size,
+        "maximum_active": masked_circuit.parameters.size,
         "active": log_data.active_count,
         "branch_selections": log_data.branch_selection,
         "branch_costs": log_data.branch_cost,
         "branch_step_costs": log_data.branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
-        "dropout_mask": masked_circuit.full_mask(DropoutMask).unwrap(),
-        "__wire_mask": masked_circuit.mask(Axis.WIRES),
-        "__layer_mask": masked_circuit.mask(Axis.LAYERS),
-        "__parameter_mask": masked_circuit.mask(Axis.PARAMETERS),
+        "mask": masked_circuit.full_mask(mask_type).unwrap(),
         "__rotations": rotations,
+        "__masked_circuit": masked_circuit,
     }
 
 
 def test(
-    params,
-    wire_mask: Mask,
-    layer_mask: Mask,
-    parameter_mask: Mask,
-    final_layers: int,
+    masked_circuit: MaskedCircuit,
     rotations: List,
     wires: int = 1,
-    layers: int = 1,
     wires_to_measure: Tuple[int, ...] = (0,),
     shots: Optional[int] = None,
     sim_local: bool = True,
@@ -219,14 +216,6 @@ def test(
         correct = 0
         N = len(data)
         costs = []
-        masked_circuit = MaskedCircuit.full_circuit(
-            parameters=params,
-            layers=layers,
-            wires=wires,
-            wire_mask=wire_mask,
-            layer_mask=layer_mask,
-            parameter_mask=parameter_mask,
-        )
         for current_data, current_target in zip(data, target):
             output = circuit(
                 masked_circuit.differentiable_parameters,
@@ -280,6 +269,7 @@ if __name__ == "__main__":
                             "amount": 1,
                             "mode": Mode.SET,
                             "axis": Axis.PARAMETERS,
+                            "mask": DropoutMask,
                         },
                     },
                 ],
@@ -290,6 +280,7 @@ if __name__ == "__main__":
                             "amount": 0.05,
                             "mode": Mode.RESET,
                             "axis": Axis.PARAMETERS,
+                            "mask": DropoutMask,
                         }
                     },
                 ],
@@ -303,6 +294,7 @@ if __name__ == "__main__":
         "logging": True,
         "seed": 1337,
         "log_interval": 5,
+        "mask_type": DropoutMask,
     }
     check_params(train_params)
     logging_activated = train_params.pop("logging", True)
@@ -337,11 +329,7 @@ if __name__ == "__main__":
     result = train(**train_params, data=data.train_data, target=data.train_target)
     if testing:
         test(
-            result["params"],
-            result["__wire_mask"],
-            result["__layer_mask"],
-            result["__parameter_mask"],
-            result["final_layers"],
+            result["__masked_circuit"],
             result["__rotations"],
             **train_params,
             data=data.test_data,

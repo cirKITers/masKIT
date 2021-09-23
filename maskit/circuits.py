@@ -34,7 +34,7 @@ def cost_basis(
 
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
     full_parameters = masked_circuit.expanded_parameters(params)
-    wires = len(masked_circuit.mask(Axis.WIRES))
+    wires = masked_circuit.wires
     dropout_mask = masked_circuit.full_mask(DropoutMask)
     for wire, _is_masked in enumerate(masked_circuit.mask(Axis.WIRES)):
         qml.RY(np.pi / 4, wires=wire)
