@@ -240,8 +240,8 @@ def test(
                     interpret,
                 )
             )
-            selected_output = [
-                elem.unwrap() for index, elem in enumerate(output) if index in interpret
+            selected_output = output[
+                interpret,
             ]
             same = np.argmax(current_target) == np.argmax(selected_output)
             if same:

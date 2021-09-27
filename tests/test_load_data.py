@@ -31,6 +31,8 @@ class TestLoadData:
         assert len(data.train_target) == 150
         assert len(data.test_data) == 0
         assert len(data.test_target) == 0
+        assert data.train_target.shape[1] == 16
+        assert data.test_target.shape[1] == 16
 
     def test_circles_basic(self):
         data = load_data("circles", train_size=150, test_size=50, target_length=2)

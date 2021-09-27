@@ -31,7 +31,9 @@ def cost_basis(
         params, data, rotations, masked_circuit, wires, wires_to_measure
     )
     return cross_entropy(
-        predictions=prediction[interpret,],
+        predictions=prediction[
+            interpret,
+        ],
         targets=target,
     )
 

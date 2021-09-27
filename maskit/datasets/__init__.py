@@ -1,10 +1,9 @@
-from typing import Tuple
-from pennylane import numpy as np
+from typing import Tuple, Optional
 
 from maskit.datasets.circles import circles
 from maskit.datasets.iris import iris
 from maskit.datasets.mnist import mnist
-from maskit.datasets.utils import DataSet
+from maskit.datasets.utils import DataSet, pad_data
 
 
 def load_data(
@@ -14,7 +13,7 @@ def load_data(
     shuffle: bool = True,
     classes: Tuple[int, ...] = (6, 9),
     wires: int = 4,
-    target_length: int = 16,
+    target_length: Optional[int] = None,
 ) -> DataSet:
     """
     Returns the data for the requested ``dataset``.
@@ -38,6 +37,8 @@ def load_data(
         result = circles(train_size, test_size, shuffle)
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
+    if target_length is None:
+        target_length = 2 ** wires
     difference = target_length - result.train_target.shape[1]
     assert difference >= 0, (
         f"Target length ({target_length}) must support at least "
@@ -45,24 +46,8 @@ def load_data(
     )
     if difference > 0:
         # extend train and test target arrays
-        size = result.train_target.shape[0]
-        try:
-            new_train_target = np.append(
-                result.train_target,
-                [[0] * difference for _ in range(size)],
-                1,
-            )
-        except ValueError:
-            new_train_target = result.train_target
-        size = result.test_target.shape[0]
-        try:
-            new_test_target = np.append(
-                result.test_target,
-                [[0] * difference for _ in range(size)],
-                1,
-            )
-        except ValueError:
-            new_test_target = result.test_target
+        new_train_target = pad_data(result.train_target, 1, difference)
+        new_test_target = pad_data(result.test_target, 1, difference)
         result = DataSet(
             result.train_data, new_train_target, result.test_data, new_test_target
         )
