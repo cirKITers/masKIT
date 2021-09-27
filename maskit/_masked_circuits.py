@@ -113,7 +113,8 @@ class MaskedCircuit(object):
                 return mask_type(shape=(self.layers,))
             elif axis == Axis.PARAMETERS:
                 return mask_type(shape=self.parameters.shape)
-            raise ValueError from err
+            else:
+                raise ValueError from err
 
     def _accumulated_mask(self, for_differentiable=True) -> np.ndarray:
         result = np.zeros(
