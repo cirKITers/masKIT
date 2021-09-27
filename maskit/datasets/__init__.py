@@ -14,7 +14,7 @@ def load_data(
     shuffle: bool = True,
     classes: Tuple[int, ...] = (6, 9),
     wires: int = 4,
-    target_length: int = 4,
+    target_length: int = 16,
 ) -> DataSet:
     """
     Returns the data for the requested ``dataset``.
@@ -45,16 +45,24 @@ def load_data(
     )
     if difference > 0:
         # extend train and test target arrays
-        new_train_target = np.append(
-            result.train_target,
-            [[0] * difference for _ in range(result.train_target.shape[0])],
-            1,
-        )
-        new_test_target = np.append(
-            result.test_target,
-            [[0] * difference for _ in range(result.test_target.shape[0])],
-            1,
-        )
+        size = result.train_target.shape[0]
+        try:
+            new_train_target = np.append(
+                result.train_target,
+                [[0] * difference for _ in range(size)],
+                1,
+            )
+        except ValueError:
+            new_train_target = result.train_target
+        size = result.test_target.shape[0]
+        try:
+            new_test_target = np.append(
+                result.test_target,
+                [[0] * difference for _ in range(size)],
+                1,
+            )
+        except ValueError:
+            new_test_target = result.test_target
         result = DataSet(
             result.train_data, new_train_target, result.test_data, new_test_target
         )
