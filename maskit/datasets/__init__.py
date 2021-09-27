@@ -1,4 +1,5 @@
 from typing import Tuple
+from pennylane import numpy as np
 
 from maskit.datasets.circles import circles
 from maskit.datasets.iris import iris
@@ -13,6 +14,7 @@ def load_data(
     shuffle: bool = True,
     classes: Tuple[int, ...] = (6, 9),
     wires: int = 4,
+    target_length: int = 4,
 ) -> DataSet:
     """
     Returns the data for the requested ``dataset``.
@@ -24,16 +26,36 @@ def load_data(
     :param shuffle: if the dataset should be shuffled
     :param classes: which numbers of the mnist dataset should be included
     :param wires: number of wires in the circuit
+    :param target_length: Normalised length of target arrays
 
     :raises ValueError: Raised if a not supported dataset is requested
     """
-    if dataset == "simple":
-        return DataSet(None, None, None, None)
-    elif dataset == "iris":
-        return iris(train_size, test_size, shuffle)
+    if dataset == "iris":
+        result = iris(train_size, test_size, shuffle)
     elif dataset == "mnist":
-        return mnist(wires, classes, train_size, test_size, shuffle)
+        result = mnist(wires, classes, train_size, test_size, shuffle)
     elif dataset == "circles":
-        return circles(train_size, test_size, shuffle)
+        result = circles(train_size, test_size, shuffle)
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
+    difference = target_length - result.train_target.shape[1]
+    assert difference >= 0, (
+        f"Target length ({target_length}) must support at least "
+        f"{result.train_target.shape[1]} classes"
+    )
+    if difference > 0:
+        # extend train and test target arrays
+        new_train_target = np.append(
+            result.train_target,
+            [[0] * difference for _ in range(result.train_target.shape[0])],
+            1,
+        )
+        new_test_target = np.append(
+            result.test_target,
+            [[0] * difference for _ in range(result.test_target.shape[0])],
+            1,
+        )
+        result = DataSet(
+            result.train_data, new_train_target, result.test_data, new_test_target
+        )
+    return result

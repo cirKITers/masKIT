@@ -1,3 +1,4 @@
+from maskit.datasets.utils import DataSet
 from typing import Dict, List, Optional, Tuple, Type
 from dataclasses import dataclass, field
 
@@ -93,6 +94,7 @@ class LoggingData:
 def train(
     wires: int = 1,
     wires_to_measure: Tuple[int, ...] = (0,),
+    interpret: Tuple[int, ...] = (0,),
     layers: int = 1,
     starting_layers: Optional[int] = None,
     steps: int = 1000,
@@ -135,6 +137,7 @@ def train(
                 masked_circuit,
                 wires,
                 wires_to_measure,
+                interpret,
             )
 
     else:  # learning without encoding any data
@@ -200,18 +203,17 @@ def train(
 def test(
     masked_circuit: MaskedCircuit,
     rotations: List,
-    wires: int = 1,
-    wires_to_measure: Tuple[int, ...] = (0,),
-    shots: Optional[int] = None,
-    sim_local: bool = True,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
+    shots: Optional[int],
+    sim_local: bool,
     data: Optional[np.ndarray] = None,
     target: Optional[np.ndarray] = None,
-    **kwargs,
 ):
     if data is None or target is None:
         pass
     elif data is not None and target is not None:
-        dev = get_device(sim_local, wires=wires, shots=shots)
+        dev = get_device(sim_local, wires=masked_circuit.wires, shots=shots)
         circuit = qml.QNode(basis_circuit, dev)
         correct = 0
         N = len(data)
@@ -222,7 +224,7 @@ def test(
                 current_data,
                 rotations,
                 masked_circuit,
-                wires,
+                masked_circuit.wires,
                 wires_to_measure,
             )
             costs.append(
@@ -233,20 +235,34 @@ def test(
                     current_target,
                     rotations,
                     masked_circuit,
-                    wires,
+                    masked_circuit.wires,
                     wires_to_measure,
+                    interpret,
                 )
             )
-            same = np.argmax(current_target) == np.argmax(output)
+            selected_output = [
+                elem.unwrap() for index, elem in enumerate(output) if index in interpret
+            ]
+            same = np.argmax(current_target) == np.argmax(selected_output)
             if same:
                 correct += 1
             if __debug__:
-                print(f"Label: {current_target} Output: {output} Correct: {same}")
+                print(
+                    f"Label: {current_target} Output: {selected_output} "
+                    f"({output}) Correct: {same}"
+                )
+
+        accuracy = correct / N
+        loss = np.average(costs)
         if __debug__:
             print(
-                f"Accuracy = {correct} / {N} = {correct/N} \n",
-                f"Avg Cost: {np.average(costs)}",
+                f"Accuracy = {correct} / {N} = {accuracy} \n",
+                f"Avg Cost: {loss}",
             )
+        return {
+            "accuracy": accuracy,
+            "loss": loss,
+        }
 
 
 if __name__ == "__main__":
@@ -323,15 +339,22 @@ if __name__ == "__main__":
         "train_size": 120,
         "test_size": 100,
         "shuffle": True,
+        "target_length": len(train_params.get("interpret", (0,))),
     }
-    data = load_data(train_params.pop("dataset", "simple"), **data_params)
+    try:
+        data = load_data(train_params.pop("dataset"), **data_params)
+    except ValueError:
+        data = DataSet(None, None, None, None)
     testing = train_params.pop("testing", False)
     result = train(**train_params, data=data.train_data, target=data.train_target)
     if testing:
         test(
-            result["__masked_circuit"],
-            result["__rotations"],
-            **train_params,
+            masked_circuit=result["__masked_circuit"],
+            rotations=result["__rotations"],
+            wires_to_measure=train_params.get("wires_to_measure", (0,)),
+            interpret=train_params.get("interpret", (0,)),
+            shots=train_params.get("shots", None),
+            sim_local=train_params.get("sim_local", True),
             data=data.test_data,
             target=data.test_target,
         )

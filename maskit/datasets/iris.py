@@ -24,7 +24,7 @@ def iris(train_size=100, test_size=50, shuffle=True) -> DataSet:
     x_train, y_train = np.split(train, [4], axis=1)
     x_test, y_test = np.split(test, [4], axis=1)
 
-    y_train = one_hot(y_train, 4)
-    y_test = one_hot(y_test, 4)
+    y_train = one_hot(y_train, 3)
+    y_test = one_hot(y_test, 3)
 
     return DataSet(x_train, y_train, x_test, y_test)

@@ -6,6 +6,10 @@ from maskit.optimizers import ExtendedOptimizers
 def check_params(train_params):
     assert train_params["dataset"] in ["simple", "iris", "mnist", "circles"]
     assert isinstance(train_params["optimizer"], ExtendedOptimizers)
+    if "interpret" not in train_params:
+        train_params["interpret"] = tuple(
+            range(2 ** len(train_params.get("wires_to_measure", (0,))))
+        )
 
 
 def cross_entropy(

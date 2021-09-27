@@ -25,11 +25,17 @@ def cost_basis(
     masked_circuit: MaskedCircuit,
     wires: int,
     wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
 ):
     prediction = circuit(
         params, data, rotations, masked_circuit, wires, wires_to_measure
     )
-    return cross_entropy(predictions=prediction, targets=target)
+    return cross_entropy(
+        predictions=np.array(
+            [elem for index, elem in enumerate(prediction) if index in interpret]
+        ),
+        targets=target,
+    )
 
 
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
