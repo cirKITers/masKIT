@@ -1,7 +1,6 @@
 from typing import List
 import tensorflow as tf
 import collections
-import math
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
@@ -40,21 +39,13 @@ def convert_to_binary(x: np.ndarray) -> np.ndarray:
 
 def convert_label(y: int, classes: List[int]) -> List[float]:
     assert y in classes
-    # Measuring n qubits gets 2^n results to compare against this vector
-    num_classes = nearest_power_of_two(len(classes))
-    a = [0.0 for i in range(num_classes)]
-    a[classes.index(y)] = 1.0
-    return a
+    return [1.0 if the_class == y else 0.0 for the_class in classes]
 
 
 def apply_PCA(wires: int, x_train: np.ndarray):
     pca = PCA(n_components=wires)
     pca.fit(x_train)
     return pca
-
-
-def nearest_power_of_two(x: int) -> int:
-    return 2 ** (math.ceil(math.log(x, 2)))
 
 
 def mnist(

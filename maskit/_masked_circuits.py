@@ -32,7 +32,14 @@ class MaskedCircuit(object):
         which masks are supported, defaults to `None`
     """
 
-    __slots__ = ("parameters", "default_value", "_dynamic_parameters", "masks")
+    __slots__ = (
+        "parameters",
+        "default_value",
+        "_dynamic_parameters",
+        "masks",
+        "wires",
+        "layers",
+    )
 
     def __init__(
         self,
@@ -49,6 +56,8 @@ class MaskedCircuit(object):
         assert (
             wires == parameters.shape[1]
         ), "Second dimension of parameters shape must be equal to number of wires"
+        self.wires = wires
+        self.layers = layers
         self.parameters = parameters
         self.default_value = default_value
         self._dynamic_parameters = dynamic_parameters
@@ -92,7 +101,20 @@ class MaskedCircuit(object):
         :param axis: The axis the mask is performed on
         :param mask_type: The type of `Mask` to return
         """
-        return self.masks[axis][mask_type]
+        try:
+            return self.masks[axis][mask_type]
+        except KeyError as err:
+            mask_types = list(self.masks[axis].keys())
+            if len(mask_types) > 0:
+                return mask_type(shape=self.masks[axis][mask_types[0]].shape)
+            if axis == Axis.WIRES:
+                return mask_type(shape=(self.wires,))
+            elif axis == Axis.LAYERS:
+                return mask_type(shape=(self.layers,))
+            elif axis == Axis.PARAMETERS:
+                return mask_type(shape=self.parameters.shape)
+            else:
+                raise ValueError from err
 
     def _accumulated_mask(self, for_differentiable=True) -> np.ndarray:
         result = np.zeros(
@@ -257,6 +279,8 @@ class MaskedCircuit(object):
     def copy(self: Self) -> Self:
         """Returns a copy of the current MaskedCircuit."""
         clone = object.__new__(type(self))
+        clone.wires = self.wires
+        clone.layers = self.layers
         clone.parameters = self.parameters.copy()
         clone.default_value = self.default_value
         clone._dynamic_parameters = self._dynamic_parameters
@@ -377,6 +401,7 @@ class MaskedCircuit(object):
         wire_mask: Optional[Mask] = None,
         layer_mask: Optional[Mask] = None,
         parameter_mask: Optional[Mask] = None,
+        mask_type: Type[Mask] = DropoutMask,
     ):
         """Helper to create a full circuit with `DropoutMasks`."""
         initializable_masks = [axis for axis in Axis if axis != Axis.ENTANGLING]
@@ -391,7 +416,7 @@ class MaskedCircuit(object):
             parameters=parameters,
             layers=layers,
             wires=wires,
-            masks=[(axis, DropoutMask) for axis in initializable_masks],
+            masks=[(axis, mask_type) for axis in initializable_masks],
             dynamic_parameters=dynamic_parameters,
             default_value=default_value,
         )

@@ -1,12 +1,46 @@
-from maskit._masks import PerturbationAxis as Axis, DropoutMask
-from maskit._masked_circuits import MaskedCircuit
 import pennylane as qml
 from pennylane import numpy as np
+from typing import List, Tuple
+
+from maskit._masks import PerturbationAxis as Axis, DropoutMask
+from maskit._masked_circuits import MaskedCircuit
+from maskit.utils import cross_entropy
+
+
+def cost(
+    circuit,
+    params,
+    rotations: List,
+    masked_circuit: MaskedCircuit,
+):
+    return 1 - circuit(params, rotations, masked_circuit)[0]
+
+
+def cost_basis(
+    circuit,
+    params,
+    data,
+    target,
+    rotations: List,
+    masked_circuit: MaskedCircuit,
+    wires: int,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
+):
+    prediction = circuit(
+        params, data, rotations, masked_circuit, wires, wires_to_measure
+    )
+    return cross_entropy(
+        predictions=prediction[
+            interpret,
+        ],
+        targets=target,
+    )
 
 
 def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
     full_parameters = masked_circuit.expanded_parameters(params)
-    wires = len(masked_circuit.mask(Axis.WIRES))
+    wires = masked_circuit.wires
     dropout_mask = masked_circuit.full_mask(DropoutMask)
     for wire, _is_masked in enumerate(masked_circuit.mask(Axis.WIRES)):
         qml.RY(np.pi / 4, wires=wire)
@@ -26,14 +60,14 @@ def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
 
         for wire in range(0, wires - 1, 2):
             if (
-                masked_circuit.mask(Axis.ENTANGLING) is not None
+                Axis.ENTANGLING in masked_circuit.masks
                 and masked_circuit.mask(Axis.ENTANGLING)[layer, wire]
             ):
                 continue
             qml.CZ(wires=[wire, wire + 1])
         for wire in range(1, wires - 1, 2):
             if (
-                masked_circuit.mask(Axis.ENTANGLING) is not None
+                Axis.ENTANGLING in masked_circuit.masks
                 and masked_circuit.mask(Axis.ENTANGLING)[layer, wire]
             ):
                 continue
@@ -50,15 +84,6 @@ def variational_circuit(params, rotations, masked_circuit):
     return qml.probs(
         wires=range(len(masked_circuit.mask(axis=Axis.WIRES, mask_type=DropoutMask)))
     )
-
-
-def iris_circuit(params, data, rotations, masked_circuit):
-    masked_circuit = masked_circuit.unwrap()
-    qml.templates.embeddings.AngleEmbedding(features=data, wires=range(4), rotation="X")
-    basic_variational_circuit(
-        params=params, rotations=rotations, masked_circuit=masked_circuit
-    )
-    return qml.probs(wires=[0, 1])
 
 
 def basis_circuit(params, data, rotations, masked_circuit, wires, wires_to_measure):

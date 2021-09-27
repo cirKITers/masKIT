@@ -1,4 +1,4 @@
-from typing import List, Dict, TypeVar, Union, Any, Callable
+from typing import List, Dict, Tuple, TypeVar, Union, Any, Callable
 import os
 import time
 import json
@@ -23,7 +23,7 @@ def serialize(o):
     # raise TypeError(f"Cannot serialize {o} to JSON")
 
 
-def log_results(executor: CJ) -> CJ:
+def log_results(executor: CJ, exclude: Tuple[str, ...]) -> CJ:
     @wraps(executor)
     def wrapper(*args, **kwargs):
         wallclock, cpuclock = time.perf_counter, time.process_time
@@ -37,7 +37,11 @@ def log_results(executor: CJ) -> CJ:
                     "call": [
                         f"{executor.__module__}.{executor.__qualname__}",
                         args,
-                        kwargs,
+                        {
+                            key: value
+                            for key, value in kwargs.items()
+                            if key not in exclude
+                        },
                     ],
                     "result": result
                     if type(result) is not dict
