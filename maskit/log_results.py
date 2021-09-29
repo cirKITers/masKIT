@@ -56,6 +56,7 @@ def log_results(executor: CJ, exclude: Tuple[str, ...]) -> CJ:
                 out_file,
                 default=serialize,
             )
+            out_file.write("\n")
         return result
 
     return wrapper
