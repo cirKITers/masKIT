@@ -30,11 +30,17 @@ def load_data(
     :raises ValueError: Raised if a not supported dataset is requested
     """
     if dataset == "iris":
-        result = iris(train_size, test_size, shuffle)
+        result = iris(train_size=train_size, test_size=test_size, shuffle=shuffle)
     elif dataset == "mnist":
-        result = mnist(wires, classes, train_size, test_size, shuffle)
+        result = mnist(
+            wires=wires,
+            classes=classes,
+            train_size=train_size,
+            test_size=test_size,
+            shuffle=shuffle,
+        )
     elif dataset == "circles":
-        result = circles(train_size, test_size, shuffle)
+        result = circles(train_size=train_size, test_size=test_size, shuffle=shuffle)
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
     if target_length is None:
@@ -49,6 +55,11 @@ def load_data(
         new_train_target = pad_data(result.train_target, 1, difference)
         new_test_target = pad_data(result.test_target, 1, difference)
         result = DataSet(
-            result.train_data, new_train_target, result.test_data, new_test_target
+            result.train_data,
+            new_train_target,
+            None,
+            None,
+            result.test_data,
+            new_test_target,
         )
     return result

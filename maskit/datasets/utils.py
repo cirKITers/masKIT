@@ -23,5 +23,7 @@ def pad_data(data: np.ndarray, axis: int, padding: int) -> np.ndarray:
 class DataSet(NamedTuple):
     train_data: Optional[np.ndarray]
     train_target: Optional[np.ndarray]
+    validation_data: Optional[np.ndarray]
+    validation_target: Optional[np.ndarray]
     test_data: Optional[np.ndarray]
     test_target: Optional[np.ndarray]
