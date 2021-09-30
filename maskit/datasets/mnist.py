@@ -19,10 +19,6 @@ def reduce_image(x: np.ndarray) -> np.ndarray:
     return x / 255
 
 
-def convert_to_binary(x: np.ndarray) -> np.ndarray:
-    return (x < 0.5).astype(int)
-
-
 def convert_label(y: int, classes: List[int]) -> List[float]:
     assert y in classes
     return [1.0 if the_class == y else 0.0 for the_class in classes]
@@ -49,7 +45,7 @@ def downscale(x_data, y_data, size) -> Tuple[np.ndarray, np.ndarray]:
     for index, image in enumerate(x_data):
         if len(result_x) >= size:
             break
-        reduced_image = convert_to_binary(reduce_image(image))
+        reduced_image = reduce_image(image)
         previous_len = len(result_x_set)
         result_x_set.add(str(reduced_image))
         if len(result_x_set) <= previous_len:  # next if contradicting
@@ -89,11 +85,12 @@ def mnist(
     test_size = min(test_size, MAX_TEST_SAMPLES)
 
     # split validation set from train set
+    split_point = len(x_train) - (5000 if validation_size > 0 else 0)
     x_train, y_train, x_validation, y_validation = (
-        x_train[:-5000],
-        y_train[:-5000],
-        x_train[-5000:],
-        y_train[-5000:],
+        x_train[:split_point],
+        y_train[:split_point],
+        x_train[split_point:],
+        y_train[split_point:],
     )
 
     x_train, y_train = prepare_data(x_train, y_train, train_size, classes)
