@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import tensorflow as tf
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
@@ -77,7 +77,7 @@ def mnist(
     train_size: int = 100,
     validation_size: int = 0,
     test_size: int = 50,
-    shuffle: bool = True,
+    shuffle: Union[bool, int] = 1337,
 ) -> DataSet:
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     train_size = min(train_size, MAX_TRAIN_SAMPLES - validation_size)
@@ -85,7 +85,7 @@ def mnist(
     test_size = min(test_size, MAX_TEST_SAMPLES)
 
     if shuffle:
-        x_train, y_train = skl_shuffle(x_train, y_train)
+        x_train, y_train = skl_shuffle(x_train, y_train, random_state=shuffle)
 
     # split validation set from train set
     split_point = len(x_train) - (5000 if validation_size > 0 else 0)

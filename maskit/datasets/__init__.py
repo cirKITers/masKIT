@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
 from maskit.datasets.circles import circles
 from maskit.datasets.iris import iris
@@ -10,7 +10,7 @@ def load_data(
     dataset: str,
     train_size: int = 100,
     test_size: int = 50,
-    shuffle: bool = True,
+    shuffle: Union[bool, int] = 1337,
     classes: Tuple[int, ...] = (6, 9),
     wires: int = 4,
     target_length: Optional[int] = None,
@@ -22,7 +22,7 @@ def load_data(
         Available datasets are: iris, mnist and circles.
     :param train_size: Size of the training dataset
     :param test_size: Size of the testing dataset
-    :param shuffle: if the dataset should be shuffled
+    :param shuffle: if the dataset should be shuffled, used also as a seed
     :param classes: which numbers of the mnist dataset should be included
     :param wires: number of wires in the circuit
     :param target_length: Normalised length of target arrays
