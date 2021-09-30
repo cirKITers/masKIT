@@ -39,7 +39,7 @@ def downscale(x_data, y_data, size) -> Tuple[np.ndarray, np.ndarray]:
     :param y_data: Target data
     :param size: Maximum number of data to prepare
     """
-    data_index: List[bool] = np.zeros(len(y_data), dtype=bool)
+    data_index: List[bool] = [False] * len(y_data)
     result_x: List[np.ndarray] = []
     result_x_set = set()
     for index, image in enumerate(x_data):
