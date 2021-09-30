@@ -84,6 +84,9 @@ def mnist(
     validation_size = min(validation_size, MAX_TRAIN_SAMPLES - train_size)
     test_size = min(test_size, MAX_TEST_SAMPLES)
 
+    if shuffle:
+        x_train, y_train = skl_shuffle(x_train, y_train)
+
     # split validation set from train set
     split_point = len(x_train) - (5000 if validation_size > 0 else 0)
     x_train, y_train, x_validation, y_validation = (
@@ -98,10 +101,6 @@ def mnist(
         x_validation, y_validation, validation_size, classes
     )
     x_test, y_test = prepare_data(x_test, y_test, test_size, classes)
-
-    if shuffle:
-        x_train, y_train = skl_shuffle(x_train, y_train)
-        # TODO: also shuffle validation data?
 
     pca = apply_PCA(wires, x_train)
     x_train = pca.transform(x_train)
