@@ -10,6 +10,7 @@ def load_data(
     dataset: str,
     train_size: int = 100,
     test_size: int = 50,
+    validation_size: int = 0,
     shuffle: Union[bool, int] = 1337,
     classes: Tuple[int, ...] = (6, 9),
     wires: int = 4,
@@ -37,6 +38,7 @@ def load_data(
             classes=classes,
             train_size=train_size,
             test_size=test_size,
+            validation_size=validation_size,
             shuffle=shuffle,
         )
     elif dataset == "circles":
@@ -51,14 +53,18 @@ def load_data(
         f"{result.train_target.shape[1]} classes"
     )
     if difference > 0:
-        # extend train and test target arrays
+        # extend train, validation and test target arrays
         new_train_target = pad_data(result.train_target, 1, difference)
         new_test_target = pad_data(result.test_target, 1, difference)
+        if result.validation_target is not None and len(result.validation_target) > 0:
+            new_validation_target = pad_data(result.validation_target, 1, difference)
+        else:
+            new_validation_target = None
         result = DataSet(
             result.train_data,
             new_train_target,
-            None,
-            None,
+            result.validation_data,
+            new_validation_target,
             result.test_data,
             new_test_target,
         )

@@ -62,6 +62,8 @@ def init_parameters(
 class LoggingData:
     interval: int = 1
     costs: Dict = field(default_factory=dict)
+    validation_costs: Dict = field(default_factory=dict)
+    validation_accuracy: Dict = field(default_factory=dict)
     branch_selection: Dict = field(default_factory=dict)
     branch_cost: Dict = field(default_factory=lambda: {"netto": {}, "brutto": {}})
     branch_cost_step: Dict = field(default_factory=lambda: {"netto": {}, "brutto": {}})
@@ -81,6 +83,10 @@ class LoggingData:
         if step % self.interval == 0:  # perform logging
             self._persist_average_cost(step)
             self._persist_average_dropout(step)
+
+    def log_validation_result(self, result, step):
+        self.validation_costs[step] = result["loss"]
+        self.validation_accuracy[step] = result["accuracy"]
 
     def _persist_average_cost(self, step):
         self.costs[step] = np.average(self.cost_values)
@@ -108,7 +114,10 @@ def train(
     ensemble_kwargs: Optional[Dict] = None,
     data: Optional[np.ndarray] = None,
     target: Optional[np.ndarray] = None,
+    validation_data: Optional[np.ndarray] = None,
+    validation_target: Optional[np.ndarray] = None,
     mask_type: Type[Mask] = DropoutMask,
+    validation_interval: int = 100,
 ):
     log_data = LoggingData(interval=log_interval)
 
@@ -173,6 +182,23 @@ def train(
         result = dropout_ensemble.step(masked_circuit, opt, cost_fn, ensemble_steps=1)
         masked_circuit = result.branch
         log_data.log_result(result, step)
+        if (
+            validation_data is not None
+            and validation_target is not None
+            and step % validation_interval == 0
+        ):
+            log_data.log_validation_result(
+                validate(
+                    circuit,
+                    masked_circuit=masked_circuit,
+                    rotations=rotations,
+                    wires_to_measure=wires_to_measure,
+                    interpret=interpret,
+                    data=validation_data,
+                    target=validation_target,
+                ),
+                step,
+            )
 
         if __debug__:
             print(
@@ -187,6 +213,8 @@ def train(
     return {
         "costs": log_data.costs,
         "final_cost": result.cost,
+        "validation_costs": log_data.validation_costs,
+        "validation_accuracy": log_data.validation_accuracy,
         "maximum_active": masked_circuit.parameters.size,
         "active": log_data.active_count,
         "branch_selections": log_data.branch_selection,
@@ -197,72 +225,112 @@ def train(
         "mask": masked_circuit.full_mask(mask_type).unwrap(),
         "__rotations": rotations,
         "__masked_circuit": masked_circuit,
+        "__circuit": circuit,
     }
 
 
-def test(
+def loss_and_accuracy(
+    circuit,
     masked_circuit: MaskedCircuit,
     rotations: List,
     wires_to_measure: Tuple[int, ...],
     interpret: Tuple[int, ...],
-    shots: Optional[int],
-    sim_local: bool,
+    data: np.ndarray,
+    target: np.ndarray,
+    variant: str = "test",
+):
+    correct = 0
+    count = len(data)
+    costs = []
+    for current_data, current_target in zip(data, target):
+        output = circuit(
+            masked_circuit.differentiable_parameters,
+            current_data,
+            rotations,
+            masked_circuit,
+            masked_circuit.wires,
+            wires_to_measure,
+        )
+        costs.append(
+            cost_basis(
+                circuit,
+                masked_circuit.differentiable_parameters,
+                current_data,
+                current_target,
+                rotations,
+                masked_circuit,
+                masked_circuit.wires,
+                wires_to_measure,
+                interpret,
+            )
+        )
+        selected_output = output[
+            interpret,
+        ]
+        same = np.argmax(current_target) == np.argmax(selected_output)
+        if same:
+            correct += 1
+        if __debug__:
+            print(
+                f"Label: {current_target} Output: {selected_output} "
+                f"({output}) Correct: {same}"
+            )
+    accuracy = correct / count
+    loss = np.average(costs)
+    if __debug__:
+        print(
+            f"[{variant}] Accuracy = {correct} / {count} = {accuracy}\n",
+            f"[{variant}] Avg Cost: {loss}",
+        )
+    return {
+        "accuracy": accuracy,
+        "loss": loss,
+    }
+
+
+def validate(
+    circuit,
+    masked_circuit: MaskedCircuit,
+    rotations: List,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
+    data: np.ndarray,
+    target: np.ndarray,
+):
+    return loss_and_accuracy(
+        circuit,
+        masked_circuit=masked_circuit,
+        rotations=rotations,
+        wires_to_measure=wires_to_measure,
+        interpret=interpret,
+        data=data,
+        target=target,
+        variant="validate",
+    )
+
+
+def test(
+    circuit,
+    masked_circuit: MaskedCircuit,
+    rotations: List,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
     data: Optional[np.ndarray] = None,
     target: Optional[np.ndarray] = None,
 ):
     if data is None or target is None:
         pass
     elif data is not None and target is not None:
-        dev = get_device(sim_local, wires=masked_circuit.wires, shots=shots)
-        circuit = qml.QNode(basis_circuit, dev)
-        correct = 0
-        N = len(data)
-        costs = []
-        for current_data, current_target in zip(data, target):
-            output = circuit(
-                masked_circuit.differentiable_parameters,
-                current_data,
-                rotations,
-                masked_circuit,
-                masked_circuit.wires,
-                wires_to_measure,
-            )
-            costs.append(
-                cost_basis(
-                    circuit,
-                    masked_circuit.differentiable_parameters,
-                    current_data,
-                    current_target,
-                    rotations,
-                    masked_circuit,
-                    masked_circuit.wires,
-                    wires_to_measure,
-                    interpret,
-                )
-            )
-            selected_output = output[
-                interpret,
-            ]
-            same = np.argmax(current_target) == np.argmax(selected_output)
-            if same:
-                correct += 1
-            if __debug__:
-                print(
-                    f"Label: {current_target} Output: {selected_output} "
-                    f"({output}) Correct: {same}"
-                )
-
-        accuracy = correct / N
-        loss = np.average(costs)
-        if __debug__:
-            print(
-                f"Accuracy = {correct} / {N} = {accuracy} \n",
-                f"Avg Cost: {loss}",
-            )
-        return {
-            "accuracy": accuracy,
-            "loss": loss,
-        }
+        return loss_and_accuracy(
+            circuit,
+            masked_circuit=masked_circuit,
+            rotations=rotations,
+            wires_to_measure=wires_to_measure,
+            interpret=interpret,
+            data=data,
+            target=target,
+            variant="test",
+        )
 
 
 if __name__ == "__main__":
@@ -310,6 +378,7 @@ if __name__ == "__main__":
         "logging": True,
         "seed": 1337,
         "log_interval": 5,
+        "validation_interval": 10,
         "mask_type": DropoutMask,
     }
     check_params(train_params)
@@ -346,15 +415,20 @@ if __name__ == "__main__":
     except ValueError:
         data = DataSet(None, None, None, None)
     testing = train_params.pop("testing", False)
-    result = train(**train_params, data=data.train_data, target=data.train_target)
+    result = train(
+        **train_params,
+        data=data.train_data,
+        target=data.train_target,
+        validation_data=data.validation_data,
+        validation_target=data.validation_target,
+    )
     if testing:
         test(
+            result["__circuit"],
             masked_circuit=result["__masked_circuit"],
             rotations=result["__rotations"],
             wires_to_measure=train_params.get("wires_to_measure", (0,)),
             interpret=train_params.get("interpret", (0,)),
-            shots=train_params.get("shots", None),
-            sim_local=train_params.get("sim_local", True),
             data=data.test_data,
             target=data.test_target,
         )
