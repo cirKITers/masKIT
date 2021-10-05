@@ -318,9 +318,7 @@ def test(
     data: Optional[np.ndarray] = None,
     target: Optional[np.ndarray] = None,
 ):
-    if data is None or target is None:
-        pass
-    elif data is not None and target is not None:
+    if data is not None and target is not None:
         return loss_and_accuracy(
             circuit,
             masked_circuit=masked_circuit,
