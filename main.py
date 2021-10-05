@@ -386,17 +386,11 @@ if __name__ == "__main__":
     if logging_activated:
         train = log_results(
             train,
-            exclude=(
-                "data",
-                "target",
-            ),
+            exclude=("data", "target", "validation_data", "validation_target"),
         )
         test = log_results(
             test,
-            exclude=(
-                "data",
-                "target",
-            ),
+            exclude=("data", "target"),
         )
     seed = train_params.pop("seed", 1337)
     np.random.seed(seed)
