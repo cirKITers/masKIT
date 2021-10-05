@@ -48,7 +48,7 @@ class TestLoadData:
         assert len(data.test_target[0]) == 2
 
     def test_mnist_basic(self):
-        classes = [6, 7, 8]
+        classes = (6, 7, 8)
         data = load_data(
             "mnist",
             wires=5,

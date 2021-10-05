@@ -1,14 +1,15 @@
-from typing import List
+from typing import List, Tuple, Union
 import tensorflow as tf
-import collections
 from sklearn.decomposition import PCA
 from pennylane import numpy as np
 from sklearn.preprocessing import minmax_scale
+from sklearn.utils import shuffle as skl_shuffle
 
 from maskit.datasets.utils import DataSet
 
-MAX_TRAIN_SAMPLES = 11471
-MAX_TEST_SAMPLES = 1952
+# ignore filtering on classes
+MAX_TRAIN_SAMPLES = 60000
+MAX_TEST_SAMPLES = 10000
 
 
 def reduce_image(x: np.ndarray) -> np.ndarray:
@@ -16,25 +17,6 @@ def reduce_image(x: np.ndarray) -> np.ndarray:
     x = tf.image.resize(x, [4, 4])
     x = np.reshape(x, [4, 4])
     return x / 255
-
-
-def remove_contradicting(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
-    mapping = collections.defaultdict(set)
-    for x, y in zip(xs, ys):
-        mapping[str(x)].add(y)
-
-    return zip(*((x, y) for x, y in zip(xs, ys) if len(mapping[str(x)]) == 1))
-
-
-def convert_to_binary(x: np.ndarray) -> np.ndarray:
-    x_new = []
-    for a in x:
-        c = (a < 0.5).astype(int)
-        c = np.expand_dims(c, axis=0)
-        x_new.append(c)
-
-    x_new = np.concatenate(x_new)
-    return x_new
 
 
 def convert_label(y: int, classes: List[int]) -> List[float]:
@@ -48,51 +30,95 @@ def apply_PCA(wires: int, x_train: np.ndarray):
     return pca
 
 
+def downscale(x_data, y_data, size) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    This function does several things including the reduction of image size,
+    conversion to binary as well as removal of duplicates.
+
+    :param x_data: Input data
+    :param y_data: Target data
+    :param size: Maximum number of data to prepare
+    """
+    data_index: List[bool] = [False] * len(y_data)
+    result_x: List[np.ndarray] = []
+    result_x_set = set()
+    for index, image in enumerate(x_data):
+        if len(result_x) >= size:
+            break
+        reduced_image = reduce_image(image)
+        previous_len = len(result_x_set)
+        result_x_set.add(str(reduced_image))
+        if len(result_x_set) <= previous_len:  # next if contradicting
+            continue
+        result_x.append(reduced_image)
+        data_index[index] = True
+    return (np.array(result_x), y_data[data_index])
+
+
+def prepare_data(
+    x_data: np.ndarray, y_data: np.ndarray, size, classes
+) -> Tuple[np.ndarray, np.ndarray]:
+    data_index = np.isin(y_data, classes)
+    x_data, y_data = x_data[data_index], y_data[data_index]
+    x_data, y_data = downscale(x_data, y_data, size)
+    y_data = np.array([convert_label(y, classes) for y in y_data])
+    try:
+        x_data = np.reshape(
+            x_data, (x_data.shape[0], x_data.shape[1] * x_data.shape[2])
+        )
+    except IndexError:
+        pass
+    return (x_data, y_data)
+
+
 def mnist(
-    wires=4, classes=(6, 9), train_size=100, test_size=50, shuffle=True
+    wires: int = 4,
+    classes=(6, 9),
+    train_size: int = 100,
+    validation_size: int = 0,
+    test_size: int = 50,
+    shuffle: Union[bool, int] = 1337,
 ) -> DataSet:
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    train_size = min(train_size, MAX_TRAIN_SAMPLES)
+    train_size = min(train_size, MAX_TRAIN_SAMPLES - validation_size)
+    validation_size = min(validation_size, MAX_TRAIN_SAMPLES - train_size)
     test_size = min(test_size, MAX_TEST_SAMPLES)
 
-    x_train, y_train = zip(*((x, y) for x, y in zip(x_train, y_train) if y in classes))
-    x_test, y_test = zip(*((x, y) for x, y in zip(x_test, y_test) if y in classes))
+    if shuffle:
+        x_train, y_train = skl_shuffle(x_train, y_train, random_state=shuffle)
 
-    x_train = [reduce_image(x) for x in x_train]
-    x_test = [reduce_image(x) for x in x_test]
-
-    x_train, y_train = remove_contradicting(x_train, y_train)
-    x_test, y_test = remove_contradicting(x_test, y_test)
-
-    x_train, y_train = x_train[:train_size], y_train[:train_size]
-    x_test, y_test = x_test[:test_size], y_test[:test_size]
-
-    x_train = convert_to_binary(x_train)
-    x_test = convert_to_binary(x_test)
-    y_train = [convert_label(y, classes) for y in y_train]
-    y_test = [convert_label(y, classes) for y in y_test]
-
-    x_train = np.reshape(
-        x_train, (x_train.shape[0], x_train.shape[1] * x_train.shape[2])
+    # split validation set from train set
+    split_point = len(x_train) - (5000 if validation_size > 0 else 0)
+    x_train, y_train, x_validation, y_validation = (
+        x_train[:split_point],
+        y_train[:split_point],
+        x_train[split_point:],
+        y_train[split_point:],
     )
-    x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1] * x_test.shape[2]))
+
+    x_train, y_train = prepare_data(x_train, y_train, train_size, classes)
+    x_validation, y_validation = prepare_data(
+        x_validation, y_validation, validation_size, classes
+    )
+    x_test, y_test = prepare_data(x_test, y_test, test_size, classes)
 
     pca = apply_PCA(wires, x_train)
     x_train = pca.transform(x_train)
+    x_train = minmax_scale(x_train, (0, 2 * np.pi))
+    if len(x_validation) > 0:
+        x_validation = pca.transform(x_validation)
+        x_validation = minmax_scale(x_validation, (0, 2 * np.pi))
     x_test = pca.transform(x_test)
+    x_test = minmax_scale(x_test, (0, 2 * np.pi))
 
-    if shuffle:
-        c = list(zip(x_train, y_train))
-        np.random.shuffle(c)
-        x_train, y_train = zip(*c)
+    return DataSet(x_train, y_train, x_validation, y_validation, x_test, y_test)
 
-    n_x_train = len(x_train)
-    data_combined = np.concatenate((np.array(x_train), np.array(x_test)))
 
-    data_combined = minmax_scale(data_combined, (0, 2 * np.pi))
-    x_train = data_combined[:n_x_train][:]
-    x_test = data_combined[n_x_train:][:]
+if __name__ == "__main__":
+    import timeit
 
-    y_train, y_test = np.array(y_train), np.array(y_test)
-
-    return DataSet(x_train, y_train, x_test, y_test)
+    print(
+        timeit.timeit(
+            "mnist(validation_size=50)", setup="from __main__ import mnist", number=1
+        )
+    )

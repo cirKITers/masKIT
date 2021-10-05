@@ -9,4 +9,4 @@ def circles(train_size=100, test_size=50, shuffle=True) -> DataSet:
 
     y_train, y_test = one_hot(y_train, 2), one_hot(y_test, 2)
 
-    return DataSet(x_train, y_train, x_test, y_test)
+    return DataSet(x_train, y_train, None, None, x_test, y_test)
