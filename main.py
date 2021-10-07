@@ -28,7 +28,7 @@ from maskit.ensembles import (
 def get_device(sim_local: bool, wires: int, shots: Optional[int] = None):
     assert sim_local, "Currently only local simulation is supported"
     if sim_local:
-        dev = qml.device("default.qubit", wires=wires, shots=shots)
+        dev = qml.device("lightning.qubit", wires=wires, shots=shots)
     return dev
 
 
