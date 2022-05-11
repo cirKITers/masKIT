@@ -1,4 +1,4 @@
-from maskit.masks import PerturbationAxis, PerturbationMode
+from maskit._masks import PerturbationAxis, PerturbationMode
 
 
 CLASSICAL = {
@@ -7,8 +7,8 @@ CLASSICAL = {
         {
             "perturb": {
                 "amount": 0.1,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
+                "mode": PerturbationMode.SET,
+                "axis": PerturbationAxis.PARAMETERS,
             }
         },
     ],
@@ -23,8 +23,8 @@ RANDOM = {
         {
             "perturb": {
                 "amount": 1,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
+                "mode": PerturbationMode.RESET,
+                "axis": PerturbationAxis.PARAMETERS,
             }
         },
     ],
@@ -34,7 +34,7 @@ RANDOM = {
             "perturb": {
                 "amount": None,
                 "mode": PerturbationMode.INVERT,
-                "axis": PerturbationAxis.RANDOM,
+                "axis": PerturbationAxis.PARAMETERS,
             }
         },
     ],
@@ -47,8 +47,8 @@ QHACK = {
         {
             "perturb": {
                 "amount": 1,
-                "mode": PerturbationMode.ADD,
-                "axis": PerturbationAxis.RANDOM,
+                "mode": PerturbationMode.SET,
+                "axis": PerturbationAxis.PARAMETERS,
             },
         },
     ],
@@ -57,8 +57,8 @@ QHACK = {
         {
             "perturb": {
                 "amount": 0.05,
-                "mode": PerturbationMode.REMOVE,
-                "axis": PerturbationAxis.RANDOM,
+                "mode": PerturbationMode.RESET,
+                "axis": PerturbationAxis.PARAMETERS,
             }
         },
     ],

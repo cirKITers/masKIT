@@ -1,47 +1,35 @@
-from typing import List, Optional
+from maskit.datasets.utils import DataSet
+from typing import Dict, List, Optional, Tuple, Type
+from dataclasses import dataclass, field
 
 import random
 import pennylane as qml
 from pennylane import numpy as np
 
-from maskit.masks import MaskedCircuit, PerturbationAxis, PerturbationMode
-from maskit.iris import load_iris
-from maskit.utils import cross_entropy, check_params
-from maskit.circuits import variational_circuit, iris_circuit
+from maskit._masks import (
+    DropoutMask,
+    Mask,
+    PerturbationAxis as Axis,
+    PerturbationMode as Mode,
+)
+from maskit._masked_circuits import MaskedCircuit
+from maskit.datasets import load_data
+from maskit.utils import check_params
+from maskit.circuits import cost, cost_basis, variational_circuit, basis_circuit
 from maskit.log_results import log_results
 from maskit.optimizers import ExtendedOptimizers
 from maskit.ensembles import (
     AdaptiveEnsemble,
     Ensemble,
+    EnsembleResult,
 )
 
 
 def get_device(sim_local: bool, wires: int, shots: Optional[int] = None):
     assert sim_local, "Currently only local simulation is supported"
     if sim_local:
-        dev = qml.device("default.qubit", wires=wires, shots=shots)
+        dev = qml.device("lightning.qubit", wires=wires, shots=shots)
     return dev
-
-
-def cost(
-    circuit,
-    params,
-    rotations: List,
-    masked_circuit: MaskedCircuit,
-):
-    return 1 - circuit(params, rotations, masked_circuit)[0]
-
-
-def cost_iris(
-    circuit,
-    params,
-    data,
-    target,
-    rotations: List,
-    masked_circuit: MaskedCircuit,
-):
-    prediction = circuit(params, data, rotations, masked_circuit)
-    return cross_entropy(predictions=prediction, targets=target)
 
 
 def init_parameters(
@@ -50,58 +38,118 @@ def init_parameters(
     wires: int,
     default_value: Optional[float],
     dynamic_parameters: bool = True,
+    mask_type: Type[Mask] = DropoutMask,
 ) -> MaskedCircuit:
     params_uniform = np.random.uniform(
         low=-np.pi, high=np.pi, size=(current_layers, wires)
     )
     params_zero = np.zeros((layers - current_layers, wires))
     params_combined = np.concatenate((params_uniform, params_zero))
-    mc = MaskedCircuit(
+    mc = MaskedCircuit.full_circuit(
         parameters=params_combined,
         layers=layers,
         wires=wires,
         default_value=default_value,
+        entangling_mask=DropoutMask(shape=(layers, wires - 1)),
         dynamic_parameters=dynamic_parameters,
+        mask_type=mask_type,
     )
-    mc.layer_mask[current_layers:] = True
+    mc.mask(Axis.LAYERS, mask_type=mask_type)[current_layers:] = True
     return mc
 
 
-def train(
-    train_params, train_data: Optional[List] = None, train_target: Optional[List] = None
-):
-    logging_costs = {}
-    logging_branch_selection = {}
-    logging_branch_cost = {"netto": {}, "brutto": {}}
-    logging_branch_cost_step = {"netto": {}, "brutto": {}}
-    logging_dropout_count = {}
-    logging_cost_values = []
-    logging_dropout_count_values = []
+@dataclass
+class LoggingData:
+    interval: int = 1
+    costs: Dict = field(default_factory=dict)
+    validation_costs: Dict = field(default_factory=dict)
+    validation_accuracy: Dict = field(default_factory=dict)
+    branch_selection: Dict = field(default_factory=dict)
+    branch_cost: Dict = field(default_factory=lambda: {"netto": {}, "brutto": {}})
+    branch_cost_step: Dict = field(default_factory=lambda: {"netto": {}, "brutto": {}})
+    active_count: Dict = field(default_factory=dict)
+    cost_values: List = field(default_factory=list)
+    active_count_values: List = field(default_factory=list)
 
-    np.random.seed(train_params["seed"])
-    random.seed(train_params["seed"])
+    def log_result(self, result: EnsembleResult, step):
+        self.cost_values.append(result.cost)
+        self.active_count_values.append(result.active)
+        if result.ensemble:
+            self.branch_selection[step] = result.branch_name
+            self.branch_cost["brutto"][step] = result.brutto
+            self.branch_cost["netto"][step] = result.netto
+            self.branch_cost_step["brutto"][step] = result.brutto_steps
+            self.branch_cost_step["netto"][step] = result.netto_steps
+        if step % self.interval == 0:  # perform logging
+            self._persist_average_cost(step)
+            self._persist_average_dropout(step)
+
+    def log_validation_result(self, result, step):
+        self.validation_costs[step] = result["loss"]
+        self.validation_accuracy[step] = result["accuracy"]
+
+    def _persist_average_cost(self, step):
+        self.costs[step] = np.average(self.cost_values)
+        self.cost_values.clear()
+
+    def _persist_average_dropout(self, step):
+        self.active_count[step] = np.average(self.active_count_values)
+        self.active_count_values.clear()
+
+
+def train(
+    wires: int = 1,
+    wires_to_measure: Tuple[int, ...] = (0,),
+    interpret: Tuple[int, ...] = (0,),
+    layers: int = 1,
+    starting_layers: Optional[int] = None,
+    steps: int = 1000,
+    sim_local: bool = True,
+    shots: Optional[int] = None,
+    step_size: Optional[float] = None,
+    optimizer: ExtendedOptimizers = ExtendedOptimizers.GD,
+    default_value: Optional[float] = None,
+    log_interval: int = 5,
+    ensemble_type: Type[Ensemble] = Ensemble,
+    ensemble_kwargs: Optional[Dict] = None,
+    data: Optional[np.ndarray] = None,
+    target: Optional[np.ndarray] = None,
+    validation_data: Optional[np.ndarray] = None,
+    validation_target: Optional[np.ndarray] = None,
+    mask_type: Type[Mask] = DropoutMask,
+    validation_interval: int = 100,
+):
+    log_data = LoggingData(interval=log_interval)
 
     # set up circuit, training, dataset
-    wires = train_params["wires"]
-    layers = train_params["layers"]
-    steps = train_params.get("steps", 1000)
-    dev = get_device(train_params.get("sim_local", True), wires=wires)
-    step_size = train_params.get("step_size", None)
-    if step_size:
-        opt = train_params["optimizer"].value(step_size)
-    else:
-        opt = train_params["optimizer"].value()
-    dropout_ensemble = train_params.get("ensemble_type", Ensemble)(
-        **train_params.get("ensemble_kwargs", {"dropout": None})
+    dev = get_device(sim_local=sim_local, wires=wires, shots=shots)
+    opt = optimizer.value(step_size) if step_size else optimizer.value()
+    dropout_ensemble = ensemble_type(
+        **(ensemble_kwargs if ensemble_kwargs is not None else {"dropout": None})
     )
 
     rotation_choices = [0, 1, 2]
     rotations = [np.random.choice(rotation_choices) for _ in range(layers * wires)]
 
-    current_layers = train_params.get("starting_layers", layers)
-    default_value = train_params.get("default_value", None)
+    current_layers = starting_layers if starting_layers else layers
 
-    if train_params["dataset"] == "simple":
+    if data is not None and target is not None:
+        circuit = qml.QNode(basis_circuit, dev)
+
+        def cost_fn(params, masked_circuit=None):
+            return cost_basis(
+                circuit,
+                params,
+                current_data,
+                current_target,
+                rotations,
+                masked_circuit,
+                wires,
+                wires_to_measure,
+                interpret,
+            )
+
+    else:  # learning without encoding any data
         circuit = qml.QNode(variational_circuit, dev)
 
         def cost_fn(params, masked_circuit=None):
@@ -112,55 +160,45 @@ def train(
                 masked_circuit,
             )
 
-    elif train_params["dataset"] == "iris":
-        circuit = qml.QNode(iris_circuit, dev)
-
-        def cost_fn(params, masked_circuit=None):
-            return cost_iris(
-                circuit,
-                params,
-                data,
-                target,
-                rotations,
-                masked_circuit,
-            )
-
     # set up parameters
     masked_circuit = init_parameters(
         layers,
         current_layers,
         wires,
         default_value,
-        dynamic_parameters=False
-        if train_params["optimizer"] == ExtendedOptimizers.ADAM
-        else True,
+        dynamic_parameters=False if optimizer == ExtendedOptimizers.ADAM else True,
+        mask_type=mask_type,
     )
 
     # -----------------------------
     # ======= TRAINING LOOP =======
     # -----------------------------
     for step in range(steps):
-        if train_params["dataset"] == "iris":
-            data = train_data[step % len(train_data)]
-            target = train_target[step % len(train_target)]
+        if data is not None and target is not None:
+            current_data = data[step % len(data)]
+            current_target = target[step % len(target)]
 
         # TODO: add logging for adaptive ensembles
         result = dropout_ensemble.step(masked_circuit, opt, cost_fn, ensemble_steps=1)
         masked_circuit = result.branch
-        if result.ensemble:
-            logging_branch_selection[step] = result.branch_name
-            logging_branch_cost["brutto"][step] = result.brutto
-            logging_branch_cost["netto"][step] = result.netto
-            logging_branch_cost_step["brutto"][step] = result.brutto_steps
-            logging_branch_cost_step["netto"][step] = result.netto_steps
-        logging_cost_values.append(result.cost)
-        logging_dropout_count_values.append(np.sum(masked_circuit.mask))
-        if step % train_params["log_interval"] == 0:
-            # perform logging
-            logging_costs[step] = np.average(logging_cost_values)
-            logging_dropout_count[step] = np.average(logging_dropout_count_values)
-            logging_cost_values.clear()
-            logging_dropout_count_values.clear()
+        log_data.log_result(result, step)
+        if (
+            validation_data is not None
+            and validation_target is not None
+            and step % validation_interval == 0
+        ):
+            log_data.log_validation_result(
+                validate(
+                    circuit,
+                    masked_circuit=masked_circuit,
+                    rotations=rotations,
+                    wires_to_measure=wires_to_measure,
+                    interpret=interpret,
+                    data=validation_data,
+                    target=validation_target,
+                ),
+                step,
+            )
 
         if __debug__:
             print(
@@ -170,84 +208,133 @@ def train(
 
     if __debug__:
         print(masked_circuit.parameters)
-        print(masked_circuit.mask)
+        print(masked_circuit.full_mask(mask_type))
 
     return {
-        "costs": logging_costs,
+        "costs": log_data.costs,
         "final_cost": result.cost,
-        "dropouts": logging_dropout_count,
-        "branch_selections": logging_branch_selection,
-        "branch_costs": logging_branch_cost,
-        "branch_step_costs": logging_branch_cost_step,
+        "validation_costs": log_data.validation_costs,
+        "validation_accuracy": log_data.validation_accuracy,
+        "maximum_active": masked_circuit.parameters.size,
+        "active": log_data.active_count,
+        "branch_selections": log_data.branch_selection,
+        "branch_costs": log_data.branch_cost,
+        "branch_step_costs": log_data.branch_cost_step,
         "final_layers": current_layers,
         "params": masked_circuit.parameters.unwrap(),
-        "mask": masked_circuit.mask.unwrap(),
-        "__wire_mask": masked_circuit.wire_mask.mask,
-        "__layer_mask": masked_circuit.layer_mask.mask,
-        "__parameter_mask": masked_circuit.parameter_mask.mask,
+        "mask": masked_circuit.full_mask(mask_type).unwrap(),
         "__rotations": rotations,
+        "__masked_circuit": masked_circuit,
+        "__circuit": circuit,
     }
 
 
-def test(
-    train_params,
-    params,
-    wire_mask,
-    layer_mask,
-    parameter_mask,
-    layers: int,
+def loss_and_accuracy(
+    circuit,
+    masked_circuit: MaskedCircuit,
     rotations: List,
-    test_data: Optional[List] = None,
-    test_target: Optional[List] = None,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
+    data: np.ndarray,
+    target: np.ndarray,
+    variant: str = "test",
 ):
-    if train_params["dataset"] == "simple":
-        pass
-    elif train_params["dataset"] == "iris":
-        wires = train_params["wires"]
-        dev = get_device(train_params["sim_local"], wires=wires)
-        circuit = qml.QNode(iris_circuit, dev)
-        correct = 0
-        N = len(test_data)
-        costs = []
-        masked_circuit = MaskedCircuit(
-            parameters=params,
-            layers=layers,
-            wires=wires,
-            wire_mask=wire_mask,
-            layer_mask=layer_mask,
-            parameter_mask=parameter_mask,
+    correct = 0
+    count = len(data)
+    costs = []
+    for current_data, current_target in zip(data, target):
+        output = circuit(
+            masked_circuit.differentiable_parameters,
+            current_data,
+            rotations,
+            masked_circuit,
+            masked_circuit.wires,
+            wires_to_measure,
         )
-        for _step, (data, target) in enumerate(zip(test_data, test_target)):
-            output = circuit(
-                masked_circuit.differentiable_parameters,
-                data,
-                rotations,
-                masked_circuit,
-            )
-            c = cost_iris(
+        costs.append(
+            cost_basis(
                 circuit,
                 masked_circuit.differentiable_parameters,
-                data,
-                target,
+                current_data,
+                current_target,
                 rotations,
                 masked_circuit,
+                masked_circuit.wires,
+                wires_to_measure,
+                interpret,
             )
-            costs.append(c)
-            same = np.argmax(target) == np.argmax(output)
-            if same:
-                correct += 1
-            if __debug__:
-                print(f"Label: {target} Output: {output} Correct: {same}")
+        )
+        selected_output = output[
+            interpret,
+        ]
+        same = np.argmax(current_target) == np.argmax(selected_output)
+        if same:
+            correct += 1
         if __debug__:
             print(
-                f"Accuracy = {correct} / {N} = {correct/N} \n",
-                f"Avg Cost: {np.average(costs)}",
+                f"Label: {current_target} Output: {selected_output} "
+                f"({output}) Correct: {same}"
             )
+    accuracy = correct / count
+    loss = np.average(costs)
+    if __debug__:
+        print(
+            f"[{variant}] Accuracy = {correct} / {count} = {accuracy}\n",
+            f"[{variant}] Avg Cost: {loss}",
+        )
+    return {
+        "accuracy": accuracy,
+        "loss": loss,
+    }
+
+
+def validate(
+    circuit,
+    masked_circuit: MaskedCircuit,
+    rotations: List,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
+    data: np.ndarray,
+    target: np.ndarray,
+):
+    return loss_and_accuracy(
+        circuit,
+        masked_circuit=masked_circuit,
+        rotations=rotations,
+        wires_to_measure=wires_to_measure,
+        interpret=interpret,
+        data=data,
+        target=target,
+        variant="validate",
+    )
+
+
+def test(
+    circuit,
+    masked_circuit: MaskedCircuit,
+    rotations: List,
+    wires_to_measure: Tuple[int, ...],
+    interpret: Tuple[int, ...],
+    data: Optional[np.ndarray] = None,
+    target: Optional[np.ndarray] = None,
+):
+    if data is not None and target is not None:
+        return loss_and_accuracy(
+            circuit,
+            masked_circuit=masked_circuit,
+            rotations=rotations,
+            wires_to_measure=wires_to_measure,
+            interpret=interpret,
+            data=data,
+            target=target,
+            variant="test",
+        )
 
 
 if __name__ == "__main__":
     train_params = {
-        "wires": 10,
+        "wires": 4,
+        "wires_to_measure": [0, 1],
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
@@ -262,8 +349,9 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 1,
-                            "mode": PerturbationMode.ADD,
-                            "axis": PerturbationAxis.RANDOM,
+                            "mode": Mode.SET,
+                            "axis": Axis.PARAMETERS,
+                            "mask": DropoutMask,
                         },
                     },
                 ],
@@ -272,8 +360,9 @@ if __name__ == "__main__":
                     {
                         "perturb": {
                             "amount": 0.05,
-                            "mode": PerturbationMode.REMOVE,
-                            "axis": PerturbationAxis.RANDOM,
+                            "mode": Mode.RESET,
+                            "axis": Axis.PARAMETERS,
+                            "mask": DropoutMask,
                         }
                     },
                 ],
@@ -287,23 +376,51 @@ if __name__ == "__main__":
         "logging": True,
         "seed": 1337,
         "log_interval": 5,
+        "validation_interval": 10,
+        "mask_type": DropoutMask,
     }
     check_params(train_params)
-    if train_params.get("logging", True):
-        train = log_results(train)
-    train_data, train_target, test_data, test_target = (
-        load_iris() if train_params["dataset"] == "iris" else [None, None, None, None]
+    logging_activated = train_params.pop("logging", True)
+    if logging_activated:
+        train = log_results(
+            train,
+            exclude=("data", "target", "validation_data", "validation_target"),
+        )
+        test = log_results(
+            test,
+            exclude=("data", "target"),
+        )
+    seed = train_params.pop("seed", 1337)
+    np.random.seed(seed)
+    random.seed(seed)
+
+    data_params = {
+        "wires": train_params["wires"],
+        "classes": [6, 9],
+        "train_size": 120,
+        "test_size": 100,
+        "shuffle": True,
+        "target_length": len(train_params.get("interpret", (0,))),
+    }
+    try:
+        data = load_data(train_params.pop("dataset"), **data_params)
+    except ValueError:
+        data = DataSet(None, None, None, None)
+    testing = train_params.pop("testing", False)
+    result = train(
+        **train_params,
+        data=data.train_data,
+        target=data.train_target,
+        validation_data=data.validation_data,
+        validation_target=data.validation_target,
     )
-    result = train(train_params, train_data=train_data, train_target=train_target)
-    if train_params["testing"]:
+    if testing:
         test(
-            train_params,
-            result["params"],
-            result["__wire_mask"],
-            result["__layer_mask"],
-            result["__parameter_mask"],
-            result["final_layers"],
-            result["__rotations"],
-            test_data=test_data,
-            test_target=test_target,
+            result["__circuit"],
+            masked_circuit=result["__masked_circuit"],
+            rotations=result["__rotations"],
+            wires_to_measure=train_params.get("wires_to_measure", (0,)),
+            interpret=train_params.get("interpret", (0,)),
+            data=data.test_data,
+            target=data.test_target,
         )

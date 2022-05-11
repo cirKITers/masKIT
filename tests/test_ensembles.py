@@ -1,3 +1,4 @@
+from maskit._masks import PerturbationAxis as Axis
 from tests.utils import cost, create_circuit, device, variational_circuit
 from tests.configurations import QHACK, GROWING, RANDOM, CLASSICAL
 import pytest
@@ -34,7 +35,7 @@ class TestEnsemble:
     def test_ensemble_step(self, dropout):
         mp = create_circuit(3, layer_size=2)
         optimizer = ExtendedGradientDescentOptimizer()
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         ensemble = Ensemble(dropout=dropout)
 
         def cost_fn(params, masked_circuit=None):
@@ -71,7 +72,7 @@ class TestIntervalEnsemble:
         interval = 3
         mp = create_circuit(3, layer_size=2)
         optimizer = ExtendedGradientDescentOptimizer()
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         simple_ensemble = Ensemble(dropout=None)
         interval_ensemble = IntervalEnsemble(dropout=dropout, interval=interval)
 
@@ -119,7 +120,7 @@ class TestAdaptiveEnsemble:
         pnp.random.seed(1234)
         mp = create_circuit(3, layer_size=2)
         optimizer = ExtendedGradientDescentOptimizer()
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         simple_ensemble = Ensemble(dropout=None)
         adaptive_ensemble = AdaptiveEnsemble(dropout=dropout, size=3, epsilon=0.01)
 
@@ -159,7 +160,7 @@ class TestEnsembleUseCases:
         pnp.random.seed(1234)
         mp = create_circuit(3, layer_size=2)
         ensemble = Ensemble(dropout=CLASSICAL)
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
@@ -180,9 +181,9 @@ class TestEnsembleUseCases:
         random.seed(1234)
         pnp.random.seed(1234)
         mp = create_circuit(3, layer_size=2)
-        mp.layer_mask[1:] = True
+        mp.mask(Axis.LAYERS)[1:] = True
         ensemble = Ensemble(dropout=GROWING)
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
@@ -193,20 +194,20 @@ class TestEnsembleUseCases:
             )
 
         current_cost = 1.0
-        assert pnp.sum(mp.layer_mask) == 2
-        for _ in range(len(mp.layer_mask) - 1):
+        assert pnp.sum(mp.mask(Axis.LAYERS)) == 2
+        for _ in range(len(mp.mask(Axis.LAYERS)) - 1):
             result = ensemble.step(mp, optimizer, cost_fn)
             mp = result.branch
             current_cost = result.cost
         assert current_cost == pytest.approx(0.86318044)
-        assert pnp.sum(mp.layer_mask) == 0
+        assert pnp.sum(mp.mask(Axis.LAYERS)) == 0
 
     def test_random(self):
         random.seed(1234)
         pnp.random.seed(1234)
         mp = create_circuit(3, layer_size=2)
         ensemble = Ensemble(dropout=RANDOM)
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
@@ -228,7 +229,7 @@ class TestEnsembleUseCases:
         pnp.random.seed(1234)
         mp = create_circuit(3, layer_size=2)
         ensemble = Ensemble(dropout=QHACK)
-        circuit = qml.QNode(variational_circuit, device(mp.wire_mask.size))
+        circuit = qml.QNode(variational_circuit, device(mp.mask(Axis.WIRES).size))
         optimizer = ExtendedGradientDescentOptimizer()
 
         def cost_fn(params, masked_circuit=None):
