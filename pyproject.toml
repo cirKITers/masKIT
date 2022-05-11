@@ -36,7 +36,7 @@ datasets = [
 dev = ["pre-commit"]
 doc = [
     "sphinx",
-    "myst_parser",
+    "myst-parser",
 ]
 
 [project.urls]
