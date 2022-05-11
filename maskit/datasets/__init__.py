@@ -46,7 +46,7 @@ def load_data(
     else:
         raise ValueError(f"Unknown dataset: {dataset}")
     if target_length is None:
-        target_length = 2 ** wires
+        target_length = 2**wires
     difference = target_length - result.train_target.shape[1]
     assert difference >= 0, (
         f"Target length ({target_length}) must support at least "
