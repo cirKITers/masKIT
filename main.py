@@ -338,7 +338,7 @@ if __name__ == "__main__":
         "layers": 5,
         # "starting_layers": 10,  # only relevant if "dropout" == "growing"
         "steps": 1000,
-        "dataset": "simple",
+        "dataset": "iris",
         "testing": True,
         "ensemble_type": AdaptiveEnsemble,
         "ensemble_kwargs": {
