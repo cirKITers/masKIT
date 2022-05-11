@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "masKIT"
-copyright = "2021, Eileen Kuehn, Christof Wendenius"
+copyright = "2021-22, Eileen Kuehn, Christof Wendenius"
 author = "Eileen Kuehn, Christof Wendenius"
 
 
@@ -63,3 +63,5 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+myst_heading_anchors = 2
