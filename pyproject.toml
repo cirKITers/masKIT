@@ -33,7 +33,7 @@ test = [
 datasets = [
     "tensorflow >=2.0.0",
 ]
-dev = ["pre-commit"]
+dev = ["pre-commit", "change-log"]
 
 [project.urls]
 Source = "https://github.com/cirKITers/masKIT"

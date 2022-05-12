@@ -1,0 +1,9 @@
+category: added
+summary: "Add mask to change values by an offset"
+description: |
+  With this change it is supported to apply a mask to parameter values. With this, it
+  becomes possible to add or reduce parameters by a specific offset given the various
+  axes, i.e. wires, layers, or parameters.
+pull requests:
+  - 54
+  - 50

@@ -1,0 +1,8 @@
+category: added
+summary: "Add mask for freezing"
+description: |
+  A mask for freezing parts of a circuit was added. The different dimensions including
+  wires, layers, and single parameters can be frozen. Frozen parts of a circuit cannot
+  be changed anymore during training.
+pull requests:
+  - 17
