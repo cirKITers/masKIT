@@ -21,7 +21,9 @@ entangling gates, for different modes, i.e. adding, removing, inverting.
 
 The framework can be installed via pypi:
 
-  python -m pip install maskit
+```bash
+python -m pip install maskit
+```
 
 ## Contributing
 
