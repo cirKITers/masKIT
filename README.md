@@ -1,9 +1,27 @@
-# QHACK 2021
+# masKIT: Ensemble-based gate dropouts for quantum circuits
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-submitted: Tag 1.0
+MasKIT is a framework that provides masking functionality in the context of
+parameterized quantum circuits (PQC) for PennyLane. It targets *scientists* and
+simplifies researching trainability and expressivity of circuits by enabling to
+dynamically mask gates within the circuit. The framework is designed to act as
+a drop-in replacement and therefore allows to enhance your existing PennyLane
+projects with low effort.
+
+The masking is supported on different axes, i.e. layers, wires, parameters, and
+entangling gates, for different modes, i.e. adding, removing, inverting.
+
+  The current version is still in a development stage and therefore does not cover
+  the whole functionality one might imagine for masking PQCs.
+  Please feel invited to submit your contributions and ideas.
+
+## Installation
+
+The framework can be installed via pypi:
+
+  python -m pip install maskit
 
 ## Contributing
 
