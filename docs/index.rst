@@ -15,12 +15,14 @@ Ensemble-based gate dropouts for quantum circuits
    source/masks
    source/ensembles
    source/glossary
+   Module Index <source/api/modules>
 
 .. toctree::
    :maxdepth: 1
    :caption: Development
    :hidden:
 
+   source/changelog
    CONTRIBUTING.md
    source/publishing
 
