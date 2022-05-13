@@ -17,7 +17,7 @@ dynamic = ["version", "description"]
 license = {file = "LICENSE"}
 keywords = ["quantum computing",]
 dependencies = [
-    "pennylane ~= 0.18.0",
+    "pennylane ~= 0.23",
     "typing_extensions",
 ]
 
