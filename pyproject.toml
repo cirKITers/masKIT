@@ -17,7 +17,7 @@ dynamic = ["version", "description"]
 license = {file = "LICENSE"}
 keywords = ["quantum computing",]
 dependencies = [
-    "pennylane ~= 0.18.0",
+    "pennylane ~= 0.23",
     "typing_extensions",
 ]
 
@@ -32,8 +32,9 @@ test = [
 ]
 datasets = [
     "tensorflow >=2.0.0",
+    "scikit-learn",
 ]
-dev = ["pre-commit"]
+dev = ["pre-commit", "change-log"]
 doc = [
     "sphinx",
     "myst-parser",

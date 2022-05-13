@@ -12,7 +12,7 @@ class L_BFGS_B:
     in scipy. Please see the :py:func:`~sciopt.fmin_l_bfgs_b` documentation for
     further details.
 
-    In case the method :py:method:`~.step` is used, the value of parameter `maxiter`
+    In case the method :py:meth:`~.step` is used, the value of parameter `maxiter`
     is ignored and interpreted as `1` instead.
 
     :param bounds: tuple of `min` and `max` for each value of provided parameters

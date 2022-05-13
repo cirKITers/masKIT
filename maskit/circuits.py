@@ -75,7 +75,10 @@ def basic_variational_circuit(params, rotations, masked_circuit: MaskedCircuit):
 
 
 def variational_circuit(params, rotations, masked_circuit):
-    masked_circuit = masked_circuit.unwrap()
+    try:  # versions prior to PennyLane 0.23 required unwrapping the object
+        masked_circuit = masked_circuit.unwrap()
+    except AttributeError:
+        pass
     basic_variational_circuit(
         params=params,
         rotations=rotations,

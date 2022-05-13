@@ -372,11 +372,21 @@ class TestMaskedCircuits:
         )
 
         circuit(mp.differentiable_parameters, rotations, mp)
-        assert circuit.specs["gate_types"]["CZ"] == 12
+        assert (
+            qml.specs(circuit)(mp.differentiable_parameters, rotations, mp)[
+                "gate_types"
+            ]["CZ"]
+            == 12
+        )
 
         mp.perturb(axis=Axis.ENTANGLING, mode=Mode.SET, amount=6)
         circuit(mp.differentiable_parameters, rotations, mp)
-        assert circuit.specs["gate_types"]["CZ"] == 6
+        assert (
+            qml.specs(circuit)(mp.differentiable_parameters, rotations, mp)[
+                "gate_types"
+            ]["CZ"]
+            == 6
+        )
 
     def _create_circuit(self, size):
         parameters = pnp.random.uniform(low=-pnp.pi, high=pnp.pi, size=(size, size))

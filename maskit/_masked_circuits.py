@@ -434,7 +434,7 @@ class MaskedCircuit(object):
 
 
 if __name__ == "__main__":
-    parameter = MaskedCircuit(
+    parameter = MaskedCircuit.full_circuit(
         np.array(([21, 22, 23], [11, 22, 33], [43, 77, 89])), 3, 3
     )
     parameter.mask(Axis.WIRES)[1] = True

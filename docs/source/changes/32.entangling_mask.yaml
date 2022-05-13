@@ -1,0 +1,8 @@
+category: added
+summary: "Add mask for entangling gates"
+description: |
+  So far only masking of gates defined via parameters was supported. This change
+  introduces the functionality to also mask entangling gates.
+pull requests:
+- 32
+version: 0.1.0
