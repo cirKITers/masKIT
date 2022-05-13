@@ -5,4 +5,5 @@ description: |
   wires, layers, and single parameters can be frozen. Frozen parts of a circuit cannot
   be changed anymore during training.
 pull requests:
-  - 17
+- 17
+version: 0.1.0

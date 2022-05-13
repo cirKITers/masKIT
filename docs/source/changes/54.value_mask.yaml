@@ -5,5 +5,6 @@ description: |
   becomes possible to add or reduce parameters by a specific offset given the various
   axes, i.e. wires, layers, or parameters.
 pull requests:
-  - 54
-  - 50
+- 54
+- 50
+version: 0.1.0
