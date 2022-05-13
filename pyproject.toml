@@ -32,6 +32,7 @@ test = [
 ]
 datasets = [
     "tensorflow >=2.0.0",
+    "scikit-learn",
 ]
 dev = ["pre-commit", "change-log"]
 doc = [
