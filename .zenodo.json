@@ -1,0 +1,26 @@
+{
+    "creators": [
+        {
+            "orcid": "0000-0002-8034-8837",
+            "affiliation": "Karlsruhe Institute of Technology",
+            "name": "Kuehn, Eileen"
+        },
+        {
+            "orcid": "0000-0002-3289-8690",
+            "affiliation": "Karlsruhe Institute of Technology",
+            "name": "Wendenius, Christof"
+        },
+        {
+            "name": "Metz, Niklas"
+        },
+        {
+            "orcid": "0000-0002-3326-1368",
+            "affiliation": "Karlsruhe Institute of Technology",
+            "name": "Fischer, Max"
+        }
+    ],
+    "title": "masKIT",
+    "description": "MasKIT is a framework that provides masking and dropout functionality for parameterized quantum circuits for PennyLane. It allows researching trainability and expressivity of circuits by enabling to dynamically mask gates within the circuit.",
+    "upload_type": "software",
+    "note": "See the full list of <a href=\"https://github.com/cirKITers/masKIT#contributors\">contributors on GitHub</a>."
+}
